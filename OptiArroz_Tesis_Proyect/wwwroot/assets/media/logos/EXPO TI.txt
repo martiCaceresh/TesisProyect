@@ -1,0 +1,66 @@
+Que consideraciones debe de tener TEXTIL DEL VALLE antes de implementar el ERP DATA TEX
+
+A NIVEL DE PROCESOS DE NEGOCIO
+	
+	Analisis de procesos existentes : Se debe de realizar una analisis de todos los procesos de negocio donde : 
+	
+		. Se identifiquen las áreas y puntos de mejora en cada proceso que se va migrar al ERP de modo que 
+		se evaluen si los módulos y funcionalidades que ofrece DATA TEX puedan brindar el soporte para poder 
+		atender las mejoras que se requieren y que se alinee a los objetivos estrategicos del negocio.
+
+		. Se identifiquen los procesos que necesitan ser estandarizados, ya que TEXTIL DEL VALLE es una empresa
+		que cuenta con varias plantas donde existen procesos que no siguen un mismo lineamiento lo cual incurre
+		en falta de estandarización de la estructura de datos lo cúal sería un retraso a la hora de migrar los 
+		procesos DATA TEX.
+
+A NIVEL DE LA ORGANIZACION
+	
+	Gestion del cambio : A raíz de la estandarización y migración de los procesos existentes estos van a repercutir en
+	una resistencia por parte de los colaboradores por ello una de las consideraciones importantes para poder tener èxito 
+	en la implementacion de DATA TEX es manejar un plan de gestión del cambio que reduzca la resistencia por parte de
+	los colaboradores a travez de : 
+	
+		. Que haya un compromiso integral que incluya a toda la organización desde el área operativa hasta la alta dirección
+		que promueva el interes y los recursos necesarios para llevar a cabo una transición suave para los colaboradores
+		
+		. Manejar los medios de comunicación y elementos de comunicación adecuados donde se expongan que beneficios va 
+		a traer consigo la implementación del ERP hacia el trabajo de los colaboradores
+		
+		. Realizar planes de capacitación y eventos que ayuden a despertar el interes e incrementar el nivel de expertiz
+		en el ERP a implementar dando incentivos para motivar a los colaboradores a participar.
+
+A NIVEL DE MADUREZ TECNOLOGICA
+
+	Evaluacion de infraestructura : Existen algunas dependencias que debe de tener TEXTIL DEL VALLE para poder obtener el mayor beneficio
+	del ERP y esto es :
+
+		. Textil del Valle, debe de realizar una analisis de rendimiento de su conectividad a internet y ancho de banda, ya que 
+		DATA TEX es un ERP en la nube que requiere de conectividad a intertet rapida y un ancho de banda suficiente para poder
+		obtener el mayor rendimiento a nivel de procesamiento y de esa manera mejorar la eficiencia en los procesos de TEXTIL del Valle
+
+		. Otra de las dependencias es a nivel de los dispositivos desde donde se va a acceder al ERP, ya que deben de contar con 
+		el HARDAWARE adecuado para poder soportar el procesamiento de las funcionalidades de DATA TEX. Entonces TEXTIL DE VALLE
+		debe de evaluar si es que se va requerir cambio a nivel de infraestructura de dispositivos si se quiere obtener los maximos
+		beneficios del ERP.
+
+	Integracion con Sistemas :
+ 
+		. Se debe de realizar un analisis de compatibilidad de sistemas de modo que se identifiquen que sistemas estan aptos o no 
+		para poder integrarse de manera sencilla al ERP
+
+		. Luego realizar una evaluación de la actualización de aquellos sistemas que no estan aptos para la integración.
+		Actualizaciones a nivel de tecnologia, estructura de datos, etc. TEXTIL DEL VALLE debe evaluar la inversion de 
+		la actualización de estos sistemas
+
+A NIVEL DE FACTORES FINANCIEROS
+
+	Costo de Inversion : TEXTIL DEL VALLE debe de tomar en consideración realizar un analisis de inversion y costeo 
+	de cada etapa dentro de la implementación del ERP y manejar un presupuesto que indique el costo total de la implementacion 
+	del ERP, de modo que pueda identificar si se encuentra en la capacidad de poder costear la implementación y si es que según el
+	ROI va a tener un retorno de la inversión adecuado que le asegure ganancias
+
+	FINANCIAMIENTO : Una vez elegido que se va a invertir TEXTIL DEL VALLE debe de considerar evaluar la estrategia de financiamiento
+	que va seguir y evaluar opciones como prestamos bancarios , prestamos de proveedores, la sumatoria de nuevos inversionistas etc
+	Esto con la finalidad de obtener el capital necesario para poder implementar de manera exitosa el ERP
+			
+  

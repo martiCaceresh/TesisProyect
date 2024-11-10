@@ -1,0 +1,89 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<style>
+	/* Estilo para la pantalla de carga */
+	#loader {
+		position: fixed;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		background-color: white; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
+		z-index: 9999;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		opacity: 1; /* La pantalla de carga será sólida sin transparencia */
+	}
+
+	/* Estilo para el spinner o indicador de carga */
+	.spinner {
+		min-width: 150px;
+		min-height: 150px;
+		max-width: 380px;
+		max-height: 380px;
+		width: 50%;
+		height: auto;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+	}
+</style>
+<script>
+    async function ValidateFirstConfiguration() {
+        try {
+            const response = await fetch('/Home/ValidateFirstConfiguration', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Error en la petición');
+            }
+
+            return await response.json();
+        } catch (error) {
+            console.error('Error:', error);
+            return false;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        const loader = document.getElementById('loader');
+        const spinner = document.getElementById('spinner');
+
+        // Mostrar la pantalla de carga al iniciar
+        loader.style.display = 'block';
+        spinner.src = spinner.src;
+
+        try {
+            // Validar la configuración
+            const hasConfiguration = await ValidateFirstConfiguration();
+
+            // Determinar la URL de redirección basada en la respuesta
+            const redirectUrl = hasConfiguration ? '/Home/Index' : '/Home/FirstConfiguration';
+
+            // Establecer un tiempo mínimo de espera para la animación del loader
+            setTimeout(function () {
+                loader.style.display = 'none';
+                window.location.href = redirectUrl;
+            }, 5300);
+
+        } catch (error) {
+            console.error('Error durante la validación:', error);
+            // En caso de error, redirigir a FirstConfiguration por defecto
+            setTimeout(function () {
+                loader.style.display = 'none';
+                window.location.href = '/Home/FirstConfiguration';
+            }, 5300);
+        }
+    });
+</script>
+
+<div id="loader">
+	<img id="spinner" src="~/assets/media/loaders/CargaInicioRefinanciados.gif" alt="Cargando..." class=" app-sidebar-logo-default theme-light-show spinner" />
+</div>

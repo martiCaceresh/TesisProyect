@@ -1,0 +1,1438 @@
+﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.CreateNewLotVM
+
+<!--start::Style-->
+<style>
+    /* Estilos para Carga de archivos */
+    #areaArrastreFile,
+    #areaArrastreBankConfirmation {
+        border: 2px dashed #007bff;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+        transition: min-height 0.3s ease;
+    }
+
+    .areaArrastreHoverFile
+    .areaArrastreHoverBankConfirmation {
+        border-color: #0056b3;
+    }
+
+    .botonArchivoFile
+    .botonArchivoBankConfirmation {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .botonArchivoFile:hover,
+    .botonArchivoBankConfirmation:hover {
+        background-color: #0056b3;
+    }
+
+    #cardArchivoFile,
+    #cardArchivoBankConfirmation {
+        display: none;
+        max-width: 400px;
+        margin: 10px auto;
+    }
+
+    #btnCargarFile,
+    #btnCargarBankConfirmation {
+        display: none;
+    }
+
+</style>
+<style>
+
+    .ubication-box {
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .ubication-box.clickable:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+    /* Hacer el contenedor scrolleable horizontalmente si es necesario */
+    #UbicationsGraphics .position-relative {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    /* Tooltip personalizado en hover */
+    .ubication-box[title]:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        white-space: nowrap;
+        z-index: 1000;
+    }
+
+    .form-control {
+        text-transform: uppercase;
+    }
+
+    .modal-dialog-custom-lg {
+        max-width: 90%;
+    }
+
+    .page-loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 9999;
+        visibility: hidden;
+    }
+
+    .circle {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        margin-right: 10px;
+    }
+
+</style>
+<!--end::Style-->
+<!--begin: General scripts-->
+<script>
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            // Simula el clic en el botón "Siguiente"
+            event.preventDefault(); // Evita comportamientos por defecto del Enter
+            $('[data-kt-element*="-next"]:visible').click();
+        }
+    });
+
+    // Función para mostrar el Page Loader
+    function showPageLoader() {
+        const pageLoader = document.querySelector(".page-loader");
+        pageLoader.style.visibility = "visible"; // Mostrar el Page Loader
+    }
+    // Función para ocultar el Page Loader
+    function hidePageLoader() {
+        const pageLoader = document.querySelector(".page-loader");
+        pageLoader.style.visibility = "hidden"; // Ocultar el Page Loader
+    }
+    // También puedes ocultar el Page Loader después de que se complete la carga
+    window.addEventListener("load", hidePageLoader);
+
+    function Create() {
+        const form = document.getElementById('kt_create_app_form');
+        // Confirmación de envío
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¿Deseas enviar el formulario?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, enviar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                //MOSTRAR SPINNER
+                $('#submitButton').prop('disabled', true); // Deshabilitar el botón
+                $('#btnGuardar').hide(); // Ocultar el texto
+                $('.indicator-progress').show(); // Mostrar el spinner
+                // Envía el formulario
+                form.submit();
+            }
+        });
+    }
+
+
+</script>
+<!--end: General scripts-->
+<!--begin: Stepper Logic-->
+<script>
+    $(document).ready(function () {
+        // Configuración inicial del stepper
+        var totalSteps = $('[data-kt-stepper-element="content"]').length;
+
+        // Al hacer clic en "Next"
+        $('[data-kt-element*="-next"]').on('click', function () {
+            if (validateCurrentStep()) {
+                console.log("Paso valido")
+                navigateStepper(1);
+            }
+            console.log("Paso no valido")
+        });
+
+        // Al hacer clic en "Previous"
+        $('[data-kt-element*="-previous"]').on('click', function () {
+            navigateStepper(-1);
+        });
+
+        //Al hacer click en create
+        $('[data-kt-element*="-create"]').on('click', function (e) {
+            e.preventDefault();
+            if (validateCurrentStep()) {
+                Create();
+            }
+        });
+
+        //funcion para validar stepper
+        function validateCurrentStep() {
+            var currentSection = $('.current[data-kt-stepper-element="content"]');
+            var currentIndex = $('[data-kt-stepper-element="content"]').index(currentSection);
+            var inputs = currentSection.find('input[required], select[required]');
+            var isValid = true;
+
+
+
+            inputs.each(function () {
+                var element = $(this);
+                if (!element.val() || element.hasClass('invalid')) {
+                    var parentDiv = element.closest('.input-group');
+                    isValid = false;
+                    element.addClass('invalid');
+                    parentDiv.next('.invalid-feedback').show();
+                } else {
+                    var parentDiv = element.closest('.input-group');
+                    element.removeClass('invalid');
+                    parentDiv.next('.invalid-feedback').hide();
+                }
+            });
+
+
+            if (isValid && currentIndex === 0) { //Llenar el select de sacos de la seccion 2
+                var Sacks = [];
+                $('[data-repeater-sack]').each(function (index) {
+                    if (index !== 1) {
+                        Sacks.push($(this).val().trim());
+                    }
+                });
+
+                $('[data-repeater-ricesack]').each(function (index) {
+                    // Limpiar las opciones existentes manteniendo solo la opción por defecto
+                    $(this).find('option:not(:first)').remove();
+
+                    // Llenar el select con los valores de la lista Sacks
+                    Sacks.forEach(function (sackValue) {
+                        if (sackValue !== '') {
+                            let option = new Option(sackValue, sackValue);
+                            $(this).append(option);
+                        }
+                    }.bind(this));
+                });
+
+            }
+
+            return isValid;
+
+        }
+
+        function navigateStepper(direction) {
+            // Encuentra la sección actual
+            var currentSection = $('.current[data-kt-stepper-element="content"]');
+
+            // Encuentra el índice de la sección actual
+            var currentIndex = $('[data-kt-stepper-element="content"]').index(currentSection);
+
+            // Calcula el próximo índice
+            var nextIndex = currentIndex + direction;
+
+            // Asegúrate de que el próximo índice esté en el rango válido
+            if (nextIndex >= 0 && nextIndex < totalSteps) {
+                // Oculta la sección actual
+                currentSection.removeClass('current');
+
+                // Muestra la siguiente o anterior sección
+                $('[data-kt-stepper-element="content"]:eq(' + nextIndex + ')').addClass('current');
+
+                // Actualiza la navegación del stepper
+                $('.stepper-item.current').removeClass('current');
+                $('[data-kt-stepper-element="nav"]:eq(' + nextIndex + ')').addClass('current');
+            }
+        }
+
+    });
+
+    function navigateStepperByStep(step) {
+        // Encuentra la sección actual
+        var currentSection = $('.current[data-kt-stepper-element="content"]');
+
+        // Calcula el próximo índice
+        var nextIndex = step;
+
+        // Oculta la sección actual
+        currentSection.removeClass('current');
+
+        // Muestra la siguiente o anterior sección
+        $('[data-kt-stepper-element="content"]:eq(' + nextIndex + ')').addClass('current');
+
+        // Actualiza la navegación del stepper
+        $('.stepper-item.current').removeClass('current');
+        $('[data-kt-stepper-element="nav"]:eq(' + nextIndex + ')').addClass('current');
+
+    }
+</script>
+<!--end: Stepper Logic-->
+<!--begin: Stepper Validations-->
+<script>
+
+    //FUNCION QUE REALIZA LAS VALIDACIONES A CADA ELEMENTO DENTRO DEL MODAL
+    function ValidateElement(element) {
+        var isValid = true;
+        var validationTypes = element.data('validation').split(',');
+
+        for (var i = 0; i < validationTypes.length; i++) {
+            var validationType = validationTypes[i];
+            switch (validationType) {
+                case 'required':
+                    if (!element.val()) {
+                        isValid = false;
+                        console.log("Required")
+                        ShowValidationError(element, 'Este campo es obligatorio.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+                case 'digits':
+                    var digits = element.data('digits').toString().split(',').map(Number);
+                    if (!digits.includes(element.val().length)) {
+                        isValid = false;
+                        console.log("Digits")
+                        ShowValidationError(element, `El campo debe tener exactamente ${digits.join(' o ')} dígitos.`);
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+                case 'email':
+                    if (element.val() == "") {
+                        var parentDiv = element.closest('.input-group');
+                        element.removeClass('valid');
+                        element.removeClass('invalid');
+                        parentDiv.next('.invalid-feedback').hide();
+                        element.removeAttr('required');
+                    }
+                    else if (!ValidateEmail(element.val())) {
+                        isValid = false;
+                        console.log("email")
+                        ShowValidationError(element, 'El correo electrónico no es válido.');
+                        element.attr('required', true);
+                        return isValid;
+                    }
+                    else {
+
+                        RemoveValidationError(element);
+                        element.attr('required', true);
+                    }
+                    break;
+
+                case 'numeric':
+                    if (!ValidateNumeric(element.val())) {
+                        isValid = false;
+                        console.log("numeric")
+                        ShowValidationError(element, 'El campo solo debe contener valores numéricos.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+                case 'decimal':
+                    console.log("decimal")
+
+                    if (!ValidateDecimal(element.val())) {
+                        isValid = false;
+                        console.log("decimal")
+                        ShowValidationError(element, 'El número decimal no es válido.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+                case 'contract-format':
+                    var formattedValue = formatContract(element.val());
+                    element.val(formattedValue);
+                    if (!ValidateContractFormat(formattedValue)) {
+                        isValid = false;
+                        console.log("contract-format")
+                        ShowValidationError(element, 'El contrato no sigue el formato correcto.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+
+                default:
+                    break;
+            }
+        }
+
+        return isValid;
+    }
+
+    //FUNCION QUE MUESTRA LOS ATRIBUTOS DE ERROR DEL ELEMENTO
+    function ShowValidationError(element, message) {
+        var parentDiv = element.closest('.input-group');
+        element.removeClass('valid');
+        element.addClass('invalid');
+        parentDiv.next('.invalid-feedback').text(message).show();
+    }
+
+    //FUNCION QUE RETIRA LOS ATRIBUTOS Y CLASES DE ERROR Y AGREGA ATRIBUTOS Y CLASES DE EXITO
+    function RemoveValidationError(element) {
+        var parentDiv = element.closest('.input-group');
+        element.removeClass('invalid');
+        parentDiv.next('.invalid-feedback').hide();
+        element.addClass('valid');
+    }
+
+    //FUNCION PARA VALIDAR CORREO
+    function ValidateEmail(email) {
+        // Expresión regular para validar un correo electrónico
+        var emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+        // Verificar si el email pasa la validación básica
+        if (!emailPattern.test(email)) {
+            return false;
+        }
+
+        // Verificar que no termine con un punto
+        if (email.endsWith('.')) {
+            return false;
+        }
+
+        // Si pasa ambas validaciones, el email es válido
+        return true;
+    }
+
+    //FUNCION PARA VALIDAR VALORES NUMERICOS
+    function ValidateNumeric(number) {
+        return /^\d+$/.test(number);
+    }
+
+
+    function ValidateDecimal(string) {
+        // Si está vacío o no es string, retornar false
+        if (!string || typeof string !== 'string') {
+            return false;
+        }
+
+        // Eliminar espacios en blanco
+        string = string.trim();
+
+        // Verificar si es un número válido
+        // Acepta:
+        // - Cero (0)
+        // - Números enteros positivos (ej: 1, 2, 123)
+        // - Números decimales positivos (ej: 0.45, 123.45)
+        // - No permite múltiples puntos decimales
+        const decimalRegex = /^(0|[1-9]\d*)\.?\d*$/;
+        return decimalRegex.test(string);
+    }
+
+    //VALIDACION DE FORMATO DE CONTRATOS
+    function ValidateContractFormat(contract) {
+        // Expresión regular para validar el formato del contrato
+        var contractPattern = /^\d{4}-\d{4}-\d{2}-\d{8}$/;
+        return contractPattern.test(contract);
+    }
+
+    //CONVERTIDOR DE NUMEROS DECIMALES
+    function formatDecimal(value) {
+
+        // Convertir el valor en un número flotante
+        let number = parseFloat(value);
+
+        if (isNaN(number)) {
+            return 'Invalid number';
+        }
+
+        // Formatear el número con comas en los miles y dos decimales
+        return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    //CONVERTIDOR A FORMATO DE CONTRATO
+    function formatContract(value) {
+
+        var value = value.replace(/\D/g, '');
+        console.log(value);
+        var sections = [4, 4, 2, 8];
+        var formattedValue = '';
+        var index = 0;
+
+        for (var i = 0; i < sections.length; i++) {
+            if (value.length > index) {
+                var endIndex = index + sections[i];
+                if (value.length > endIndex) {
+                    if (value.length > 18 && i === 3) formattedValue += value.substring(index, endIndex);
+                    else formattedValue += value.substring(index, endIndex) + '-';
+                } else {
+                    formattedValue += value.substring(index, value.length);
+                }
+            }
+            index += sections[i];
+        }
+
+        return formattedValue;
+    }
+
+</script>
+<!--end: Stepper Validations-->
+<!--begin: Repeater logic-->
+<script>
+
+    $(document).ready(function () {
+
+        function clonedLastSack() {
+            // Clona el último elemento repeater y agrega al final
+            var clonator = $('[data-repeater-item-sack]').eq(1);
+            var lastItem = $('[data-repeater-item-sack]').last();
+            var clonedItem = clonator.clone().show();
+            //Establece la numeracion del clon
+            var lastNumeration = lastItem.find('#numeration').text();
+            var newNumeration = parseInt(lastNumeration, 10) + 1;
+            clonedItem.find('#numeration').text(newNumeration);
+            // Limpia los valores de los campos de entrada en el elemento clonado
+            clonedItem.find('input[data-repeater-sack]').val('');
+            clonedItem.find('input[data-repeater-sack]').removeClass('invalid');
+            clonedItem.find('input[data-repeater-sack]').removeClass('valid');
+            // Ocultar y eliminar el mensaje de retroalimentación
+            var parentDiv = clonedItem.closest('.input-group');
+            parentDiv.next('.invalid-feedback').text('Este campo es obligatorio.').hide();
+
+
+            clonedItem.find('input[data-repeater-sack]').attr('required', 'required').attr('data-validation', 'required,decimal'); // Añadir el atributo 'required' al input
+
+            lastItem.after(clonedItem);
+        }
+
+        function clonedLastClassification() {
+
+            // Clona el último elemento repeater y agrega al final
+            var clonator = $('[data-repeater-item-classification]').eq(1);
+            var lastItem = $('[data-repeater-item-classification]').last();
+
+
+            var clonedItem = clonator.clone().show();
+
+            //Establece la numeracion del clon
+            var lastNumeration = lastItem.find('#numeration').text();
+            var newNumeration = parseInt(lastNumeration, 10) + 1;
+            clonedItem.find('#numeration').text(newNumeration);
+
+            // Limpia los valores de los campos de entrada en el elemento clonado
+            clonedItem.find('input[data-repeater-riceclass]').val('');
+            clonedItem.find('input[data-repeater-riceclass]').removeClass('invalid');
+            clonedItem.find('input[data-repeater-riceclass]').removeClass('valid');
+
+            clonedItem.find('input[data-repeater-ricegrade]').val('');
+            clonedItem.find('input[data-repeater-ricegrade]').removeClass('invalid');
+            clonedItem.find('input[data-repeater-ricegrade]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-ricesack]').val('');
+            clonedItem.find('select[data-repeater-ricesack]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-ricesack]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-minimunstock]').val('');
+            clonedItem.find('select[data-repeater-minimunstock]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-minimunstock]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-maximunstock]').val('');
+            clonedItem.find('select[data-repeater-maximunstock]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-maximunstock]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-sacksperlot]').val('');
+            clonedItem.find('select[data-repeater-sacksperlot]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-sacksperlot]').removeClass('valid');
+
+
+            // Ocultar y eliminar el mensaje de retroalimentación
+            var parentDiv = clonedItem.closest('.input-group');
+            parentDiv.next('.invalid-feedback').text('Este campo es obligatorio.').hide();
+
+
+            // Agregar atributos al nuevo elemento clonado
+            clonedItem.find('select[data-repeater-riceclass]').attr('required', 'required').attr('data-validation', 'required'); // Añadir el atributo 'required' al select
+            clonedItem.find('select[data-repeater-ricegrade]').attr('required', 'required').attr('data-validation', 'required'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-ricesack]').attr('required', 'required').attr('data-validation', 'required'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-minimunstock]').attr('required', 'required').attr('data-validation', 'required,numeric'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-maximunstock]').attr('required', 'required').attr('data-validation', 'required,numeric'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-sacksperlot]').attr('required', 'required').attr('data-validation', 'required,numeric'); // Añadir el atributo 'required' al input
+
+            lastItem.after(clonedItem);
+        }
+
+        function clonedLastWarehouse() {
+
+            // Clona el último elemento repeater y agrega al final
+            var clonator = $('[data-repeater-item-warehouse]').eq(1);
+            var lastItem = $('[data-repeater-item-warehouse]').last();
+
+
+            var clonedItem = clonator.clone().show();
+
+            //Establece la numeracion del clon
+            var lastNumeration = lastItem.find('#numeration').text();
+            var newNumeration = parseInt(lastNumeration, 10) + 1;
+            clonedItem.find('#numeration').text(newNumeration);
+
+            // Limpia los valores de los campos de entrada en el elemento clonado
+            clonedItem.find('input[data-repeater-warehousename]').val('');
+            clonedItem.find('input[data-repeater-warehousename]').removeClass('invalid');
+            clonedItem.find('input[data-repeater-warehousename]').removeClass('valid');
+
+            clonedItem.find('input[data-repeater-warehousedescription]').val('');
+            clonedItem.find('input[data-repeater-warehousedescription]').removeClass('invalid');
+            clonedItem.find('input[data-repeater-warehousedescription]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-warehouselength]').val('');
+            clonedItem.find('select[data-repeater-warehouselength]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-warehouselength]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-warehousewidth]').val('');
+            clonedItem.find('select[data-repeater-warehousewidth]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-warehousewidth]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-warehouseheight]').val('');
+            clonedItem.find('select[data-repeater-warehouseheight]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-warehouseheight]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-warehouserow]').val('');
+            clonedItem.find('select[data-repeater-warehouserow]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-warehouserow]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-warehousecolumn]').val('');
+            clonedItem.find('select[data-repeater-warehousecolumn]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-warehousecolumn]').removeClass('valid');
+
+            // Ocultar y eliminar el mensaje de retroalimentación
+            var parentDiv = clonedItem.closest('.input-group');
+            parentDiv.next('.invalid-feedback').text('Este campo es obligatorio.').hide();
+
+            // Agregar atributos al nuevo elemento clonado
+            clonedItem.find('select[data-repeater-warehousename]').attr('required', 'required').attr('data-validation', 'required'); // Añadir el atributo 'required' al select
+            clonedItem.find('select[data-repeater-warehousedescription]').attr('required', 'required').attr('data-validation', 'required'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-warehouselength]').attr('required', 'required').attr('data-validation', 'required,decimal'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-warehousewidth]').attr('required', 'required').attr('data-validation', 'required,decimal'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-warehouseheight]').attr('required', 'required').attr('data-validation', 'required,decimal'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-warehouserow]').attr('required', 'required').attr('data-validation', 'required,numeric'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-warehousecolumn]').attr('required', 'required').attr('data-validation', 'required,numeric'); // Añadir el atributo 'required' al input
+
+            lastItem.after(clonedItem);
+        }
+
+        function clonedLastOtherZone() {
+
+            // Clona el último elemento repeater y agrega al final
+            var clonator = $('[data-repeater-item-otherzone]').eq(1);
+            var lastItem = $('[data-repeater-item-otherzone]').last();
+
+
+            var clonedItem = clonator.clone().show();
+
+            //Establece la numeracion del clon
+            var lastNumeration = lastItem.find('#numeration').text();
+            console.log(lastNumeration)
+            var newNumeration = parseInt(lastNumeration, 10) + 1;
+            console.log(newNumeration)
+            clonedItem.find('#numeration').text(newNumeration);
+
+            // Limpia los valores de los campos de entrada en el elemento clonado
+            clonedItem.find('input[data-repeater-otherzonename]').val('');
+            clonedItem.find('input[data-repeater-otherzonename]').removeClass('invalid');
+            clonedItem.find('input[data-repeater-otherzonename]').removeClass('valid');
+
+            clonedItem.find('input[data-repeater-otherzonedescription]').val('');
+            clonedItem.find('input[data-repeater-otherzonedescription]').removeClass('invalid');
+            clonedItem.find('input[data-repeater-otherzonedescription]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-otherzonelength]').val('');
+            clonedItem.find('select[data-repeater-otherzonelength]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-otherzonelength]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-otherzonewidth]').val('');
+            clonedItem.find('select[data-repeater-otherzonewidth]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-otherzonewidth]').removeClass('valid');
+
+            clonedItem.find('select[data-repeater-otherzoneheight]').val('');
+            clonedItem.find('select[data-repeater-otherzoneheight]').removeClass('invalid');
+            clonedItem.find('select[data-repeater-otherzoneheight]').removeClass('valid');
+
+            // Ocultar y eliminar el mensaje de retroalimentación
+            var parentDiv = clonedItem.closest('.input-group');
+            parentDiv.next('.invalid-feedback').text('Este campo es obligatorio.').hide();
+
+
+            // Agregar atributos al nuevo elemento clonado
+            clonedItem.find('select[data-repeater-otherzonename]').attr('required', 'required').attr('data-validation', 'required'); // Añadir el atributo 'required' al select
+            clonedItem.find('select[data-repeater-otherzonedescription]').attr('required', 'required').attr('data-validation', 'required'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-otherzonelength]').attr('required', 'required').attr('data-validation', 'required,decimal'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-otherzonewidth]').attr('required', 'required').attr('data-validation', 'required,decimal'); // Añadir el atributo 'required' al input
+            clonedItem.find('input[data-repeater-otherzoneheight]').attr('required', 'required').attr('data-validation', 'required,decimal'); // Añadir el atributo 'required' al input
+
+            lastItem.after(clonedItem);
+        }
+
+
+        // Al hacer clic en "Add"
+        $('[data-repeater-create-sack]').on('click', function () {
+            clonedLastSack()
+        });
+
+        // Al hacer clic en "Add"
+        $('[data-repeater-create-classification]').on('click', function () {
+            clonedLastClassification()
+        });
+
+        // Al hacer clic en "Add"
+        $('[data-repeater-create-warehouse]').on('click', function () {
+            clonedLastWarehouse()
+        });
+
+        // Al hacer clic en "Add"
+        $('[data-repeater-create-otherzone]').on('click', function () {
+            clonedLastOtherZone()
+        });
+
+
+        // Al hacer clic en "Delete"
+        $(document).on('click', '[data-repeater-delete-sack]', function () {
+            // Elimina el elemento repeater actual
+            $(this).closest('[data-repeater-item-sack]').remove();
+            // Reestablece la enumeración
+            resetEnumerations('sack');
+        });
+
+        // Al hacer clic en "Delete"
+        $(document).on('click', '[data-repeater-delete-classification]', function () {
+            // Elimina el elemento repeater actual
+            $(this).closest('[data-repeater-item-classification]').remove();
+            // Reestablece la enumeración
+            resetEnumerations('classification');
+        });
+
+        // Al hacer clic en "Delete"
+        $(document).on('click', '[data-repeater-delete-warehouse]', function () {
+            // Elimina el elemento repeater actual
+            $(this).closest('[data-repeater-item-warehouse]').remove();
+            // Reestablece la enumeración
+            resetEnumerations('warehouse');
+        });
+
+        // Al hacer clic en "Delete"
+        $(document).on('click', '[data-repeater-delete-otherzone]', function () {
+            // Elimina el elemento repeater actual
+            $(this).closest('[data-repeater-item-otherzone]').remove();
+            // Reestablece la enumeración
+            resetEnumerations('otherzone');
+        });
+
+
+        // Función para reenumerar los elementos
+        function resetEnumerations(repeaterName) {
+            console.log("Estoy en reset numeration")
+            // Construye el selector dinámico usando el parámetro repeaterName
+            var items = $('[data-repeater-item-' + repeaterName + ']');
+
+            // Recorre cada elemento y actualiza la numeración
+            items.each(function (index) {
+                // Si el índice es mayor o igual a 2 (tercer elemento), cambia la numeración
+                if (index >= 2) {
+                    $(this).find('#numeration').text(index); // Puedes ajustar la lógica si es necesario
+                }
+            });
+        }
+
+
+    });
+
+
+
+</script>
+<!--end: Repeater logic-->
+
+<script>
+    function PutMaximunQuantitySacksPerLot(element) {
+        var selectedOption = element.find('option:selected');
+        var maxSacks = selectedOption.data('sacks-per-lot');
+        var quantityInput = $('#QuantitySacks');
+
+        console.log(maxSacks)
+
+        // Quitar readonly
+        quantityInput.prop('readonly', false);
+
+        // Establecer atributos min y max
+        quantityInput.attr({
+            'min': 1,
+            'max': maxSacks
+        });
+
+        // Establecer el valor máximo como valor inicial
+        quantityInput.val(maxSacks);
+    }
+
+    function ShowZoneUbications(element) {
+        console.log('Iniciando ShowZoneUbications');
+
+        const selectedOption = element.find('option:selected');
+        const idZone = selectedOption.val();
+        const rows = parseInt(selectedOption.data('rows') || 0);
+        const columns = parseInt(selectedOption.data('columns') || 0);
+        const container = $('#UbicationsGraphics');
+
+        console.log('Valores obtenidos:', {
+            idZone: idZone,
+            rows: rows,
+            columns: columns
+        });
+
+        // Limpiar el contenedor
+        container.empty();
+        $('#IdUbication').val('');
+        $('#UbicationSelected').val('');
+
+        // Si no hay una opción seleccionada o la zona tiene 0 filas o columnas, ocultar el label y salir
+        if (!idZone || rows === 0 || columns === 0) {
+            console.log('Saliendo: No hay zona seleccionada o filas/columnas son 0');
+            document.getElementById('SeeUbicationSection').style.display = 'none';
+            document.getElementById('UbicationSelectedLabel').style.display = 'none';
+            document.getElementById('UbicationSelectedInput').style.display = 'none';
+            $('#UbicationSelected').removeAttr('required').removeAttr('data-validation');
+            return;
+        }
+        else {
+            $('#UbicationSelected').attr('required', 'required').attr('data-validation', 'required');
+            document.getElementById('UbicationSelectedLabel').style.display = 'none';
+            document.getElementById('UbicationSelectedInput').style.display = 'none';
+        }
+
+        // Mostrar el label
+        document.getElementById('SeeUbicationSection').style.display = 'block';
+        
+
+        
+
+        console.log('Iniciando llamada AJAX para zona:', idZone);
+        // Obtener ubicaciones mediante AJAX
+        $.ajax({
+            url: '/Ubication/GetUbicationsByZone',
+            type: 'GET',
+            data: { IdZone: idZone },
+            success: function (ubicationsData) {
+                console.log('Ubicaciones recibidas:', ubicationsData);
+
+                // Crear matriz para organizar las ubicaciones
+                let ubicationMatrix = {};
+                ubicationsData.forEach(ubication => {
+                    if (!ubicationMatrix[ubication.row]) {
+                        ubicationMatrix[ubication.row] = {};
+                    }
+                    ubicationMatrix[ubication.row][ubication.column] = ubication;
+                });
+
+                console.log('Matriz de ubicaciones creada:', ubicationMatrix);
+
+                // Crear la cuadrícula
+                let html = '<div class="position-relative overflow-auto px-2">';
+                html += '<div class="d-flex flex-column gap-2">'; // Contenedor principal
+
+                // Crear filas y columnas usando los valores de data-rows y data-columns
+                for (let row = 1; row <= rows; row++) {
+                    html += '<div class="d-flex gap-2">'; // Fila
+
+                    for (let col = 1; col <= columns; col++) {
+                        const ubication = ubicationMatrix[row]?.[col];
+
+                        if (ubication) {
+                            console.log(`Procesando ubicación F${row}C${col}:`, ubication);
+                            const isOccupied = ubication.idCurrentRiceLot !== null;
+                            const backgroundColor = isOccupied ? '#50CD89' : '#F1416C';
+                            const isClickable = !isOccupied;
+
+                            html += `<div class="ubication-box ${isClickable ? 'clickable' : ''}"
+                                        data-id="${ubication.idUbication}"
+                                        data-name="F${row}C${col}"
+                                        title="F${row}C${col}"
+                                        style="background-color: ${backgroundColor};
+                                               min-width: 45px;
+                                               height: 45px;
+                                               display: flex;
+                                               align-items: center;
+                                               justify-content: center;
+                                               border-radius: 4px;
+                                               cursor: ${isClickable ? 'pointer' : 'not-allowed'};
+                                               color: white;
+                                               font-size: 12px;
+                                               text-align: center;">
+                                       F${row}C${col}
+                                   </div>`;
+                        } else {
+                            console.log(`Ubicación vacía en F${row}C${col}`);
+                            html += `<div style="min-width: 45px;
+                                              height: 45px;
+                                              border: 1px dashed #ccc;
+                                              border-radius: 4px;"></div>`;
+                        }
+                    }
+
+                    html += '</div>'; // Fin de la fila
+
+                    // Agregar espacio para pasillo después de cada 2 filas
+                    if (row % 2 === 0 && row < rows) {
+                        console.log(`Agregando pasillo después de la fila ${row}`);
+                        html += `<div class="d-flex gap-2" style="height: 30px; margin: 10px 0;">
+                                   <div style="min-width: 100%;
+                                             background-color: #f5f5f5;
+                                             border: 1px dashed #ccc;
+                                             border-radius: 4px;
+                                             display: flex;
+                                             align-items: center;
+                                             justify-content: center;
+                                             color: #999;
+                                             font-size: 12px;">
+                                       Pasillo ${row / 2}
+                                   </div>
+                               </div>`;
+                    }
+                }
+
+                html += '</div></div>';
+                container.append(html);
+                console.log('Cuadrícula generada y agregada al contenedor');
+
+                // Añadir event listeners para las ubicaciones clickeables
+                $('.ubication-box.clickable').click(function () {
+                    const idUbication = $(this).data('id');
+                    const UbicationName = $(this).data('name');
+                    console.log('Ubicación seleccionada:', idUbication);
+
+                    // Restaurar color rojo a la ubicación previamente seleccionada
+                    $('.ubication-box.selected').css('background-color', '#F1416C').removeClass('selected');
+
+                    // Marcar la nueva ubicación seleccionada en azul
+                    $(this).css('background-color', '#009EF7').addClass('selected');
+
+                    // Actualizar el input hidden
+                    $('#IdUbication').val(idUbication);
+                    $('#UbicationSelected').val(UbicationName);
+
+                    ValidateElement($('#UbicationSelected'));
+
+                    //Mostrar la seccion de ver ubicacion seleccionada
+                    document.getElementById('UbicationSelectedLabel').style.display = 'block';
+                    document.getElementById('UbicationSelectedInput').style.display = 'block';
+
+                    //Cerrar el modal
+                    const modal = document.getElementById('kt_modal_1');
+                    const modalInstance = bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
+                    modalInstance.hide()
+
+                    console.log('Input hidden actualizado con:', idUbication);
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error en la llamada AJAX:', {
+                    status: status,
+                    error: error,
+                    response: xhr.responseText
+                });
+                container.html('<div class="alert alert-danger">Error al cargar las ubicaciones</div>');
+            }
+        });
+    }
+</script>
+
+<!--begin: Upload Files-->
+<script>
+    // Función para formatear bytes a kilobytes, megabytes, etc.
+    function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return '0 Bytes';
+
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    // Función para manejar el evento de arrastrar
+    function handleDragOver(event) {
+        event.preventDefault();
+    }
+
+    // Funciones para manejar el evento de arrastrar y soltar para Confirmación de banco
+    var archivoBankConfirmation;
+
+    function handleDropBankConfirmation(event) {
+        event.preventDefault();
+
+        archivoBankConfirmation = event.dataTransfer.files[0];
+
+        var inputArchivoBankConfirmation = document.getElementById("inputArchivoBankConfirmation");
+
+        // Asignar directamente el archivo al input
+        inputArchivoBankConfirmation.files = event.dataTransfer.files;
+
+        // Validar que solo se haya seleccionado un archivo
+        if (archivoBankConfirmation) {
+            var extensionPermitida = ['pdf'];
+            var extensionArchivo = archivoBankConfirmation.name.split('.').pop().toLowerCase();
+
+            if (extensionPermitida.indexOf(extensionArchivo) === -1) {
+                Swal.fire({
+                    icon: 'error', // El tipo de alerta (success, error, info, etc.)
+                    title: 'Error', // El título de la alerta
+                    text: 'Por favor, selecciona un archivo con extensión .pdf.', // El mensaje de la alerta
+                    showConfirmButton: true // Muestra un botón de confirmación
+                });
+                return;
+            }
+
+            var nombreCompleto = archivoBankConfirmation.name;
+            var maxCaracteres = 20;
+
+            if (nombreCompleto.length > maxCaracteres) {
+                var nombreSinExtension = nombreCompleto.slice(0, maxCaracteres - extensionArchivo.length - 1);
+                var nombreCorto = nombreSinExtension + "...." + extensionArchivo;
+            } else {
+                var nombreCorto = nombreCompleto;
+            }
+
+            // Actualizar la imagen de fileIcon según la extensión
+            var fileIcon = document.getElementById("fileIconBankConfirmation");
+            var iconPath = "../assets/media/opplus/";
+
+            switch (extensionArchivo) {
+                case 'xlsx':
+                case 'xls':
+                    iconPath += "xls.png";
+                    break;
+                case 'pdf':
+                    iconPath += "pdf.png";
+                    break;
+                default:
+                    // Puedes proporcionar una imagen predeterminada o manejar otros casos aquí
+                    iconPath += "default.png";
+            }
+
+            fileIcon.src = iconPath;
+
+            // Actualizar el elemento de entrada de archivo con el nombre del archivo
+            document.getElementById("nombreArchivoBankConfirmation").innerHTML = nombreCorto;
+            document.getElementById("fileSizeBankConfirmation").innerHTML = formatBytes(archivoBankConfirmation.size);
+            document.getElementById("cardArchivoBankConfirmation").style.display = "block";
+            document.getElementById("agregarArchivoBankConfirmation").style.display = "none";
+
+            // Ajustar la altura del área de arrastre para contener el archivo seleccionado
+            var areaArrastre = document.getElementById("areaArrastreBankConfirmation");
+            areaArrastre.style.minHeight = areaArrastre.offsetHeight + "px";
+        }
+    }
+
+    // Función para quitar el archivo seleccionado
+    function quitarArchivoBankConfirmation() {
+        archivoBankConfirmation = null;
+        document.getElementById("nombreArchivoBankConfirmation").innerHTML = "Ningún archivo seleccionado";
+        document.getElementById("inputArchivoBankConfirmation").value = "";
+        document.getElementById("cardArchivoBankConfirmation").style.display = "none";
+        document.getElementById("agregarArchivoBankConfirmation").style.display = "block";
+
+        // Restablecer la altura mínima del área de arrastre
+        document.getElementById("areaArrastreBankConfirmation").style.minHeight = "";
+    }
+
+    //Función para manejar el cambio en el input de archivo
+    function handleArchivoSeleccionadoBankConfirmation() {
+        archivoBankConfirmation = document.getElementById("inputArchivoBankConfirmation").files[0];
+
+        // Actualizar el elemento de entrada de archivo con el nombre del archivo
+        if (archivoBankConfirmation) {
+            var extensionPermitida = ['pdf'];
+            var extensionArchivo = archivoBankConfirmation.name.split('.').pop().toLowerCase();
+
+            if (extensionPermitida.indexOf(extensionArchivo) === -1) {
+                Swal.fire({
+                    icon: 'error', // El tipo de alerta (success, error, info, etc.)
+                    title: 'Error', // El título de la alerta
+                    text: 'Por favor, selecciona un archivo con extensión .pdf.', // El mensaje de la alerta
+                    showConfirmButton: true // Muestra un botón de confirmación
+                });
+                return;
+            }
+
+            var nombreCompleto = archivoBankConfirmation.name;
+            var maxCaracteres = 20;
+
+            if (nombreCompleto.length > maxCaracteres) {
+                var nombreSinExtension = nombreCompleto.slice(0, maxCaracteres - extensionArchivo.length - 1);
+                var nombreCorto = nombreSinExtension + "...." + extensionArchivo;
+            } else {
+                var nombreCorto = nombreCompleto;
+            }
+
+            // Actualizar la imagen de fileIcon según la extensión
+            var fileIcon = document.getElementById("fileIconBankConfirmation");
+            var iconPath = "../assets/media/opplus/";
+
+            switch (extensionArchivo) {
+                case 'xlsx':
+                case 'xls':
+                    iconPath += "xls.png";
+                    break;
+                case 'pdf':
+                    iconPath += "pdf.png";
+                    break;
+                default:
+                    // Puedes proporcionar una imagen predeterminada o manejar otros casos aquí
+                    iconPath += "default.png";
+            }
+
+            fileIcon.src = iconPath;
+
+            document.getElementById("nombreArchivoBankConfirmation").innerHTML = nombreCorto;
+            document.getElementById("fileSizeBankConfirmation").innerHTML = formatBytes(archivoBankConfirmation.size);
+            document.getElementById("cardArchivoBankConfirmation").style.display = "block";
+            document.getElementById("agregarArchivoBankConfirmation").style.display = "none";
+
+            // Ajustar la altura del área de arrastre para contener el archivo seleccionado
+            var areaArrastre = document.getElementById("areaArrastreBankConfirmation");
+            areaArrastre.style.minHeight = areaArrastre.offsetHeight + "px";
+        }
+    }
+</script>
+<!--end: Upload Files-->
+
+<!--begin::Stepper-->
+<div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid" id="kt_modal_create_app_stepper">
+    <!--begin::Aside-->
+    <div class="d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px">
+        <!--begin::Nav-->
+        <div class="stepper-nav ps-lg-10">
+            <!--begin::Step 1 : DATOS DEL LOTE-->
+            <div class="stepper-item current" data-kt-stepper-element="nav">
+                <!--begin::Wrapper-->
+                <div class="stepper-wrapper">
+                    <!--begin::Icon-->
+                    <div class="stepper-icon w-40px h-40px">
+                        <i class="ki-duotone ki-check stepper-check fs-2"></i>
+                        <span class="stepper-number">1</span>
+                    </div>
+                    <!--end::Icon-->
+                    <!--begin::Label-->
+                    <div class="stepper-label">
+                        <h3 class="stepper-title">Sacos</h3>
+                        <div class="stepper-desc">Ingresa los datos del lote</div>
+                    </div>
+                    <!--end::Label-->
+                </div>
+                <!--end::Wrapper-->
+                <!--begin::Line-->
+                <div class="stepper-line h-40px"></div>
+                <!--end::Line-->
+            </div>
+            <!--end::Step 1-->
+            <!--begin::Step 2: ELEGIR UBICACION-->
+            <div class="stepper-item" data-kt-stepper-element="nav">
+                <!--begin::Wrapper-->
+                <div class="stepper-wrapper">
+                    <!--begin::Icon-->
+                    <div class="stepper-icon w-40px h-40px">
+                        <i class="ki-duotone ki-check stepper-check fs-2"></i>
+                        <span class="stepper-number">2</span>
+                    </div>
+                    <!--end::Icon-->
+                    <!--begin::Label-->
+                    <div class="stepper-label">
+                        <h3 class="stepper-title">Elegir ubicación</h3>
+                        <div class="stepper-desc">Selecciona la ubicacion del lote</div>
+                    </div>
+                    <!--end::Label-->
+                </div>
+                <!--end::Wrapper-->
+                <!--begin::Line-->
+                <div class="stepper-line h-40px"></div>
+                <!--end::Line-->
+            </div>
+            <!--end::Step 2-->
+            <!--begin::Step 3 : ADJUNTAR ESPECIFICACION TECNICA-->
+            <div class="stepper-item mark-completed" data-kt-stepper-element="nav">
+                <!--begin::Wrapper-->
+                <div class="stepper-wrapper">
+                    <!--begin::Icon-->
+                    <div class="stepper-icon w-40px h-40px">
+                        <i class="ki-duotone ki-check stepper-check fs-2"></i>
+                        <span class="stepper-number">3</span>
+                    </div>
+                    <!--end::Icon-->
+                    <!--begin::Label-->
+                    <div class="stepper-label">
+                        <h3 class="stepper-title">Adjuntar especificación tecnica</h3>
+                        <div class="stepper-desc">Adjunta la copia del documento técnico del tipo de arroz lotizado</div>
+                    </div>
+                    <!--end::Label-->
+                </div>
+                <!--end::Wrapper-->
+            </div>
+            <!--end::Step 4-->
+        </div>
+        <!--end::Nav-->
+    </div>
+    <!--begin::Aside-->
+    <!--begin::Content-->
+    <div class="flex-row-fluid py-lg-2 px-lg-12">
+
+
+        <!--begin::Form-->
+        <form asp-action="CreateRiceLot" enctype="multipart/form-data" method="post" class="row g-3 needs-validation" novalidate="novalidate" id="kt_create_app_form">
+            <!--begin::Step 1 : DATOS DEL LOTE-->
+            <div class="current" data-kt-stepper-element="content">
+                <div class="w-100">
+                    <!--begin::Label-->
+                    <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                        <span>Ingresa los siguientes datos del lote</span>
+                        <span class="ms-1" data-bs-toggle="tooltip" title="Ingresa los datos del lote">
+                            <i class="ki-duotone ki-information-5 text-gray-500 fs-6">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                                <span class="path3"></span>
+                            </i>
+                        </span>
+                    </label>
+                    <!--end::Label-->
+
+
+
+                    <div class="row">
+                        <div class="col-lg-4 mb-3">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <select id="IdClassification" name="IdClassification" class="form-select" required data-validation="required" oninput="ValidateElement($(this))" onchange="PutMaximunQuantitySacksPerLot($(this))">
+                                        <option value="">Seleccione una clasificación de arroz</option>
+                                        @foreach (var item in Model.RiceClassifications)
+                                        {
+                                            <option value="@item.IdClassification"
+                                                data-sacks-per-lot="@item.SacksPerLot">
+                                                @item.Name
+                                            </option>
+                                        }
+                                    </select>
+                                    <label class="form-label" for="riceClass">Clasificación</label>
+                                </div>
+                            </div>
+                            <!-- Mensaje de feedback inmediatamente después del input-group -->
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input readonly id="QuantitySacks" onkeydown="return false" name="QuantitySacks" type="number" required data-validation="required,numeric" class="form-control" placeholder="Cantidad de sacos" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="QuantitySacks">Cantidad de sacos</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                        </div>
+                        <div class="col-lg-4 mb-3">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input id="ExpirationDate" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" name="ExpirationDate" type="date" required data-validation="required" class="form-control" placeholder="Fecha de vencimiento" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="ExpirationDate">Fecha de vencimiento</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                        </div>
+                    </div>
+
+
+
+
+                    <!--begin::Actions-->
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-lg btn-primary" data-kt-element="first-step-next">
+                            <span class="indicator-label">Siguiente</span>
+                            <span class="indicator-progress">
+                                Por favor, espera...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                    <!--end::Actions-->
+                </div>
+            </div>
+            <!--end::Step 1-->
+            <!--begin::Step 2 : ELEGIR UBICACION-->
+            <div data-kt-stepper-element="content">
+                <div class="w-100">
+                    <!--begin::Label-->
+                    <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                        <span>Selecciona un almacén</span>
+                    </label>
+                    <!--end::Label-->
+
+                    <div class="row">
+                        <div class="col-lg-6 mb-3">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <select id="Zone" name="IdZone" class="form-select" required data-validation="required" oninput="ValidateElement($(this))" onchange="ShowZoneUbications($(this))">
+                                        <option value="">Seleccione una zona</option>
+                                        @foreach (var item in Model.Zones)
+                                        {
+                                            <option value="@item.IdZone"
+                                                data-rows="@item.Rows"
+                                                data-columns="@item.Columns">
+                                                @item.Name
+                                            </option>
+                                        }
+                                    </select>
+                                    <label class="form-label" for="Zone">Zona</label>
+                                </div>
+                            </div>
+                            <!-- Mensaje de feedback inmediatamente después del input-group -->
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                        </div>
+
+                    </div>
+
+                    <div id="SeeUbicationSection" style="display: none;">
+                        <!--begin::Label-->
+                        <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                            <span>Selecciona una ubicacion dentro del almacén</span>
+                        </label>
+                        <!--end::Label-->
+
+                        <a id="btnOpenModal" class="btn btn-sm btn-primary me-2 mb-3" data-bs-toggle="modal" data-bs-target="#kt_modal_1">
+                            Ver Ubicaciones
+                        </a>
+                    </div>
+                    <div id="UbicationSelectedLabel" style="display: none;">
+                        <!--begin::Label-->
+                        <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                            <span>Ubicacion escogida</span>
+                        </label>
+                        <!--end::Label-->
+                    </div>
+
+                    <div class="row" id="UbicationSelectedInput" style="display: none;">
+                        <div class="col-lg-6 mb-3">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input readonly id="UbicationSelected" type="text" class="form-control" placeholder="Ubicación" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="UbicationSelected">Ubicación</label>
+                                </div>
+                                <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    
+                    
+                    <input hidden id="IdUbication" name="IdUbication">
+
+                    @await Html.PartialAsync("_SeeUbicationsModalPartial")
+
+                    <!--begin::Actions-->
+                    <div class="d-flex flex-stack">
+                        <button type="button" class="btn btn-lg btn-danger" data-kt-element="step2-previous">Atrás</button>
+                        <button type="button" class="btn btn-lg btn-primary" data-kt-element="step2-next">
+                            <span class="indicator-label">Siguiente</span>
+                            <span class="indicator-progress">
+                                Por favor, espera...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                    <!--end::Actions-->
+                </div>
+            </div>
+            <!--end::Step 2-->
+            <!--begin::Step 3 : OTRAS ZONAS Y FINALIZACION DEL PROCESO-->
+            <div data-kt-stepper-element="content">
+                <div class="w-100">
+                    <div class="mb-8">
+                        <label class="fs-6 fw-semibold mb-2">Adjunta una copia del documento de especificación técnica del arroz lotizado</label>
+                        
+                        <div class="input-group row">
+                            <div class="col" id="areaArrastreBankConfirmation" ondrop="handleDropBankConfirmation(event)" ondragover="handleDragOver(event)">
+                                <div id="agregarArchivoBankConfirmation" style="display: block;">
+                                    <strong>Arrastra aquí</strong>
+                                    <br />
+                                    <strong>o</strong>
+                                    <br />
+                                    <label for="inputArchivoBankConfirmation" class="btn btn-sm btn-lg btn-primary">
+                                        Selecciona un archivo
+                                        <input type="file" name="TechnicalEspecification" required data-validation="required" id="inputArchivoBankConfirmation" style="display: none;" onchange="handleArchivoSeleccionadoBankConfirmation()" oninput="ValidateElement($(this))" />
+                                    </label>
+                                </div>
+
+                                <div id="cardArchivoBankConfirmation">
+                                    <div class="d-flex flex-stack py-4">
+                                        <div class="d-flex align-items-center">
+                                            <!--begin::Avatar-->
+                                            <div class="symbol symbol-35px">
+                                                <img id="fileIconBankConfirmation" src="" alt="icon" />
+                                            </div>
+                                            <!--end::Avatar-->
+                                            <!--begin::Details-->
+                                            <div class="ms-6">
+                                                <p id="nombreArchivoBankConfirmation" class="fs-5 fw-bold text-gray-900 mb-2">Nombre</p>
+                                                <div id="fileSizeBankConfirmation" class="fw-semibold text-muted"></div>
+                                            </div>
+                                            <!--end::Details-->
+                                        </div>
+                                        <!--begin::Menu-->
+                                        <div class="min-w-100px">
+                                            <button type="button" class="close btn btn-sm btn-lg btn-primary" onclick="quitarArchivoBankConfirmation()">
+                                                <!--begin::Indicator label-->
+                                                <span class="indicator-label">Quitar</span>
+                                                <!--end::Indicator label-->
+                                            </button>
+                                        </div>
+                                        <!--end::Menu-->
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <!-- Error message -->
+                        <div class="invalid-feedback">Este campo es obligatorio.</div>
+                    </div>
+
+                    <!--end::Input group-->
+                    <!--begin::Actions-->
+                    <div class="d-flex flex-stack">
+                        <button type="button" class="btn btn-lg btn-danger" data-kt-element="step3-previous">Atrás</button>
+                        <button type="button" id="submitButton" class="btn btn-lg btn-primary" data-kt-element="finish-create">
+                            <span id="btnGuardar" class="indicator-label">Crear</span>
+                            <span class="indicator-progress">
+                                Por favor, espera...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                    <!--end::Actions-->
+                </div>
+
+            </div>
+            <!--end::Step 4-->
+        </form>
+        <!--end::Form-->
+    </div>
+    <!--end::Content-->
+</div>
+<!--end::Stepper-->

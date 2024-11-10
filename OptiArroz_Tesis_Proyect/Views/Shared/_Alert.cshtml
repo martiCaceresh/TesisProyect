@@ -1,0 +1,26 @@
+﻿@model OptiArroz_Tesis_Proyect.Models.Utils.AlertModel
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-TsbzuasP8pZvFUR6pNd29IbGlVwNb1N0j6NgsqFcMjC6e1A4SQPUL0bYYIkzqP8S5Vh5EdyG++OQZqBjA1XBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<!-- Agrega SweetAlert CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.css">
+
+
+<!-- Tu código HTML y JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Agrega SweetAlert JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.0.18/dist/sweetalert2.min.js"></script>
+
+
+
+
+<!-- Lógica de SweetAlert2 -->
+<script>
+    Swal.fire({
+        icon: '@Model.Type', // El tipo de alerta (success, error, info, etc.)
+        title: '@Model.Title', // El mensaje de la alerta
+        text: '@Model.Message',
+        showConfirmButton: true // Muestra un botón de confirmación
+    });
+</script>

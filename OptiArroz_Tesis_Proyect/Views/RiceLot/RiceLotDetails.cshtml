@@ -1,0 +1,607 @@
+﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceLotDetailVM;
+
+<style>
+    /* Estilos para Carga de archivos */
+    #areaArrastreFile,
+    #areaArrastreBankConfirmation {
+        border: 2px dashed #007bff;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+        transition: min-height 0.3s ease;
+    }
+
+    .areaArrastreHoverFile
+    .areaArrastreHoverBankConfirmation {
+        border-color: #0056b3;
+    }
+
+    .botonArchivoFile
+    .botonArchivoBankConfirmation {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .botonArchivoFile:hover,
+    .botonArchivoBankConfirmation:hover {
+        background-color: #0056b3;
+    }
+
+    #cardArchivoFile,
+    #cardArchivoBankConfirmation {
+        display: none;
+        max-width: 400px;
+        margin: 10px auto;
+    }
+
+    #btnCargarFile,
+    #btnCargarBankConfirmation {
+        display: none;
+    }
+
+</style>
+<!--begin: Upload Files-->
+<script>
+
+
+    // Función para formatear bytes a kilobytes, megabytes, etc.
+    function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return '0 Bytes';
+
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    // Función para manejar el evento de arrastrar
+    function handleDragOver(event) {
+        event.preventDefault();
+    }
+
+    // Funciones para manejar el evento de arrastrar y soltar para Confirmación de banco
+    var archivoBankConfirmation;
+
+    function handleDropBankConfirmation(event) {
+        event.preventDefault();
+
+        archivoBankConfirmation = event.dataTransfer.files[0];
+
+        var inputArchivoBankConfirmation = document.getElementById("inputArchivoBankConfirmation");
+
+        // Asignar directamente el archivo al input
+        inputArchivoBankConfirmation.files = event.dataTransfer.files;
+
+        // Validar que solo se haya seleccionado un archivo
+        if (archivoBankConfirmation) {
+            var extensionPermitida = ['pdf'];
+            var extensionArchivo = archivoBankConfirmation.name.split('.').pop().toLowerCase();
+
+            if (extensionPermitida.indexOf(extensionArchivo) === -1) {
+                Swal.fire({
+                    icon: 'error', // El tipo de alerta (success, error, info, etc.)
+                    title: 'Error', // El título de la alerta
+                    text: 'Por favor, selecciona un archivo con extensión .pdf.', // El mensaje de la alerta
+                    showConfirmButton: true // Muestra un botón de confirmación
+                });
+                return;
+            }
+
+            var nombreCompleto = archivoBankConfirmation.name;
+            var maxCaracteres = 20;
+
+            if (nombreCompleto.length > maxCaracteres) {
+                var nombreSinExtension = nombreCompleto.slice(0, maxCaracteres - extensionArchivo.length - 1);
+                var nombreCorto = nombreSinExtension + "...." + extensionArchivo;
+            } else {
+                var nombreCorto = nombreCompleto;
+            }
+
+            // Actualizar la imagen de fileIcon según la extensión
+            var fileIcon = document.getElementById("fileIconBankConfirmation");
+            var iconPath = "../assets/media/opplus/";
+
+            switch (extensionArchivo) {
+                case 'xlsx':
+                case 'xls':
+                    iconPath += "xls.png";
+                    break;
+                case 'pdf':
+                    iconPath += "pdf.png";
+                    break;
+                default:
+                    // Puedes proporcionar una imagen predeterminada o manejar otros casos aquí
+                    iconPath += "default.png";
+            }
+
+            fileIcon.src = iconPath;
+
+            // Actualizar el elemento de entrada de archivo con el nombre del archivo
+            document.getElementById("nombreArchivoBankConfirmation").innerHTML = nombreCorto;
+            document.getElementById("fileSizeBankConfirmation").innerHTML = formatBytes(archivoBankConfirmation.size);
+            document.getElementById("cardArchivoBankConfirmation").style.display = "block";
+            document.getElementById("agregarArchivoBankConfirmation").style.display = "none";
+
+            // Ajustar la altura del área de arrastre para contener el archivo seleccionado
+            var areaArrastre = document.getElementById("areaArrastreBankConfirmation");
+            areaArrastre.style.minHeight = areaArrastre.offsetHeight + "px";
+        }
+    }
+
+    // Función para quitar el archivo seleccionado
+    function quitarArchivoBankConfirmation() {
+        archivoBankConfirmation = null;
+        document.getElementById("nombreArchivoBankConfirmation").innerHTML = "Ningún archivo seleccionado";
+        document.getElementById("inputArchivoBankConfirmation").value = "";
+        document.getElementById("cardArchivoBankConfirmation").style.display = "none";
+        document.getElementById("agregarArchivoBankConfirmation").style.display = "block";
+
+        // Restablecer la altura mínima del área de arrastre
+        document.getElementById("areaArrastreBankConfirmation").style.minHeight = "";
+    }
+
+    //Función para manejar el cambio en el input de archivo
+    function handleArchivoSeleccionadoBankConfirmation() {
+        archivoBankConfirmation = document.getElementById("inputArchivoBankConfirmation").files[0];
+
+        // Actualizar el elemento de entrada de archivo con el nombre del archivo
+        if (archivoBankConfirmation) {
+            var extensionPermitida = ['pdf'];
+            var extensionArchivo = archivoBankConfirmation.name.split('.').pop().toLowerCase();
+
+            if (extensionPermitida.indexOf(extensionArchivo) === -1) {
+                Swal.fire({
+                    icon: 'error', // El tipo de alerta (success, error, info, etc.)
+                    title: 'Error', // El título de la alerta
+                    text: 'Por favor, selecciona un archivo con extensión .pdf.', // El mensaje de la alerta
+                    showConfirmButton: true // Muestra un botón de confirmación
+                });
+                return;
+            }
+
+            var nombreCompleto = archivoBankConfirmation.name;
+            var maxCaracteres = 20;
+
+            if (nombreCompleto.length > maxCaracteres) {
+                var nombreSinExtension = nombreCompleto.slice(0, maxCaracteres - extensionArchivo.length - 1);
+                var nombreCorto = nombreSinExtension + "...." + extensionArchivo;
+            } else {
+                var nombreCorto = nombreCompleto;
+            }
+
+            // Actualizar la imagen de fileIcon según la extensión
+            var fileIcon = document.getElementById("fileIconBankConfirmation");
+            var iconPath = "../assets/media/opplus/";
+
+            switch (extensionArchivo) {
+                case 'xlsx':
+                case 'xls':
+                    iconPath += "xls.png";
+                    break;
+                case 'pdf':
+                    iconPath += "pdf.png";
+                    break;
+                default:
+                    // Puedes proporcionar una imagen predeterminada o manejar otros casos aquí
+                    iconPath += "default.png";
+            }
+
+            fileIcon.src = iconPath;
+
+            document.getElementById("nombreArchivoBankConfirmation").innerHTML = nombreCorto;
+            document.getElementById("fileSizeBankConfirmation").innerHTML = formatBytes(archivoBankConfirmation.size);
+            document.getElementById("cardArchivoBankConfirmation").style.display = "block";
+            document.getElementById("agregarArchivoBankConfirmation").style.display = "none";
+
+            // Ajustar la altura del área de arrastre para contener el archivo seleccionado
+            var areaArrastre = document.getElementById("areaArrastreBankConfirmation");
+            areaArrastre.style.minHeight = areaArrastre.offsetHeight + "px";
+        }
+    }
+</script>
+<!--end: Upload Files-->
+
+<script>
+    function downloadTechnicalSpecification(idLot) {
+        if (!idLot) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'ID del lote no encontrado'
+            });
+            return;
+        }
+
+        const button = $(event.currentTarget);
+        const originalContent = button.html();
+
+        // Mostrar loading
+        button.html('<i class="fa fa-spinner fa-spin fs-2x pt-1 mb-2"></i>');
+        button.prop('disabled', true);
+
+        $.ajax({
+            url: '/RiceLot/DownloadTechnicalSpecification',
+            type: 'GET',
+            data: { IdLot: idLot },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob, status, xhr) {
+                // Verificar el tipo de contenido
+                const contentType = xhr.getResponseHeader('content-type');
+                if (contentType && contentType.indexOf('application/pdf') !== -1) {
+                    // Es un PDF, proceder con la descarga
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `EspecificacionTecnica_Lote_${idLot}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    $(a).remove();
+                } else {
+                    // No es un PDF, probablemente es un mensaje de error
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            const error = JSON.parse(this.result);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: error.message || 'Error al descargar el archivo'
+                            });
+                        } catch {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al procesar la respuesta del servidor'
+                            });
+                        }
+                    };
+                    reader.readAsText(blob);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                let mensaje = 'No se pudo descargar la especificación técnica';
+
+                // Manejar diferentes códigos de estado HTTP
+                switch (xhr.status) {
+                    case 404:
+                        mensaje = 'No se encontró la especificación técnica';
+                        break;
+                    case 403:
+                        mensaje = 'No tiene permisos para descargar este archivo';
+                        break;
+                    case 500:
+                        mensaje = 'Error en el servidor al procesar la solicitud';
+                        break;
+                }
+
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensaje
+                });
+            },
+            complete: function () {
+                // Restaurar el botón
+                button.html(originalContent);
+                button.prop('disabled', false);
+            }
+        });
+    }
+    function downloadLotLabel(idLot) {
+        if (!idLot) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'ID del lote no encontrado'
+            });
+            return;
+        }
+
+        const button = $(event.currentTarget);
+        const originalContent = button.html();
+        button.html('<i class="fa fa-spinner fa-spin fs-2x pt-1 mb-2"></i>');
+        button.prop('disabled', true);
+
+        $.ajax({
+            url: '/RiceLot/DownloadLotLabel',
+            type: 'GET',
+            data: { IdLot: idLot },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob) {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Etiqueta_Lote_${idLot}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                $(a).remove();
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'No se pudo generar la etiqueta del lote'
+                });
+            },
+            complete: function () {
+                button.html(originalContent);
+                button.prop('disabled', false);
+            }
+        });
+    }
+</script>
+
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Detalle del lote @Model.RiceLotDetailDTO.Code</h1>
+                    <!--end::Title-->
+                    <!--begin::Breadcrumb-->
+                    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">
+                            <a href="/Home/Index" class="text-muted text-hover-primary">Inicio</a>
+                        </li>
+                        <li class="breadcrumb-item text-muted">
+                            -
+                        </li>
+                        <li class="breadcrumb-item text-muted">
+                            <a class="text-muted text-hover-primary">Detalle lote</a>
+                        </li>
+                        <!--end::Item-->
+                    </ul>
+                    <!--end::Breadcrumb-->
+                </div>
+                <!--end::Page title-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+        <!--begin::Content-->
+        <div id="kt_app_content" class="app-content flex-column-fluid">
+
+
+            <!--begin::Content container-->
+            <div id="kt_app_content_container" class="app-container container-xxl" style="margin-bottom:15px;">
+
+                <!--begin::Card-->
+                <div class="card card-flush">
+                    <!--begin::Card body-->
+                    <div id="tableSection" class="card-body">
+                        <form asp-action="UpdateRiceLot" enctype="multipart/form-data" method="post" class="row g-3 needs-validation" novalidate="novalidate" id="kt_create_app_form">
+                            <div class="row">
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="ReceptionDate" asp-for="RiceLotDetailDTO.ReceptionDate" name="ReceptionDate" type="date" required data-validation="required" class="form-control" placeholder="Fecha de recepción" oninput="ValidateElement($(this))" />
+                                            <label class="form-label required" for="ExpirationDate">Fecha de recepción</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="ExpirationDate" asp-for="RiceLotDetailDTO.ExpirationDate" name="ExpirationDate" type="date" required data-validation="required" class="form-control" placeholder="Fecha de vencimiento" oninput="ValidateElement($(this))" />
+                                            <label class="form-label required" for="ExpirationDate">Fecha de vencimiento</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <select id="IdClassification" asp-for="RiceLotDetailDTO.IdClassification" name="IdClassification" class="form-select" required data-validation="required" oninput="ValidateElement($(this))">
+                                                <option value="">Seleccione una clasificación de arroz</option>
+                                                @foreach (var item in Model.Classifications)
+                                                {
+                                                    <option value="@item.IdClassification">@item.Name</option>
+                                                }
+                                            </select>
+                                            <label class="form-label" for="riceClass">Clasificación</label>
+                                        </div>
+                                    </div>
+                                    <!-- Mensaje de feedback inmediatamente después del input-group -->
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly id="LastUbication" asp-for="RiceLotDetailDTO.LastUbication"  type="text" class="form-control" placeholder="Última ubicación" />
+                                            <label class="form-label required" for="QuantitySacks">Cantidad de sacos</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly id="InitialQuantity" asp-for="RiceLotDetailDTO.InitialQuantity" type="text" class="form-control" placeholder="Stock Inicial" />
+                                            <label class="form-label required" for="InitialQuantity">Stock inicial</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly id="LeftoverQuantity" asp-for="RiceLotDetailDTO.LeftoverQuantity" type="text" class="form-control" placeholder="Stock actual" />
+                                            <label class="form-label required" for="LeftoverQuantity">Stock actual</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly id="State" asp-for="RiceLotDetailDTO.State" type="text" class="form-control" placeholder="Estado" />
+                                            <label class="form-label required" for="InitialQuantity">Estado</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly id="RegisterDate" asp-for="RiceLotDetailDTO.CreatedAt"  type="datetime" required data-validation="required" class="form-control" placeholder="Fecha de registro" oninput="ValidateElement($(this))" />
+                                            <label class="form-label required" for="ExpirationDate">Fecha de registro</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly id="CreatedBy" asp-for="RiceLotDetailDTO.CreatedBy" type="text" class="form-control" placeholder="Creado por" />
+                                            <label class="form-label required" for="CreatedBy">Creado por</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly id="UpdatedBy" asp-for="RiceLotDetailDTO.UpdatedBy" type="text" class="form-control" placeholder="Modificado por" />
+                                            <label class="form-label required" for="UpdatedBy">Modificado por</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-3 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly id="UpdatedAt" asp-for="RiceLotDetailDTO.UpdatedAt" type="datetime"  class="form-control" placeholder="Fecha de modificación"  />
+                                            <label class="form-label required" for="UpdatedAt">Fecha de modificación</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <label class="fs-6 fw-semibold mb-2 mt-10">Adjunta una copia del documento de especificación técnica si deseas reemplazar en anterior</label>
+                                <div class="col" id="areaArrastreBankConfirmation" ondrop="handleDropBankConfirmation(event)" ondragover="handleDragOver(event)">
+                                    <div id="agregarArchivoBankConfirmation" style="display: block;">
+                                        <strong>Arrastra aquí</strong>
+                                        <br />
+                                        <strong>o</strong>
+                                        <br />
+                                        <label for="inputArchivoBankConfirmation" class="btn btn-sm btn-lg btn-primary">
+                                            Selecciona un archivo
+                                            <input type="file" name="TechnicalEspecification" id="inputArchivoBankConfirmation" style="display: none;" onchange="handleArchivoSeleccionadoBankConfirmation()" />
+                                        </label>
+                                    </div>
+
+                                    <div id="cardArchivoBankConfirmation">
+                                        <div class="d-flex flex-stack py-4">
+                                            <div class="d-flex align-items-center">
+                                                <!--begin::Avatar-->
+                                                <div class="symbol symbol-35px">
+                                                    <img id="fileIconBankConfirmation" src="" alt="icon" />
+                                                </div>
+                                                <!--end::Avatar-->
+                                                <!--begin::Details-->
+                                                <div class="ms-6">
+                                                    <p id="nombreArchivoBankConfirmation" class="fs-5 fw-bold text-gray-900 mb-2">Nombre</p>
+                                                    <div id="fileSizeBankConfirmation" class="fw-semibold text-muted"></div>
+                                                </div>
+                                                <!--end::Details-->
+                                            </div>
+                                            <!--begin::Menu-->
+                                            <div class="min-w-100px">
+                                                <button type="button" class="close btn btn-sm btn-lg btn-primary" onclick="quitarArchivoBankConfirmation()">
+                                                    <!--begin::Indicator label-->
+                                                    <span class="indicator-label">Quitar</span>
+                                                    <!--end::Indicator label-->
+                                                </button>
+                                            </div>
+                                            <!--end::Menu-->
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!--begin::Actions-->
+                            <div class="d-flex flex-stack justify-content-end">
+                                <button type="submit" id="submitButton" class="btn btn-lg btn-primary">
+                                    <span id="btnGuardar" class="indicator-label">Guardar cambios</span>
+                                    <span class="indicator-progress">
+                                        Por favor, espera...
+                                        <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                    </span>
+                                </button>
+                            </div>
+                            <!--end::Actions-->
+                        </form>
+                        
+                    </div>
+                    <!--end::Card body-->
+                </div>
+                <!--end::Card-->
+            </div>
+            <!--end::Content container-->
+        </div>
+        <!--end::Content-->
+
+    </div>
+    <!--end::Content wrapper-->
+</div>
+<!--end:::Main-->
+
+<div class="app-engage " id="kt_app_engage">
+    <!--begin::Files toggle-->
+    <a href="@Url.Action("Index", "RiceLotMovement", new { IdLot = Model.RiceLotDetailDTO.IdLot })"
+       class="app-engage-btn border-hover-warning hover-scale"
+       data-bs-toggle="tooltip"
+       data-bs-placement="left"
+       data-bs-title="Ir a movimientos"
+       aria-label="Ver movimientos">
+        <i class="fa-solid fa-dolly fs-2x pt-1 mb-2 text-warning"></i>
+    </a>
+    <!--end::Files toggle-->
+    <!--begin::Files toggle-->
+    <a
+       class="app-engage-btn border-hover-success  hover-scale"
+       onclick="downloadLotLabel(@Model.RiceLotDetailDTO.IdLot)"
+       data-bs-toggle="tooltip"
+       data-bs-placement="left"
+       data-bs-title="Descarga de etiqueta">
+        <i class="fa-solid fa-file-arrow-down fs-2x pt-1 mb-2 text-success"></i>
+    </a>
+    <!--end::Files toggle-->
+    <!--begin::Files toggle-->
+    <a
+       class="app-engage-btn border-hover-primary hover-scale"
+       onclick="downloadTechnicalSpecification(@Model.RiceLotDetailDTO.IdLot)"
+       data-bs-toggle="tooltip"
+       data-bs-placement="left"
+       data-bs-title="Descarga de ficha técnica">
+        <i class="fa-solid fa-download fs-2x pt-1 mb-2 text-primary"></i>
+    </a>
+    <!--end::Files toggle-->
+</div>
+
+
+<!--begin::Page loading(append to body)-->
+<div class="page-loader flex-column bg-dark bg-opacity-25">
+    <span class="spinner-border text-primary" role="status"></span>
+    <span class="text-gray-800 fs-6 fw-semibold mt-5">Loading...</span>
+</div>
+<!--end::Page loading-->

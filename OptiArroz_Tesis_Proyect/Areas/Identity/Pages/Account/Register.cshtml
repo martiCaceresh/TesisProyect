@@ -1,0 +1,205 @@
+﻿@page
+@model RegisterModel
+
+@{
+	Layout = null;
+	ViewData["Title"] = "Registro";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<base href="../../" />
+	<meta property="og:locale" content="en_US" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="SISCOP" />
+	<meta property="og:url" content="https://keenthemes.com/metronic" />
+	<meta property="og:site_name" content="Keenthemes | Metronic" />
+	<link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
+	<link rel="shortcut icon" href="assets/media/logos/favicon.ico" />
+	<!--begin::Fonts(mandatory for all pages)-->
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+	<!--end::Fonts-->
+	<!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
+	<link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+	<link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+	<!--end::Global Stylesheets Bundle-->
+	<script>// Frame-busting to prevent site from being loaded within a frame without permission (click-jacking) if (window.top != window.self) { window.top.location.replace(window.self.location.href); }</script>
+</head>
+<!--begin::Body-->
+<body id="kt_body" class="app-blank bgi-size-cover bgi-position-center bgi-no-repeat">
+	<!--begin::Theme mode setup on page load-->
+	<script>var defaultThemeMode = "light"; var themeMode; if (document.documentElement) { if (document.documentElement.hasAttribute("data-bs-theme-mode")) { themeMode = document.documentElement.getAttribute("data-bs-theme-mode"); } else { if (localStorage.getItem("data-bs-theme") !== null) { themeMode = localStorage.getItem("data-bs-theme"); } else { themeMode = defaultThemeMode; } } if (themeMode === "system") { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } document.documentElement.setAttribute("data-bs-theme", themeMode); }</script>
+
+
+	<!--end::Theme mode setup on page load-->
+	<!--begin::Root-->
+	<div class="d-flex flex-column flex-root" id="kt_app_root">
+		<!--begin::Page bg image-->
+		<style>
+			body {
+				background-image: url('assets/media/auth/bg3.jpg');
+			}
+
+			[data-bs-theme="dark"] body {
+				background-image: url('assets/media/auth/bg3-dark.jpg');
+			}
+
+			.uppercase-input {
+				text-transform: uppercase;
+			}
+
+			.position-relative {
+				position: relative;
+			}
+
+			.toggle-password {
+				position: absolute;
+				top: 50%;
+				right: 10px; /* Ajusta el valor para la posición horizontal deseada */
+				transform: translateY(-50%);
+				cursor: pointer;
+			}
+
+			/* Estilos adicionales para el ícono, como tamaño y color */
+			.toggle-password {
+				font-size: 18px;
+				color: #555; /* Cambia el color a tu preferencia */
+			}
+
+		</style>
+		<!--end::Page bg image-->
+		<!--begin::Authentication - Signup Welcome Message -->
+		<div class="d-flex flex-column flex-center flex-column-fluid">
+			<!--begin::Content-->
+			<div class="d-flex flex-column flex-center text-center p-10">
+				<!--begin::Wrapper-->
+				<div class="card card-flush w-lg-500px">
+					<div class="card-body py-15 py-lg-25">
+						<!--begin::Logo-->
+						<div class="mb-14">
+							<img id="logoWhite" alt="Logo" src="~/assets/media/logos/LogoAnimadoRefinanciados.gif" class="h-55px h-lg-65px app-sidebar-logo-default theme-light-show" />
+							<img id="logoEstaticoWhite" alt="Logo" src="~/assets/media/logos/LogoRefinanciadosStatic.png" style="display:none" />
+							<img id="logoAnimadoWhite" alt="Logo" src="~/assets/media/logos/LogoAnimadoRefinanciados.gif" style="display:none" />
+						</div>
+						<!--end::Logo-->
+						<!--begin::Message-->
+						<div class="fs-6 fw-semibold text-dark mb-10">
+							Para crear una nueva cuenta,
+							<br />por favor ingresa tu información
+						</div>
+						<!--end::Message-->
+						<!--begin::Link-->
+						<form asp-route-returnUrl="@Model.ReturnUrl" method="post">
+							<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+							<div class="form-floating mb-2">
+								<input asp-for="Input.Username" class="form-control text-dark uppercase-input"/>
+								<label class="form-label text-dark">Dni o Carnet de extranjería</label>
+								<span asp-validation-for="Input.Username" class="text-danger"></span>
+							</div>
+
+							<div class="form-floating mb-2 position-relative">
+								<input asp-for="Input.Password" class="form-control text-dark" type="password" autocomplete="new-password" />
+								<label class="form-label text-dark">Contraseña</label>
+								<span asp-validation-for="Input.Password" class="text-danger"></span>
+								<i class="form-icon toggle-password far fa-eye" id="password-toggle"></i>
+							</div>
+
+							<div class="form-floating mb-2 position-relative">
+								<input asp-for="Input.ConfirmPassword" type="password" class="form-control text-dark" autocomplete="new-password" />
+								<label class="form-label text-dark">Confirmar Contraseña</label>
+								<span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+								<i class="form-icon toggle-password far fa-eye" id="confirm-password-toggle"></i>
+							</div>
+
+							<div class="form-floating mb-2">
+								<input asp-for="Input.Name" class="form-control text-dark uppercase-input" />
+								<label class="form-label text-dark">Nombre</label>
+								<span asp-validation-for="Input.Name" class="text-danger"></span>
+							</div>
+
+							<div class="form-floating mb-2">
+								<input asp-for="Input.LastName" class="form-control text-dark uppercase-input" />
+								<label class="form-label text-dark">Apellidos</label>
+								<span asp-validation-for="Input.LastName" class="text-danger"></span>
+							</div>
+
+							<div class="form-floating mb-2">
+								<input asp-for="Input.PhoneNumber" class="form-control text-dark uppercase-input" />
+								<label class="form-label text-dark">Número de telefono</label>
+								<span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+							</div>
+
+							<div class="form-floating mb-2">
+								<input asp-for="Input.Email" class="form-control text-dark uppercase-input" autocomplete="email" />
+								<label class="form-label text-dark">Correo</label>
+								<span asp-validation-for="Input.Email" class="text-danger"></span>
+							</div>
+
+							<button type="submit" class="w-100 btn btn-lg" style="background-color:#2FBBAE">Registrarse</button>
+						</form>
+
+						<div class="m-3 text-center text-muted">
+							<p class="mb-0 text-dark">¿Ya tienes una cuenta?  <a asp-page="./Login" class="text-primary ms-2"> ¡Ingresa a OptiArroz!</a></p>
+						</div>
+						<!--end::Link-->
+					</div>
+				</div>
+				<!--end::Wrapper-->
+			</div>
+			<!--end::Content-->
+		</div>
+		<!--end::Authentication - Signup Welcome Message-->
+	</div>
+	<!--end::Root-->
+	@section Scripts {
+		<partial name="_ValidationScriptsPartial" />
+	}
+
+	<!--begin::Javascript-->
+	<script>var hostUrl = "assets/";</script>
+
+	<!--begin::Global Javascript Bundle(mandatory for all pages)-->
+	<script src="~/assets/plugins/global/plugins.bundle.js"></script>
+	<script src="~/assets/js/scripts.bundle.js"></script>
+	<!--end::Global Javascript Bundle-->
+
+	<script>
+		const passwordInput = document.querySelector('input[type="password"]');
+		const confirmPasswordInput = document.querySelector('input[name="Input.ConfirmPassword"]');
+		const passwordToggleIcon = document.getElementById("password-toggle");
+		const confirmPasswordToggleIcon = document.getElementById("confirm-password-toggle");
+
+		// Agrega un evento de escucha al icono de Password
+		passwordToggleIcon.addEventListener("click", function () {
+			togglePasswordVisibility(passwordInput, passwordToggleIcon);
+		});
+
+		// Agrega un evento de escucha al icono de ConfirmPassword
+		confirmPasswordToggleIcon.addEventListener("click", function () {
+			togglePasswordVisibility(confirmPasswordInput, confirmPasswordToggleIcon);
+		});
+
+		function togglePasswordVisibility(inputElement, toggleIcon) {
+			if (inputElement.type === "password") {
+				inputElement.type = "text";
+				toggleIcon.classList.remove("fa-eye");
+				toggleIcon.classList.add("fa-eye-slash");
+			} else {
+				inputElement.type = "password";
+				toggleIcon.classList.remove("fa-eye-slash");
+				toggleIcon.classList.add("fa-eye");
+			}
+		}
+	</script>
+
+
+
+	<!--end::Javascript-->
+
+</body>
+<!--end::Body-->
+</html>

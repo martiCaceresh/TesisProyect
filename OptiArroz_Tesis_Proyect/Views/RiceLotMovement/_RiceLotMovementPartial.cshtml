@@ -559,7 +559,9 @@
                             -
                         </li>
                         <li class="breadcrumb-item text-muted">
-                            <a href="/RiceLot/Index/@Model.RiceLotDetailDTO.IdLot" class="text-muted text-hover-primary">Detalle lote</a>
+                            <a asp-controller="RiceLot"
+                               asp-action="RiceLotDetails"
+                               asp-route-IdLot="@Model.RiceLotDetailDTO.IdLot" class="text-muted text-hover-primary">Detalle lote</a>
                         </li>
                         <li class="breadcrumb-item text-muted">
                             -
@@ -598,83 +600,93 @@
 
                         <div class="tab-content" id="myTabContent">
                             <div class="tab-pane fade show active" id="kt_tab_pane_1" role="tabpanel">
-                                ...
+                                @await Html.PartialAsync("_RiceLotMovementTablePartial.cshtml", Model.RiceLotMovementTableDTO)
                             </div>
                             <div class="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
                                 <div class="current" data-kt-stepper-element="content">
+                                    <form asp-action="CreateRiceLotMovement" method="post" class="row g-3 needs-validation" novalidate="novalidate" id="kt_create_app_form">
 
-                                    <div class="row">
-                                        <div class="col-lg-6 mb-3">
-                                            <div class="input-group">
-                                                <div class="form-floating">
-                                                    <select id="Zone" name="IdZone" class="form-select" required data-validation="required" oninput="ValidateElement($(this))" onchange="ShowZoneUbications($(this))">
-                                                        <option value="">Seleccione una zona</option>
-                                                        @foreach (var item in Model.Zones)
-                                                        {
-                                                            <option value="@item.IdZone"
-                                                                data-rows="@item.Rows"
-                                                                data-columns="@item.Columns">
-                                                                @item.Name
-                                                            </option>
-                                                        }
-                                                    </select>
-                                                    <label class="form-label" for="Zone">Zona</label>
+                                        <!--Inputs de zona y ubicacion actual del lote-->
+                                        <input hidden name="IdZoneOrigin" value="@Model.RiceLotDetailDTO.IdZone" />
+                                        <input hidden name="IdRiceLot" value="@Model.RiceLotDetailDTO.IdLot"/>
+                                        <input hidden name="IdOrigin" value="@Model.RiceLotDetailDTO.IdLastUbication"/>
+
+
+                                        <div class="row">
+                                            <div class="col-lg-6 mb-3">
+                                                <div class="input-group">
+                                                    <div class="form-floating">
+                                                        <select id="Zone" name="IdZoneDestination" class="form-select" required data-validation="required" oninput="ValidateElement($(this))" onchange="ShowZoneUbications($(this))">
+                                                            <option value="">Seleccione una zona</option>
+                                                            @foreach (var item in Model.Zones)
+                                                            {
+                                                                <option value="@item.IdZone"
+                                                                    data-rows="@item.Rows"
+                                                                    data-columns="@item.Columns">
+                                                                    @item.Name
+                                                                </option>
+                                                            }
+                                                        </select>
+                                                        <label class="form-label" for="Zone">Zona</label>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <!-- Mensaje de feedback inmediatamente después del input-group -->
-                                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
-                                        </div>
-
-                                    </div>
-
-                                    <div id="SeeUbicationSection" style="display: none;">
-                                        <!--begin::Label-->
-                                        <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
-                                            <span>Selecciona una ubicacion dentro del almacén</span>
-                                        </label>
-                                        <!--end::Label-->
-
-                                        <a id="btnOpenModal" class="btn btn-sm btn-primary me-2 mb-3" data-bs-toggle="modal" data-bs-target="#kt_modal_1">
-                                            Ver Ubicaciones
-                                        </a>
-                                    </div>
-                                    <div id="UbicationSelectedLabel" style="display: none;">
-                                        <!--begin::Label-->
-                                        <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
-                                            <span>Ubicacion escogida</span>
-                                        </label>
-                                        <!--end::Label-->
-                                    </div>
-
-                                    <div class="row" id="UbicationSelectedInput" style="display: none;">
-                                        <div class="col-lg-6 mb-3">
-                                            <div class="input-group">
-                                                <div class="form-floating">
-                                                    <input readonly id="UbicationSelected" type="text" class="form-control" placeholder="Ubicación" oninput="ValidateElement($(this))" />
-                                                    <label class="form-label required" for="UbicationSelected">Ubicación</label>
-                                                </div>
+                                                <!-- Mensaje de feedback inmediatamente después del input-group -->
                                                 <div class="invalid-feedback"> Este campo es obligatorio.</div>
                                             </div>
+
                                         </div>
 
-                                    </div>
+                                        <div id="SeeUbicationSection" style="display: none;">
+                                            <!--begin::Label-->
+                                            <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                                                <span>Selecciona una ubicacion dentro del almacén</span>
+                                            </label>
+                                            <!--end::Label-->
+
+                                            <a id="btnOpenModal" class="btn btn-sm btn-primary me-2 mb-3" data-bs-toggle="modal" data-bs-target="#kt_modal_1">
+                                                Ver Ubicaciones
+                                            </a>
+                                        </div>
+                                        <div id="UbicationSelectedLabel" style="display: none;">
+                                            <!--begin::Label-->
+                                            <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                                                <span>Ubicacion escogida</span>
+                                            </label>
+                                            <!--end::Label-->
+                                        </div>
+
+                                        <div class="row" id="UbicationSelectedInput" style="display: none;">
+                                            <div class="col-lg-6 mb-3">
+                                                <div class="input-group">
+                                                    <div class="form-floating">
+                                                        <input readonly id="UbicationSelected" type="text" class="form-control" placeholder="Ubicación" oninput="ValidateElement($(this))" />
+                                                        <label class="form-label required" for="UbicationSelected">Ubicación</label>
+                                                    </div>
+                                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                                </div>
+                                            </div>
+
+                                        </div>
 
 
-                                    <input hidden id="IdUbication" name="IdUbication">
+                                        <input hidden id="IdUbication" name="IdDestination">
 
-                                    @await Html.PartialAsync("~/Views/RiceLot/_SeeUbicationsModalPartial.cshtml")
+                                        @await Html.PartialAsync("~/Views/RiceLot/_SeeUbicationsModalPartial.cshtml")
 
-                                    <!--begin::Actions-->
-                                    <div class="d-flex flex-stack justify-content-end">
-                                        <button type="button" id="submitButton" class="btn btn-lg btn-primary" data-kt-element="finish-create">
-                                            <span id="btnGuardar" class="indicator-label">Crear</span>
-                                            <span class="indicator-progress">
-                                                Por favor, espera...
-                                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-                                            </span>
-                                        </button>
-                                    </div>
-                                    <!--end::Actions-->
+                                        <!--begin::Actions-->
+                                        <div class="d-flex flex-stack justify-content-end">
+                                            <button type="button" id="submitButton" class="btn btn-lg btn-primary" data-kt-element="finish-create">
+                                                <span id="btnGuardar" class="indicator-label">Crear</span>
+                                                <span class="indicator-progress">
+                                                    Por favor, espera...
+                                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <!--end::Actions-->
+                                    
+                                    </form>
+                                    
 
                                 </div>
                                 

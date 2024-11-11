@@ -8,10 +8,12 @@ namespace OptiArroz_Tesis_Proyect.Models.Dtos
     {
 
         public int IdRiceLot { get; set; }
-        public RiceLot? RiceLot { get; set; }
+
+        public int IdZoneOrigin { get; set; }
 
         public int IdOrigin { get; set; }
 
+        public int IdZoneDestination { get; set; }
         public int IdDestination { get; set; }
     }
 }

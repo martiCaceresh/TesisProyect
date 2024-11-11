@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OptiArroz_Tesis_Proyect.Data.Interfaces;
+using OptiArroz_Tesis_Proyect.Models.Dtos;
 using OptiArroz_Tesis_Proyect.Models.Entities;
 
 namespace OptiArroz_Tesis_Proyect.Data.DataAccess
@@ -111,6 +112,51 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                 throw;
             }
             
+        }
+
+        public async Task<List<RiceLot>> GetRiceLotConsultation(int IdClassification)
+        {
+
+            try
+            {
+                var RiceLots = await DbContext.RiceLots
+                    .Include(x => x.RiceClassification)
+                    .Include(x => x.Zone)
+                    .Include(x => x.LastUbication)
+                    .ThenInclude(x => x!.Zone)
+                    .Where(x => x.IdClassification == IdClassification && x.State == 1)
+                    .OrderBy(x => x.ExpirationDate)
+                    .ThenBy(x => x.LeftoverQuantity)
+                    .ToListAsync();
+
+                return RiceLots ?? new List<RiceLot>();
+            }
+            catch
+            {
+                throw;
+            }
+
+        }
+
+        public async Task<RiceLot> UpdateRiceLot(RiceLot UpdateRiceLot)
+        {
+            try
+            {
+                var FoundRiceLot = await DbContext.RiceLots.FindAsync(UpdateRiceLot.IdLot) ?? throw new Exception ("No se encontró el lote") ;
+                FoundRiceLot.ExpirationDate = UpdateRiceLot.ExpirationDate;
+                FoundRiceLot.ReceptionDate = UpdateRiceLot.ReceptionDate;
+                FoundRiceLot.TechnicalSpecification = UpdateRiceLot.TechnicalSpecification;
+                FoundRiceLot.UpdatedAt = UpdateRiceLot.UpdatedAt;
+                FoundRiceLot.IdUpdatedBy = UpdateRiceLot.IdUpdatedBy;
+                FoundRiceLot.State = UpdateRiceLot.State;
+                DbContext.Entry(FoundRiceLot).State = EntityState.Modified;
+                await DbContext.SaveChangesAsync();
+                return FoundRiceLot;
+            }
+            catch
+            {
+                throw;
+            }
         }
     }
 }

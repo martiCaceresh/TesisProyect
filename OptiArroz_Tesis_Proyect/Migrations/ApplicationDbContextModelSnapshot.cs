@@ -263,7 +263,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdSendTo");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.NotificationType", b =>
@@ -284,7 +284,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasKey("IdNotificationType");
 
-                    b.ToTable("NotificationTypes", (string)null);
+                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceClass", b =>
@@ -318,7 +318,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceClasses", (string)null);
+                    b.ToTable("RiceClasses");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceClassification", b =>
@@ -376,7 +376,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceClassifications", (string)null);
+                    b.ToTable("RiceClassifications");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceGrade", b =>
@@ -410,7 +410,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceGrades", (string)null);
+                    b.ToTable("RiceGrades");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceLot", b =>
@@ -475,7 +475,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdZone");
 
-                    b.ToTable("RiceLots", (string)null);
+                    b.ToTable("RiceLots");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceLotMovement", b =>
@@ -490,10 +490,10 @@ namespace OptiArroz_Tesis_Proyect.Migrations
                     b.Property<string>("IdCreatedBy")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<int>("IdDestination")
+                    b.Property<int?>("IdDestination")
                         .HasColumnType("int");
 
-                    b.Property<int>("IdOrigin")
+                    b.Property<int?>("IdOrigin")
                         .HasColumnType("int");
 
                     b.Property<int>("IdRiceLot")
@@ -501,6 +501,12 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.Property<string>("IdUpdatedBy")
                         .HasColumnType("varchar(255)");
+
+                    b.Property<int>("IdZoneDestination")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdZoneOrigin")
+                        .HasColumnType("int");
 
                     b.Property<string>("Observation")
                         .IsRequired()
@@ -527,7 +533,11 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceLotMovements", (string)null);
+                    b.HasIndex("IdZoneDestination");
+
+                    b.HasIndex("IdZoneOrigin");
+
+                    b.ToTable("RiceLotMovements");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSack", b =>
@@ -560,7 +570,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceSacks", (string)null);
+                    b.ToTable("RiceSacks");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSacksDevolution", b =>
@@ -603,7 +613,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceSacksDevolutions", (string)null);
+                    b.ToTable("RiceSacksDevolutions");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSacksDevolutionDetail", b =>
@@ -627,7 +637,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdRiceSacksDevolution");
 
-                    b.ToTable("RiceSacksDevolutionDetails", (string)null);
+                    b.ToTable("RiceSacksDevolutionDetails");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSacksDevolutionType", b =>
@@ -661,7 +671,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceSacksDevolutionTypes", (string)null);
+                    b.ToTable("RiceSacksDevolutionTypes");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSacksOutput", b =>
@@ -710,7 +720,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceSacksOutputs", (string)null);
+                    b.ToTable("RiceSacksOutputs");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSacksOutputDetail", b =>
@@ -734,7 +744,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdRiceSacksOutput");
 
-                    b.ToTable("RiceSacksOutputDetails", (string)null);
+                    b.ToTable("RiceSacksOutputDetails");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSacksOutputType", b =>
@@ -768,7 +778,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("RiceSacksOutputTypes", (string)null);
+                    b.ToTable("RiceSacksOutputTypes");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.SystemConfiguration", b =>
@@ -866,7 +876,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasKey("IdSystemConfiguration");
 
-                    b.ToTable("SystemConfiguration", (string)null);
+                    b.ToTable("SystemConfiguration");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.Ubication", b =>
@@ -894,7 +904,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdZone");
 
-                    b.ToTable("Ubications", (string)null);
+                    b.ToTable("Ubications");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.Zone", b =>
@@ -947,7 +957,7 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasIndex("IdUpdatedBy");
 
-                    b.ToTable("Zones", (string)null);
+                    b.ToTable("Zones");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -1135,15 +1145,11 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.Ubication", "Destination")
                         .WithMany("RiceLotMovementDestinations")
-                        .HasForeignKey("IdDestination")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IdDestination");
 
                     b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.Ubication", "Origin")
                         .WithMany("RiceLotMovementOrigins")
-                        .HasForeignKey("IdOrigin")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IdOrigin");
 
                     b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.RiceLot", "RiceLot")
                         .WithMany("RiceLotMovements")
@@ -1155,6 +1161,18 @@ namespace OptiArroz_Tesis_Proyect.Migrations
                         .WithMany("RiceLotMovementsUpdated")
                         .HasForeignKey("IdUpdatedBy");
 
+                    b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.Zone", "ZoneDestination")
+                        .WithMany("RiceLotMovementZoneDestinations")
+                        .HasForeignKey("IdZoneDestination")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.Zone", "ZoneOrigin")
+                        .WithMany("RiceLotMovementZoneOrigins")
+                        .HasForeignKey("IdZoneOrigin")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Destination");
@@ -1164,6 +1182,10 @@ namespace OptiArroz_Tesis_Proyect.Migrations
                     b.Navigation("RiceLot");
 
                     b.Navigation("UpdatedBy");
+
+                    b.Navigation("ZoneDestination");
+
+                    b.Navigation("ZoneOrigin");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSack", b =>
@@ -1435,6 +1457,10 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.Zone", b =>
                 {
+                    b.Navigation("RiceLotMovementZoneDestinations");
+
+                    b.Navigation("RiceLotMovementZoneOrigins");
+
                     b.Navigation("RiceLots");
 
                     b.Navigation("Ubications");

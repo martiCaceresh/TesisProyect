@@ -33,7 +33,7 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public Ubication? LastUbication { get; set; }
 
         public int IdZone { get; set; }
-        public Zone? Zone { get; set; } 
+        public Zone? Zone { get; set; }
 
         public List<RiceLotMovement>? RiceLotMovements { get; set; }
         public List<RiceSacksDevolutionDetail>? RiceSacksDevolutionDetails { get; set; }
@@ -77,6 +77,15 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
             IdZone = NewLot.IdZone;
             SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
 
+        }
+
+        public RiceLot(UpdateLotDTO UpdateLot, byte[] TechnicalSpecification, string IdUser)
+        {
+            ReceptionDate = UpdateLot.ReceptionDate;
+            ExpirationDate = UpdateLot.ExpirationDate;
+            this.TechnicalSpecification = TechnicalSpecification;
+            this.IdLot = UpdateLot.IdLot;
+            SetBaseModel(IdUser, DateTime.Now, 1);
         }
 
 

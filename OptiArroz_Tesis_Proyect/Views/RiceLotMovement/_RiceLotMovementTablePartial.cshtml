@@ -1,0 +1,130 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using OptiArroz_Tesis_Proyect.Models.Entities
+@model IEnumerable<OptiArroz_Tesis_Proyect.Models.Dtos.RiceLotMovementTableDTO>
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<style>
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        min-width: 160px;
+    }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+            .dropdown-content a:hover {
+                background-color: #f1f1f1;
+            }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .icon {
+        cursor: pointer;
+    }
+
+    .table-container {
+        position: relative;
+        width: 100%;
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table th, .table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .fixed-column {
+        position: absolute;
+        left: 0;
+        top: auto;
+        border-right: 1px solid #ddd;
+        background-color: white;
+    }
+
+        .fixed-column th, .fixed-column td {
+            border-right: 1px solid #ddd;
+        }
+
+</style>
+
+<script>
+    $(document).ready(function () {
+        $("#kt_datatable_zero_configuration").DataTable({
+            scrollX: true,
+            scrollY: '50vh',
+            order: [[0, 'desc']],
+            fixedColumns: {
+                left: 1
+            },
+            autoWidth: false,
+        });
+    });
+
+
+
+</script>
+
+<div class="table-container">
+    <div id="loadingSpinner" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; text-align: center;">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <div style="margin-top: 10px; font-weight: bold; color: #333;">Cargando...</div>
+    </div>
+    <!--begin::Table-->
+    <table id="kt_datatable_zero_configuration" data-kt-filemanager-table="files" class="table table-row-bordered">
+        <thead>
+            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                <th class="min-w-150px text-center text-dark">FECHA REGISTRO</th>
+                <th class="min-w-150px text-center text-dark">ORIGEN</th>
+                <th class="min-w-150px text-center text-dark">DESTINO</th>
+                <th class="min-w-150px text-center text-dark">CREADO POR</th>
+            </tr>
+        </thead>
+        <tbody class="fw-semibold text-gray-600" style="font-size: 11px;">
+
+            @foreach (var item in Model)
+            {
+                <tr>
+
+                    <td class="text-center" data-order="@(item.CreatedAt.ToString("yyyyMMddHHmmss"))">
+                        @Html.DisplayFor(modelItem => item.CreatedAt)
+                    </td>
+                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Origin) </td>
+                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Destination) </td>
+
+                    <td class="text-center">@Html.DisplayFor(modelItem => item.CreatedBy)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+</div>

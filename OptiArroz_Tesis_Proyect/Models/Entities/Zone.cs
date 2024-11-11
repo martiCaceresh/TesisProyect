@@ -28,6 +28,9 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public List<Ubication>? Ubications { get; set; }
         public List<RiceLot>? RiceLots { get; set; }
 
+        public List<RiceLotMovement>? RiceLotMovementZoneOrigins { get; set; }
+        public List<RiceLotMovement>? RiceLotMovementZoneDestinations { get; set; }
+
 
         [Display(Name = "FECHA CREACION")]
         [DataType(DataType.Date)]

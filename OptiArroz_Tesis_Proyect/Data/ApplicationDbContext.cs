@@ -147,6 +147,17 @@ namespace OptiArroz_Tesis_Proyect.Data
                 .WithMany(f => f.RiceLotMovementDestinations)
                 .HasForeignKey(p => p.IdDestination);
 
+
+            builder.Entity<RiceLotMovement>()
+                .HasOne(p => p.ZoneOrigin)
+                .WithMany(f => f.RiceLotMovementZoneOrigins)
+                .HasForeignKey(p => p.IdZoneOrigin);
+
+            builder.Entity<RiceLotMovement>()
+                .HasOne(p => p.ZoneDestination)
+                .WithMany(f => f.RiceLotMovementZoneDestinations)
+                .HasForeignKey(p => p.IdZoneDestination);
+
             builder.Entity<RiceLotMovement>()
                 .HasOne(p => p.CreatedBy)
                 .WithMany(f => f.RiceLotMovementsCreated)

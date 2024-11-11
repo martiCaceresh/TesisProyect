@@ -11,8 +11,8 @@ using OptiArroz_Tesis_Proyect.Data;
 namespace OptiArroz_Tesis_Proyect.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241109160833_AddRelationLotZone")]
-    partial class AddRelationLotZone
+    [Migration("20241110170751_CreateRelations")]
+    partial class CreateRelations
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -492,10 +492,10 @@ namespace OptiArroz_Tesis_Proyect.Migrations
                     b.Property<string>("IdCreatedBy")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<int>("IdDestination")
+                    b.Property<int?>("IdDestination")
                         .HasColumnType("int");
 
-                    b.Property<int>("IdOrigin")
+                    b.Property<int?>("IdOrigin")
                         .HasColumnType("int");
 
                     b.Property<int>("IdRiceLot")
@@ -503,6 +503,12 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.Property<string>("IdUpdatedBy")
                         .HasColumnType("varchar(255)");
+
+                    b.Property<int>("IdZoneDestination")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdZoneOrigin")
+                        .HasColumnType("int");
 
                     b.Property<string>("Observation")
                         .IsRequired()
@@ -528,6 +534,10 @@ namespace OptiArroz_Tesis_Proyect.Migrations
                     b.HasIndex("IdRiceLot");
 
                     b.HasIndex("IdUpdatedBy");
+
+                    b.HasIndex("IdZoneDestination");
+
+                    b.HasIndex("IdZoneOrigin");
 
                     b.ToTable("RiceLotMovements");
                 });
@@ -1137,15 +1147,11 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
                     b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.Ubication", "Destination")
                         .WithMany("RiceLotMovementDestinations")
-                        .HasForeignKey("IdDestination")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IdDestination");
 
                     b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.Ubication", "Origin")
                         .WithMany("RiceLotMovementOrigins")
-                        .HasForeignKey("IdOrigin")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("IdOrigin");
 
                     b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.RiceLot", "RiceLot")
                         .WithMany("RiceLotMovements")
@@ -1157,6 +1163,18 @@ namespace OptiArroz_Tesis_Proyect.Migrations
                         .WithMany("RiceLotMovementsUpdated")
                         .HasForeignKey("IdUpdatedBy");
 
+                    b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.Zone", "ZoneDestination")
+                        .WithMany("RiceLotMovementZoneDestinations")
+                        .HasForeignKey("IdZoneDestination")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("OptiArroz_Tesis_Proyect.Models.Entities.Zone", "ZoneOrigin")
+                        .WithMany("RiceLotMovementZoneOrigins")
+                        .HasForeignKey("IdZoneOrigin")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.Navigation("CreatedBy");
 
                     b.Navigation("Destination");
@@ -1166,6 +1184,10 @@ namespace OptiArroz_Tesis_Proyect.Migrations
                     b.Navigation("RiceLot");
 
                     b.Navigation("UpdatedBy");
+
+                    b.Navigation("ZoneDestination");
+
+                    b.Navigation("ZoneOrigin");
                 });
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.RiceSack", b =>
@@ -1437,6 +1459,10 @@ namespace OptiArroz_Tesis_Proyect.Migrations
 
             modelBuilder.Entity("OptiArroz_Tesis_Proyect.Models.Entities.Zone", b =>
                 {
+                    b.Navigation("RiceLotMovementZoneDestinations");
+
+                    b.Navigation("RiceLotMovementZoneOrigins");
+
                     b.Navigation("RiceLots");
 
                     b.Navigation("Ubications");

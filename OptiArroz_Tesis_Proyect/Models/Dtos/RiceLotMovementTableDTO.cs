@@ -6,11 +6,10 @@ namespace OptiArroz_Tesis_Proyect.Models.Dtos
 {
     public class RiceLotMovementTableDTO
     {
-        public int IdRiceLotMovement { get; set; }
 
         public string Origin { get; set; } = string.Empty;
 
-        public string IdDestination { get; set; } = string.Empty ;
+        public string Destination { get; set; } = string.Empty ;
 
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy hh:mm:ss tt}", ApplyFormatInEditMode = true)]
         public DateTime CreatedAt { get; set; }

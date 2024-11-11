@@ -72,7 +72,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             catch (Exception)
             {
                 // Agrega un mensaje de error al TempData
-                TempData["ErrorMessage"] = "Se produjo un error en la configuracion, vuelva a intentar.";
+                TempData["ErrorMessage"] = "Se produjo un error en el registro, vuelva a intentar.";
 
                 return RedirectToAction("Index");
             }
@@ -85,6 +85,39 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             var RiceLot = await RiceLotDA.GetRiceLotById(IdLot);
             Model.RiceLotDetailDTO = Mapper.Map<RiceLotDetailDTO>(RiceLot);
             return View(Model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateRiceLot ([FromForm] UpdateLotDTO UpdateLotDTO, IFormFile TechnicalEspecification)
+        {
+            try
+            {
+                var CurrentUser = await UserManager.GetUserAsync(User);
+
+                // Convertir el IFormFile a byte[]
+                byte[] fileBytes;
+                using (var ms = new MemoryStream())
+                {
+                    await TechnicalEspecification.CopyToAsync(ms);
+                    fileBytes = ms.ToArray();
+                }
+
+                var UpdateRiceLot = new RiceLot(UpdateLotDTO, fileBytes, CurrentUser.Id);
+
+                await RiceLotDA.UpdateRiceLot(UpdateRiceLot);
+
+                // Agrega un mensaje de éxito al TempData
+                TempData["SuccessMessage"] = "Se actualizo el lote correctamente";
+
+                return RedirectToAction("RiceLotDetails" , new { IdLot = UpdateLotDTO.IdLot });
+            }
+            catch (Exception)
+            {
+                // Agrega un mensaje de error al TempData
+                TempData["ErrorMessage"] = "Se produjo un error en la actualizacion, vuelva a intentar.";
+
+                return RedirectToAction("RiceLotDetails", new { IdLot = UpdateLotDTO.IdLot });
+            }
         }
 
         [HttpGet]

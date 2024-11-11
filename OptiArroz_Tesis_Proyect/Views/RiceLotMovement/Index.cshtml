@@ -1,2 +1,12 @@
-﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceLotMovementVM
+﻿@using OptiArroz_Tesis_Proyect.Models.Utils
+@model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceLotMovementVM
 @await Html.PartialAsync("_RiceLotMovementPartial", Model)
+@if (TempData.ContainsKey("SuccessMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("success", "Éxito" ,TempData["SuccessMessage"]?.ToString() ?? string.Empty ))
+}
+@if (TempData.ContainsKey("ErrorMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("error", "Error" ,TempData["ErrorMessage"]?.ToString() ?? string.Empty ))
+}
+

@@ -126,6 +126,30 @@
 										<!--end:Menu link-->
 									</div>
 									<!--end:Menu item-->
+									<!--begin:Menu item-->
+									<div data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="bottom-start" class="menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
+										<!--begin:Menu link-->
+
+										<a class="menu-title text-dark" style="font-size: 1.1rem; font-weight: 600; padding: 1rem;" asp-area="" asp-controller="RiceSacksOutput" asp-action="Index">
+											Salida de sacos
+										</a>
+
+
+										<!--end:Menu link-->
+									</div>
+									<!--end:Menu item-->
+									<!--begin:Menu item-->
+									<div data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="bottom-start" class="menu-item menu-here-bg menu-lg-down-accordion me-0 me-lg-2">
+										<!--begin:Menu link-->
+
+										<a class="menu-title text-dark" style="font-size: 1.1rem; font-weight: 600; padding: 1rem;" asp-area="" asp-controller="Home" asp-action="Index">
+											Devolución
+										</a>
+
+
+										<!--end:Menu link-->
+									</div>
+									<!--end:Menu item-->
 									<!--begin:Menu item: CONTROL PANEL-->
 									@* @if (User.IsInRole("ADMIN") || User.IsInRole("QUALITY") || User.IsInRole("COORDINATOR"))
 									{
@@ -701,6 +725,12 @@
 										</div> *@
 										<!--end::Menu item-->
 										<!--begin::Menu item-->
+										<div class="menu-item px-5">
+											<form class="form-inline" asp-controller="Home" asp-action="MyAccount">
+												<a class="menu-link px-5" id="logoutLink">Mi cuenta</a>
+											</form>
+											@* <a href="../../demo1/dist/authentication/layouts/corporate/sign-in.html" class="menu-link px-5">Sign Out</a> *@
+										</div>
 										<div class="menu-item px-5">
 											<form class="form-inline" asp-controller="Home" asp-action="Exit">
 												<a class="menu-link px-5" id="logoutLink">Salir</a>

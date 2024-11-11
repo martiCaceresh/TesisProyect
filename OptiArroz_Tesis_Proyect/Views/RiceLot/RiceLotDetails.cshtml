@@ -1,4 +1,5 @@
-﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceLotDetailVM;
+﻿@using OptiArroz_Tesis_Proyect.Models.Utils
+@model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceLotDetailVM;
 
 <style>
     /* Estilos para Carga de archivos */
@@ -391,6 +392,7 @@
                     <!--begin::Card body-->
                     <div id="tableSection" class="card-body">
                         <form asp-action="UpdateRiceLot" enctype="multipart/form-data" method="post" class="row g-3 needs-validation" novalidate="novalidate" id="kt_create_app_form">
+                            <input hidden name="IdLot" asp-for="RiceLotDetailDTO.IdLot" />
                             <div class="row">
                                 <div class="col-lg-3 mb-3">
                                     <div class="input-group">
@@ -430,7 +432,14 @@
                                     <div class="input-group">
                                         <div class="form-floating">
                                             <input readonly id="LastUbication" asp-for="RiceLotDetailDTO.LastUbication"  type="text" class="form-control" placeholder="Última ubicación" />
-                                            <label class="form-label required" for="QuantitySacks">Cantidad de sacos</label>
+                                            
+                                            @if(Model.RiceLotDetailDTO.State == "ACTIVO") {
+                                                <label class="form-label required" for="LastUbication">Ubicación Actual</label>
+                                            }
+                                            else {
+                                                <label class="form-label required" for="LastUbication">Última Ubicación</label>
+                                            }
+                                           
                                         </div>
                                     </div>
                                 </div>
@@ -567,7 +576,10 @@
 
 <div class="app-engage " id="kt_app_engage">
     <!--begin::Files toggle-->
-    <a href="@Url.Action("Index", "RiceLotMovement", new { IdLot = Model.RiceLotDetailDTO.IdLot })"
+    <a 
+       asp-controller="RiceLotMovement"
+       asp-action="Index"
+       asp-route-IdLot="@Model.RiceLotDetailDTO.IdLot"
        class="app-engage-btn border-hover-warning hover-scale"
        data-bs-toggle="tooltip"
        data-bs-placement="left"
@@ -577,8 +589,7 @@
     </a>
     <!--end::Files toggle-->
     <!--begin::Files toggle-->
-    <a
-       class="app-engage-btn border-hover-success  hover-scale"
+    <a class="app-engage-btn border-hover-success  hover-scale cursor-pointer"
        onclick="downloadLotLabel(@Model.RiceLotDetailDTO.IdLot)"
        data-bs-toggle="tooltip"
        data-bs-placement="left"
@@ -587,8 +598,7 @@
     </a>
     <!--end::Files toggle-->
     <!--begin::Files toggle-->
-    <a
-       class="app-engage-btn border-hover-primary hover-scale"
+    <a class="app-engage-btn border-hover-primary hover-scale cursor-pointer"
        onclick="downloadTechnicalSpecification(@Model.RiceLotDetailDTO.IdLot)"
        data-bs-toggle="tooltip"
        data-bs-placement="left"
@@ -605,3 +615,11 @@
     <span class="text-gray-800 fs-6 fw-semibold mt-5">Loading...</span>
 </div>
 <!--end::Page loading-->
+@if (TempData.ContainsKey("SuccessMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("success", "Éxito" ,TempData["SuccessMessage"]?.ToString() ?? string.Empty ))
+}
+@if (TempData.ContainsKey("ErrorMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("error", "Error" ,TempData["ErrorMessage"]?.ToString() ?? string.Empty ))
+}

@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using OptiArroz_Tesis_Proyect.Models.Dtos;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace OptiArroz_Tesis_Proyect.Models.Entities
@@ -15,11 +16,17 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public int IdRiceLot { get; set; }
         public RiceLot? RiceLot { get; set; }
 
-        public int IdOrigin { get;set; }
+        public int? IdOrigin { get;set; }
         public Ubication? Origin { get; set; }
 
-        public int IdDestination { get; set; }
+        public int IdZoneOrigin { get; set; }
+        public Zone? ZoneOrigin { get; set; }
+
+        public int? IdDestination { get; set; }
         public Ubication? Destination { get; set; }
+
+        public int IdZoneDestination { get; set; }
+        public Zone? ZoneDestination { get; set; }
 
         [Display(Name = "FECHA CREACION")]
         [DataType(DataType.Date)]
@@ -44,6 +51,19 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public string? IdUpdatedBy { get; set; }
         public ApplicationUser? UpdatedBy { get; set; }
 
+        public RiceLotMovement() { }
+
+        public RiceLotMovement(CreateRiceLotMovementDTO NewLotMovement , string IdUser) 
+        {
+            this.RiceLotMovementDate = DateTime.Now;
+            this.IdRiceLot = NewLotMovement.IdRiceLot;
+            this.Observation = "";
+            this.IdOrigin = NewLotMovement.IdOrigin == 0 ? null : NewLotMovement.IdOrigin; 
+            this.IdZoneOrigin = NewLotMovement.IdZoneOrigin;
+            this.IdDestination = NewLotMovement.IdDestination == 0 ? null : NewLotMovement.IdDestination;
+            this.IdZoneDestination = NewLotMovement.IdZoneDestination;
+            SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
+        }
 
         public void SetBaseModel(string? IdCreatedBy, string? IdUpdatedBy, DateTime CreatedAt, DateTime UpdatedAt, int State)
         {

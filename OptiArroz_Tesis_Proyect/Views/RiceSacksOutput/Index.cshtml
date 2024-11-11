@@ -1,0 +1,273 @@
+﻿@using OptiArroz_Tesis_Proyect.Models.Utils
+@using OptiArroz_Tesis_Proyect.Models.ViewModels
+@model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceSacksOutputVM
+
+@{
+    ViewData["Title"] = "Salida de Sacos";
+}
+<script>
+
+    function Navigate(Page) {
+        // Lista de todas las páginas posibles
+        const pages = ["RiceSacksOutput", "RiceSacksConsultation"];  // Agrega aquí todos los IDs de tus vistas
+
+        $.ajax({
+            url: '/RiceSacksOutput/Index',
+            type: 'GET',
+            data: { Page: Page },  // Enviar el parámetro Page al controlador
+            success: function (response) {
+                // Ocultar todas las vistas
+                pages.forEach(page => {
+                    $("#" + page).hide();
+                });
+
+                // Cargar y mostrar la vista solicitada
+                $("#" + Page).html(response).show();
+            },
+            error: function (error) {
+                console.log('Error:', error);
+            }
+        });
+    }
+
+</script>
+
+<!--begin: Stepper Validations-->
+<script>
+
+    //FUNCION QUE REALIZA LAS VALIDACIONES A CADA ELEMENTO DENTRO DEL MODAL
+    function ValidateElement(element) {
+        var isValid = true;
+        var validationTypes = element.data('validation').split(',');
+
+        for (var i = 0; i < validationTypes.length; i++) {
+            var validationType = validationTypes[i];
+            switch (validationType) {
+                case 'required':
+                    if (!element.val()) {
+                        isValid = false;
+                        console.log("Required")
+                        ShowValidationError(element, 'Este campo es obligatorio.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+                case 'digits':
+                    var digits = element.data('digits').toString().split(',').map(Number);
+                    if (!digits.includes(element.val().length)) {
+                        isValid = false;
+                        console.log("Digits")
+                        ShowValidationError(element, `El campo debe tener exactamente ${digits.join(' o ')} dígitos.`);
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+                case 'email':
+                    if (element.val() == "") {
+                        var parentDiv = element.closest('.input-group');
+                        element.removeClass('valid');
+                        element.removeClass('invalid');
+                        parentDiv.next('.invalid-feedback').hide();
+                        element.removeAttr('required');
+                    }
+                    else if (!ValidateEmail(element.val())) {
+                        isValid = false;
+                        console.log("email")
+                        ShowValidationError(element, 'El correo electrónico no es válido.');
+                        element.attr('required', true);
+                        return isValid;
+                    }
+                    else {
+
+                        RemoveValidationError(element);
+                        element.attr('required', true);
+                    }
+                    break;
+
+                case 'numeric':
+                    if (!ValidateNumeric(element.val())) {
+                        isValid = false;
+                        console.log("numeric")
+                        ShowValidationError(element, 'El campo solo debe contener valores numéricos.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+                case 'decimal':
+                    console.log("decimal")
+
+                    if (!ValidateDecimal(element.val())) {
+                        isValid = false;
+                        console.log("decimal")
+                        ShowValidationError(element, 'El número decimal no es válido.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+                case 'contract-format':
+                    var formattedValue = formatContract(element.val());
+                    element.val(formattedValue);
+                    if (!ValidateContractFormat(formattedValue)) {
+                        isValid = false;
+                        console.log("contract-format")
+                        ShowValidationError(element, 'El contrato no sigue el formato correcto.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+
+                default:
+                    break;
+            }
+        }
+
+        return isValid;
+    }
+
+    //FUNCION QUE MUESTRA LOS ATRIBUTOS DE ERROR DEL ELEMENTO
+    function ShowValidationError(element, message) {
+        var parentDiv = element.closest('.input-group');
+        element.removeClass('valid');
+        element.addClass('invalid');
+        parentDiv.next('.invalid-feedback').text(message).show();
+    }
+
+    //FUNCION QUE RETIRA LOS ATRIBUTOS Y CLASES DE ERROR Y AGREGA ATRIBUTOS Y CLASES DE EXITO
+    function RemoveValidationError(element) {
+        var parentDiv = element.closest('.input-group');
+        element.removeClass('invalid');
+        parentDiv.next('.invalid-feedback').hide();
+        element.addClass('valid');
+    }
+
+    //FUNCION PARA VALIDAR CORREO
+    function ValidateEmail(email) {
+        // Expresión regular para validar un correo electrónico
+        var emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+        // Verificar si el email pasa la validación básica
+        if (!emailPattern.test(email)) {
+            return false;
+        }
+
+        // Verificar que no termine con un punto
+        if (email.endsWith('.')) {
+            return false;
+        }
+
+        // Si pasa ambas validaciones, el email es válido
+        return true;
+    }
+
+    //FUNCION PARA VALIDAR VALORES NUMERICOS
+    function ValidateNumeric(number) {
+        return /^\d+$/.test(number);
+    }
+
+
+    function ValidateDecimal(string) {
+        // Si está vacío o no es string, retornar false
+        if (!string || typeof string !== 'string') {
+            return false;
+        }
+
+        // Eliminar espacios en blanco
+        string = string.trim();
+
+        // Verificar si es un número válido
+        // Acepta:
+        // - Cero (0)
+        // - Números enteros positivos (ej: 1, 2, 123)
+        // - Números decimales positivos (ej: 0.45, 123.45)
+        // - No permite múltiples puntos decimales
+        const decimalRegex = /^(0|[1-9]\d*)\.?\d*$/;
+        return decimalRegex.test(string);
+    }
+
+    //VALIDACION DE FORMATO DE CONTRATOS
+    function ValidateContractFormat(contract) {
+        // Expresión regular para validar el formato del contrato
+        var contractPattern = /^\d{4}-\d{4}-\d{2}-\d{8}$/;
+        return contractPattern.test(contract);
+    }
+
+    //CONVERTIDOR DE NUMEROS DECIMALES
+    function formatDecimal(value) {
+
+        // Convertir el valor en un número flotante
+        let number = parseFloat(value);
+
+        if (isNaN(number)) {
+            return 'Invalid number';
+        }
+
+        // Formatear el número con comas en los miles y dos decimales
+        return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    //CONVERTIDOR A FORMATO DE CONTRATO
+    function formatContract(value) {
+
+        var value = value.replace(/\D/g, '');
+        console.log(value);
+        var sections = [4, 4, 2, 8];
+        var formattedValue = '';
+        var index = 0;
+
+        for (var i = 0; i < sections.length; i++) {
+            if (value.length > index) {
+                var endIndex = index + sections[i];
+                if (value.length > endIndex) {
+                    if (value.length > 18 && i === 3) formattedValue += value.substring(index, endIndex);
+                    else formattedValue += value.substring(index, endIndex) + '-';
+                } else {
+                    formattedValue += value.substring(index, value.length);
+                }
+            }
+            index += sections[i];
+        }
+
+        return formattedValue;
+    }
+
+</script>
+<!--end: Stepper Validations-->
+
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <div id="RiceSacksOutput">
+            @await Html.PartialAsync("_RiceSacksOutputPartial", Model)
+        </div>
+
+        <!-- Vista de consulta de lotes (inicialmente oculta) -->
+        <div id="RiceSacksConsultation" style="display: none;">
+            @await Html.PartialAsync("_RiceSacksConsultationPartial" , new RiceSacksConsultationVM())
+        </div>
+    </div>
+    <!--end::Content wrapper-->
+</div>
+<!--end:::Main-->
+<!--begin::Page loading(append to body)-->
+<div class="page-loader flex-column bg-dark bg-opacity-25">
+    <span class="spinner-border text-primary" role="status"></span>
+    <span class="text-gray-800 fs-6 fw-semibold mt-5">Loading...</span>
+</div>
+<!--end::Page loading-->
+@if (TempData.ContainsKey("SuccessMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("success", "Éxito" ,TempData["SuccessMessage"]?.ToString() ?? string.Empty ))
+}
+@if (TempData.ContainsKey("ErrorMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("error", "Error" ,TempData["ErrorMessage"]?.ToString() ?? string.Empty ))
+}

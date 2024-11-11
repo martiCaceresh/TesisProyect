@@ -5,8 +5,9 @@
     ViewData["Title"] = "Consulta de sacos";
 }
 
+<!--begin:: INICIALIZACION DE COMPONENTES-->
 <script>
-    // Después de cargar el partial view
+    // Reinicializar menús
     document.querySelectorAll('[data-kt-menu="true"]').forEach(element => {
         const menu = KTMenu.getInstance(element);
         if (menu) {
@@ -14,7 +15,73 @@
         }
         new KTMenu(element);
     });
+
+
+    // Reinicializar tooltips
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(element => {
+        const tooltip = bootstrap.Tooltip.getInstance(element);
+        if (tooltip) {
+            tooltip.dispose();
+        }
+        new bootstrap.Tooltip(element);
+    });
 </script>
+<script>
+   
+
+    $("#kt_riceSacksConsultation_app_form").submit(function (e) {
+        e.preventDefault();
+
+        var form = $(this);
+        if(validateForm(form)){
+            $('#loadingSpinner').css('display', 'block');
+            $('#kt_datatable_zero_RiceSacksConsultationTable').hide();
+
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: form.serialize(),
+                success: function (response) {
+                    $('#loadingSpinner').hide();
+                    $('#kt_datatable_zero_RiceSacksConsultationTable').show();
+                    $("#RiceSacksConsultationSection").html(response);
+                },
+                error: function () {
+                    $('#loadingSpinner').hide();
+                    $('#kt_datatable_zero_RiceSacksConsultationTable').show();
+                    console.log("Error al actualizar la tabla.");
+                }
+            });
+        }
+            
+        
+    });
+
+    //funcion para validar stepper
+    function validateForm(form) {
+        var inputs = form.find('input[required], select[required]');
+        var isValid = true;
+
+        inputs.each(function () {
+            var element = $(this);
+            if (!element.val() || element.hasClass('invalid')) {
+                var parentDiv = element.closest('.input-group');
+                isValid = false;
+                element.addClass('invalid');
+                parentDiv.next('.invalid-feedback').show();
+            } else {
+                var parentDiv = element.closest('.input-group');
+                element.removeClass('invalid');
+                parentDiv.next('.invalid-feedback').hide();
+            }
+        });
+
+        return isValid;
+
+    }
+</script>
+
+
 
 <!--begin::Toolbar-->
 <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
@@ -52,7 +119,7 @@
             <!--begin::Filter menu-->
             <div class="m-0">
                 <!--begin::Menu toggle-->
-                <a href="#" class="btn btn-sm btn-secondary me-2 mb-2" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+                <a href="#" class="btn btn-sm btn-secondary me-2 mb-2" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start" data-kt-menu-offset="0,5">
                     <i class="ki-duotone ki-filter fs-2 text-muted me-1">
                         <span class="path1"></span>
                         <span class="path2"></span>
@@ -70,50 +137,50 @@
                     <div class="separator border-gray-200"></div>
                     <!--end::Menu separator-->
                     <!--begin::Form-->
-                    <div class="px-7 py-5">
-                        
-                        <!--begin::Status Input group-->
-
-                        <div class="mb-5">
-                            <div class="input-group">
-                                <div class="form-floating">
-                                    <select id="IdClassification" name="IdClassification" class="form-select" required data-validation="required" oninput="ValidateElement($(this))">
-                                        <option value="">Seleccione una clasificación de arroz</option>
-                                        @foreach (var item in Model.RiceClassifications)
-                                        {
-                                            <option value="@item.IdClassification">
-                                                @item.Name
-                                            </option>
-                                        }
-                                    </select>
-                                    <label class="form-label" for="riceClass">Clasificación</label>
+                    <form asp-controller="RiceSacksOutput" asp-action="GetLotsConsultationResult" method="post" class="row g-3 needs-validation" novalidate="novalidate" id="kt_riceSacksConsultation_app_form">
+                        <div class="px-7 py-5">
+                            <!--begin::Status Input group-->
+                            <div class="mb-5">
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <select id="IdClassification" name="IdClassification" class="form-select" required data-validation="required" oninput="ValidateElement($(this))">
+                                            <option value="">Seleccione una clasificación de arroz</option>
+                                            @foreach (var item in Model.RiceClassifications)
+                                            {
+                                                <option value="@item.IdClassification">
+                                                    @item.Name
+                                                </option>
+                                            }
+                                        </select>
+                                        <label class="form-label" for="riceClass">Clasificación</label>
+                                    </div>
                                 </div>
+                                <!-- Mensaje de feedback inmediatamente después del input-group -->
+                                <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                <!--end::Input-->
                             </div>
-                            <!-- Mensaje de feedback inmediatamente después del input-group -->
-                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
-                            <!--end::Input-->
-                        </div>
-                        <!--end::Input group-->
-                        <!--begin::Revision Input group-->
-                        <div class="mb-5">
-                            <!--begin::Input-->
-                            <div class="input-group">
-                                <div class="form-floating">
-                                    <input id="QuantitySacksConsultation" name="QuantitySacksConsultation" type="text" required data-validation="required,numeric" class="form-control" placeholder="Cantidad de sacos" oninput="ValidateElement($(this))" />
-                                    <label class="form-label required" for="QuantitySacksConsultation">Cantidad de sacos</label>
+                            <!--end::Input group-->
+                            <!--begin::Revision Input group-->
+                            <div class="mb-5">
+                                <!--begin::Input-->
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <input id="QuantitySelected" name="QuantitySelected" type="text" required data-validation="required,numeric" class="form-control" placeholder="Cantidad de sacos" oninput="ValidateElement($(this))" />
+                                        <label class="form-label required" for="QuantitySelected">Cantidad de sacos</label>
+                                    </div>
                                 </div>
+                                <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                <!--end::Input-->
                             </div>
-                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
-                            <!--end::Input-->
+                            <!--end::Input group-->
+                            <!--begin::Actions-->
+                            <div class="d-flex justify-content-end">
+                                <button onclick="resetFilters()" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Reiniciar</button>
+                                <button class="btn btn-sm btn-primary" data-kt-menu-dismiss="true" data-kt-element="finish-finish">Aplicar</button>
+                            </div>
+                            <!--end::Actions-->
                         </div>
-                        <!--end::Input group-->
-                        <!--begin::Actions-->
-                        <div class="d-flex justify-content-end">
-                            <button onclick="resetFilters()" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Reiniciar</button>
-                            <button onclick="updateTable()" class="btn btn-sm btn-primary" data-kt-menu-dismiss="true">Aplicar</button>
-                        </div>
-                        <!--end::Actions-->
-                    </div>
+                    </form>
                     <!--end::Form-->
                 </div>
                 <!--end::Menu 1-->
@@ -138,9 +205,8 @@
         <!--begin::Card-->
         <div class="card card-flush">
             <!--begin::Card body-->
-            <div id="tableSection" class="card-body">
-
-                
+            <div id="RiceSacksConsultationSection" class="card-body">
+                @await Html.PartialAsync("_RiceSacksConsultationTablePartial", Model)
             </div>
             <!--end::Card body-->
         </div>
@@ -149,3 +215,25 @@
     <!--end::Content container-->
 </div>
 <!--end::Content-->
+
+<div class="app-engage " id="kt_app_engage">
+    <!--begin::Files toggle-->
+    <a class="app-engage-btn border-hover-success  hover-scale cursor-pointer"
+       onclick=""
+       data-bs-toggle="tooltip"
+       data-bs-placement="left"
+       data-bs-title="Ver resumen de consulta">
+        <i class="fa-solid fa-file-lines fs-2x pt-1 mb-2 text-success"></i>
+
+    </a>
+    <!--end::Files toggle-->
+    <!--begin::Files toggle-->
+    <a class="app-engage-btn border-hover-primary hover-scale cursor-pointer"
+       onclick=""
+       data-bs-toggle="tooltip"
+       data-bs-placement="left"
+       data-bs-title="Ver resumen desde móvil">
+        <i class="fa-solid fa-mobile-screen fs-2x pt-1 mb-2 text-primary" ></i>
+    </a>
+    <!--end::Files toggle-->
+</div>

@@ -1,0 +1,181 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using OptiArroz_Tesis_Proyect.Models.Entities
+@model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceSacksConsultationVM
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<style>
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        min-width: 160px;
+    }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+            .dropdown-content a:hover {
+                background-color: #f1f1f1;
+            }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .icon {
+        cursor: pointer;
+    }
+
+    .table-container {
+        position: relative;
+        width: 100%;
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table th, .table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .fixed-column {
+        position: absolute;
+        left: 0;
+        top: auto;
+        border-right: 1px solid #ddd;
+        background-color: white;
+    }
+
+        .fixed-column th, .fixed-column td {
+            border-right: 1px solid #ddd;
+        }
+
+</style>
+
+<script>
+    $(document).ready(function () {
+        $("#kt_datatable_zero_RiceSacksConsultationTable").DataTable({
+            scrollX: true,
+            scrollY: '50vh',
+            autoWidth: false,
+            ordering: false
+        });
+    });
+
+    $(document).ready(function () {
+        $("input[type='number']").on('input paste', function (e) {
+            // Prevenir el pegado si no es número
+            if (e.type === 'paste') {
+                let clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+                let pastedData = clipboardData.getData('text');
+                if (!/^\d*$/.test(pastedData)) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+
+            // Eliminar caracteres no numéricos
+            this.value = this.value.replace(/[^0-9]/g, '');
+
+            // Validar límites
+            let max = parseInt($(this).attr('max'));
+            let min = parseInt($(this).attr('min'));
+
+            if (this.value !== '') {
+                let num = parseInt(this.value);
+                if (num > max) this.value = max;
+                if (num < min) this.value = min;
+            }
+        });
+
+        // Prevenir el ingreso de caracteres no numéricos
+        $("input[type='number']").on('keypress', function (e) {
+            if (!/^\d*$/.test(String.fromCharCode(e.which)) && e.which != 8) {
+                e.preventDefault();
+            }
+        });
+    });
+
+</script>
+
+<div class="table-container">
+    <input id="Input" value="HOLA" />
+    <div id="loadingSpinner" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; text-align: center;">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <div style="margin-top: 10px; font-weight: bold; color: #333;">Cargando...</div>
+    </div>
+    <!--begin::Table-->
+    <table id="kt_datatable_zero_RiceSacksConsultationTable" data-kt-filemanager-table="files" class="table table-row-bordered">
+        @if(Model.RiceSacksConsultationTableDTOs.Count != 0) {
+            <div id="RiceSacksConsultationTableTitle" class="d-flex align-items-center fs-5 fw-semibold mb-4">Resultado de lotes para la extracción de @Model.QuantitySelected sacos</div>
+        }
+        else {
+            <!--begin::Label-->
+            <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                <span>Resultado de consulta de 0 lotes</span>
+            </label>
+            <!--end::Label-->
+        }
+        <thead>
+            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                <th class="min-w-200px text-center text-dark">CODIGO</th>
+                <th class="min-w-150px text-center text-dark">FECHA DE VENCIMIENTO</th>
+                <th class="min-w-150px text-center text-dark">CLASIFICACIÓN</th>
+                <th class="min-w-150px text-center text-dark">UBICACION ACTUAL</th>
+                <th class="min-w-150px text-center text-dark">STOCK ACTUAL</th>
+                <th class="min-w-150px text-center text-dark">CANTIDAD ESCOGIDA</th>
+
+            </tr>
+        </thead>
+        <tbody class="fw-semibold text-gray-600" style="font-size: 11px;">
+
+            @foreach (var item in Model.RiceSacksConsultationTableDTOs)
+            {
+                <tr>
+                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Code) </td>
+                    <td class="text-center" data-order="@item.ExpirationDate.ToString("yyyyMMddHHmmss")">
+                        @Html.DisplayFor(modelItem => item.ExpirationDate)
+                    </td>
+                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Classification) </td>
+                    <td class="text-center">@Html.DisplayFor(modelItem => item.LastUbication)</td>
+                    <td class="text-center"> @Html.DisplayFor(modelItem => item.LeftoverQuantity) </td>
+                    <td class="text-center">
+                        <input type="number"
+                           max="@item.LeftoverQuantity"
+                           min="0"
+                           class="fw-bold form-control form-control-transparent text-center"
+                           style="font-size: 12px; font-weight: 900; color: #000; background-color: rgba(0,0,0,0.05);"
+                           value="@item.QuantitySelected">
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+</div>
+<!--end::Table-->

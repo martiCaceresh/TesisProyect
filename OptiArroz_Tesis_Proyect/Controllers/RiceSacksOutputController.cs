@@ -45,6 +45,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
 			else if (Page == "RiceSacksConsultation")
 			{
 				var Model = new RiceSacksConsultationVM();
+				Model.RiceClassifications = await RiceClassificationDA.GetActiveRiceClassifications();
 				return PartialView("_RiceSacksConsultationPartial",Model);
 			}
 			else
@@ -56,5 +57,42 @@ namespace OptiArroz_Tesis_Proyect.Controllers
 			
 			
 		}
-	}
+
+		[HttpPost]
+		public async Task<IActionResult> GetLotsConsultationResult([FromForm] RiceSacksConsultationDTO RiceSacksConsultationDTO)
+		{
+            var Model = new RiceSacksConsultationVM();
+            var Lots = await RiceLotDA.GetRiceLotConsultation(RiceSacksConsultationDTO.IdClassification);
+            Model.RiceSacksConsultationTableDTOs = SelectQuantities(Mapper.Map<List<RiceSacksConsultationTableDTO>>(Lots), RiceSacksConsultationDTO.QuantitySelected);
+            Model.QuantitySelected = RiceSacksConsultationDTO.QuantitySelected;
+
+            return PartialView("_RiceSacksConsultationTablePartial", Model);
+
+		}
+
+        public List<RiceSacksConsultationTableDTO> SelectQuantities(List<RiceSacksConsultationTableDTO> Lots, int requestedQuantity)
+        {
+
+
+            int remainingQuantity = requestedQuantity;
+
+            // Iterar sobre la lista de productos
+            foreach (var Lot in Lots)
+            {
+                if (remainingQuantity <= 0)
+                    break;
+
+                // Determinar cuánto podemos tomar de este producto
+                int quantityToTake = Math.Min(Lot.LeftoverQuantity, remainingQuantity);
+
+                // Actualizar la cantidad seleccionada
+                Lot.QuantitySelected = quantityToTake;
+
+                // Actualizar la cantidad restante por seleccionar
+                remainingQuantity -= quantityToTake;
+            }
+
+            return Lots;
+        }
+    }
 }

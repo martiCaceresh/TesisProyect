@@ -19,6 +19,6 @@ namespace OptiArroz_Tesis_Proyect.Models.Dtos
 
         public string LastUbication { get; set; } = string.Empty;
 
-        public int QuantitySelected { get; set; }
+        public int QuantitySelected { get; set; } = 0;
     }
 }

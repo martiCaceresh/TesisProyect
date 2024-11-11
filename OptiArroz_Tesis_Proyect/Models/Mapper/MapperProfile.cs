@@ -12,6 +12,10 @@ namespace OptiArroz_Tesis_Proyect.Models.Mapper
                 .ForMember(dest => dest.Classification, opt => opt.MapFrom(src => src.RiceClassification != null ? src.RiceClassification.Name : string.Empty))
                 .ForMember(dest => dest.LastUbication, opt => opt.MapFrom(src => src.LastUbication != null ? src.LastUbication.UbicationName() : (src.Zone != null ? src.Zone.Name : "")));
 
+            CreateMap<RiceLot, RiceSacksConsultationTableDTO>()
+                .ForMember(dest => dest.Classification, opt => opt.MapFrom(src => src.RiceClassification != null ? src.RiceClassification.Name : string.Empty))
+                .ForMember(dest => dest.LastUbication, opt => opt.MapFrom(src => src.LastUbication != null ? src.LastUbication.UbicationName() : (src.Zone != null ? src.Zone.Name : "")));
+
             CreateMap<RiceLotMovement, RiceLotMovementTableDTO>()
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.Name + " " + src.CreatedBy.LastName : ""))
                 .ForMember(dest => dest.Origin, opt => opt.MapFrom(src => src.Origin != null ? src.Origin.UbicationName() : (src.ZoneOrigin != null ? src.ZoneOrigin.Name : "")))

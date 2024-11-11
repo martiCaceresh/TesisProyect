@@ -1,6 +1,17 @@
 ﻿@using OptiArroz_Tesis_Proyect.Models.Utils
 @model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceSacksOutputVM
 
+<script>
+    // Después de cargar el partial view
+    document.querySelectorAll('[data-kt-menu="true"]').forEach(element => {
+        const menu = KTMenu.getInstance(element);
+        if (menu) {
+            menu.destroy();
+        }
+        new KTMenu(element);
+    });
+</script>
+
 <!--begin::Toolbar-->
 <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
     <!--begin::Toolbar container-->

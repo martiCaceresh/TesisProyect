@@ -661,7 +661,7 @@
 												<!--begin::Username-->
 												<div class="d-flex flex-column">
 
-													<a class="fw-semibold text-muted text-hover-primary fs-7">@fullname</a>
+													<a asp-controller="Home" asp-action="MyAccount" class="fw-semibold text-muted text-hover-primary fs-7">@fullname</a>
 												</div>
 												<!--end::Username-->
 											</div>
@@ -678,7 +678,7 @@
 										</div> *@
 										<!--end::Menu item-->
 										<!--begin::Menu item-->
-										@* <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
+										 <div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
 										<a href="#" class="menu-link px-5">
 										<span class="menu-title position-relative">
 										Modo
@@ -722,15 +722,9 @@
 										<!--end::Menu item-->
 										</div>
 										<!--end::Menu-->
-										</div> *@
+										</div> 
 										<!--end::Menu item-->
 										<!--begin::Menu item-->
-										<div class="menu-item px-5">
-											<form class="form-inline" asp-controller="Home" asp-action="MyAccount">
-												<a class="menu-link px-5" id="logoutLink">Mi cuenta</a>
-											</form>
-											@* <a href="../../demo1/dist/authentication/layouts/corporate/sign-in.html" class="menu-link px-5">Sign Out</a> *@
-										</div>
 										<div class="menu-item px-5">
 											<form class="form-inline" asp-controller="Home" asp-action="Exit">
 												<a class="menu-link px-5" id="logoutLink">Salir</a>

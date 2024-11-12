@@ -36,7 +36,10 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 
         private async Task<RiceLot> RegisterLot(RiceLot NewRiceLot)
         {
-            var LastRiceLot = await DbContext.RiceLots.Where(x => x.CreatedAt.Date == DateTime.Now.Date).OrderByDescending(x => x.Code).FirstOrDefaultAsync();
+            //var LastRiceLot = await DbContext.RiceLots.Where(x => x.CreatedAt.Date == DateTime.Now.Date.AddDays(1)).OrderByDescending(x => x.Code).FirstOrDefaultAsync();
+            var RiceLots = await DbContext.RiceLots.ToListAsync();
+            var LastRiceLot = RiceLots.Where(x => x.CreatedAt.Date == DateTime.Now.Date).OrderByDescending(x => x.Code).FirstOrDefault();
+
             if (LastRiceLot == null)
             {
                 //Crear el primer lote del dia

@@ -4,7 +4,29 @@
 @{
     ViewData["Title"] = "Consulta de sacos";
 }
+<style>
+    /* Modal que se desliza desde el lado derecho */
+    .modal.right .modal-dialog {
+        position: fixed;
+        margin: auto;
+        width: 400px; /* Ajusta este valor para el ancho del modal */
+        height: 100%;
+        right: 0;
+        top: 0;
+        transform: translateX(100%);
+        transition: transform 0.3s ease-out;
+    }
 
+    .modal.right.show .modal-dialog {
+        transform: translateX(0);
+    }
+
+    /* Estilo para asegurar que el modal ocupe todo el alto */
+    .modal-fullscreen {
+        height: 100%;
+    }
+
+</style>
 <!--begin:: INICIALIZACION DE COMPONENTES-->
 <script>
     // Reinicializar menús
@@ -80,7 +102,180 @@
 
     }
 </script>
+<script>
+    var ConsultationReview = [];
 
+    function AddConsultation() {
+        // Obtener los datos de la tabla
+        const tableData = extractTableData();
+
+        // Filtrar los registros que ya existen y actualizar sus cantidades
+        tableData.forEach(newItem => {
+            const existingIndex = ConsultationReview.findIndex(item => item.code === newItem.code);
+            if (existingIndex !== -1) {
+                // Si el registro ya existe, actualizar la cantidad
+                ConsultationReview[existingIndex].quantitySelected = newItem.quantitySelected;
+            } else {
+                // Si es un nuevo registro, agregarlo
+                ConsultationReview.push(newItem);
+            }
+        });
+
+        updateCardsAndSummary();
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(document.getElementById('files_modal'));
+        modal.show();
+    }
+
+    function updateCardsAndSummary() {
+        // Generar las cards
+        const cardsContainer = document.getElementById('consultationCards');
+        cardsContainer.innerHTML = '';
+
+        ConsultationReview.forEach((item, index) => {
+            const card = `
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body p-5">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="fw-bold fs-5">${item.code}</div>
+                            <button class="btn btn-icon btn-sm btn-light-danger" onclick="removeCard(${index})">
+                                <i class="ki-duotone ki-cross fs-2">
+                                    <span class="path1"></span>
+                                    <span class="path2"></span>
+                                </i>
+                            </button>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="d-flex flex-column">
+                                    <span class="text-gray-500 fs-7">Clasificación</span>
+                                    <span class="text-gray-800 fw-bold fs-7">${item.classification}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex flex-column">
+                                    <span class="text-gray-500 fs-7">Vencimiento</span>
+                                    <span class="text-gray-800 fw-bold fs-7">${item.expirationDate}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex flex-column">
+                                    <span class="text-gray-500 fs-7">Ubicación</span>
+                                    <span class="text-gray-800 fw-bold fs-7 text-primary">${item.lastUbication}</span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="d-flex flex-column">
+                                    <span class="text-gray-500 fs-7">Stock Actual</span>
+                                    <span class="text-gray-800 fw-bold fs-7">${item.leftoverQuantity}</span>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex flex-column">
+                                    <span class="text-gray-500 fs-7">Cantidad Seleccionada</span>
+                                    <input type="number"
+                                           class="form-control form-control-solid form-control-sm mt-1"
+                                           value="${item.quantitySelected}"
+                                           min="0"
+                                           max="${item.leftoverQuantity}"
+                                           onchange="updateQuantity(${index}, this.value)">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+
+            cardsContainer.innerHTML += card;
+        });
+
+        updateSummary();
+    }
+
+    function updateSummary() {
+        // Actualizar el resumen
+        const summary = ConsultationReview.reduce((acc, item) => {
+            if (!acc[item.classification]) {
+                acc[item.classification] = 0;
+            }
+            acc[item.classification] += parseInt(item.quantitySelected);
+            return acc;
+        }, {});
+
+        // Calcular total
+        const total = Object.values(summary).reduce((a, b) => a + b, 0);
+
+        // Generar HTML del resumen
+        let summaryHtml = '';
+
+        // Agregar cada clasificación
+        Object.entries(summary).forEach(([classification, quantity]) => {
+            summaryHtml += `
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="text-gray-800">${classification}...........</span>
+                <span class="text-gray-800 fw-bold">${quantity} unds</span>
+            </div>`;
+        });
+
+        // Agregar el total
+        summaryHtml += `
+            <div class="separator my-4"></div>
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="text-gray-800 fw-bold">TOTAL SACOS:</span>
+                <span class="text-gray-800 fw-bolder">${total} unds</span>
+            </div>`;
+
+        document.getElementById('summaryContent').innerHTML = summaryHtml;
+    }
+
+    function updateQuantity(index, newValue) {
+        // Validar que el valor no exceda el stock
+        const maxStock = ConsultationReview[index].leftoverQuantity;
+        newValue = Math.min(Math.max(0, parseInt(newValue) || 0), maxStock);
+
+        // Actualizar el valor
+        ConsultationReview[index].quantitySelected = newValue;
+
+        // Actualizar el resumen
+        updateSummary();
+    }
+
+    function removeCard(index) {
+        // Eliminar el registro del array
+        ConsultationReview.splice(index, 1);
+
+        // Actualizar las cards y el resumen
+        updateCardsAndSummary();
+    }
+
+    function extractTableData() {
+        const rows = document.querySelectorAll('#kt_datatable_zero_RiceSacksConsultationTable tbody tr');
+        const tableData = [];
+    
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const quantitySelected = parseInt(cells[5].querySelector('input').value) || 0;
+        
+            // Solo procesar filas donde quantitySelected > 0
+            if(quantitySelected > 0) {
+                const rowData = {
+                    code: cells[0].textContent.trim(),
+                    expirationDate: cells[1].textContent.trim(),
+                    classification: cells[2].textContent.trim(),
+                    lastUbication: cells[3].textContent.trim(),
+                    leftoverQuantity: parseInt(cells[4].textContent.trim()) || 0,
+                    quantitySelected: quantitySelected
+                };
+            
+                tableData.push(rowData);
+            }
+        });
+    
+        return tableData;
+    }
+
+
+</script>
 
 
 <!--begin::Toolbar-->
@@ -186,7 +381,7 @@
                 <!--end::Menu 1-->
             </div>
             <!--end::Filter menu-->
-            <a id="btnOpenModal" href="/RiceLot/Index" class="btn btn-sm btn-success me-2 mb-2">
+            <a id="btnOpenModal" onclick="AddConsultation()" class="btn btn-sm btn-success me-2 mb-2">
                 <i class="ki-duotone ki-plus fs-2"></i>Resultado 
             </a>
         </div>
@@ -218,13 +413,13 @@
 
 <div class="app-engage " id="kt_app_engage">
     <!--begin::Files toggle-->
-    <a class="app-engage-btn border-hover-success  hover-scale cursor-pointer"
-       onclick=""
-       data-bs-toggle="tooltip"
+    <a data-bs-target="#files_modal"
+       class="app-engage-btn border-hover-success hover-scale cursor-pointer"
+       data-bs-toggle="modal"
        data-bs-placement="left"
        data-bs-title="Ver resumen de consulta">
         <i class="fa-solid fa-file-lines fs-2x pt-1 mb-2 text-success"></i>
-
+    </a>
     </a>
     <!--end::Files toggle-->
     <!--begin::Files toggle-->
@@ -236,4 +431,28 @@
         <i class="fa-solid fa-mobile-screen fs-2x pt-1 mb-2 text-primary" ></i>
     </a>
     <!--end::Files toggle-->
+</div>
+
+
+<!-- Modal -->
+<div class="modal right fade" id="files_modal" tabindex="-1" aria-labelledby="files_modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-body px-10">
+                <!-- Cards Container -->
+                <div id="consultationCards" class="d-flex flex-column gap-4">
+                    <!-- Las cards se generarán aquí dinámicamente -->
+                </div>
+            </div>
+            <div class="modal-footer px-10">
+                <!-- Resumen directo en el footer -->
+                <div class="w-100">
+                    <h4 class="fw-bold mb-5">RESUMEN</h4>
+                    <div id="summaryContent">
+                        <!-- El resumen se generará aquí dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

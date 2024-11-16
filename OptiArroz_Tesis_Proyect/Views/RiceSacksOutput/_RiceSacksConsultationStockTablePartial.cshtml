@@ -1,0 +1,121 @@
+﻿
+<style>
+
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+        min-width: 160px;
+    }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left;
+        }
+
+            .dropdown-content a:hover {
+                background-color: #f1f1f1;
+            }
+
+    .dropdown:hover .dropdown-content {
+        display: block;
+    }
+
+    .icon {
+        cursor: pointer;
+    }
+
+    .table-container {
+        position: relative;
+        width: 100%;
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table th, .table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .fixed-column {
+        position: absolute;
+        left: 0;
+        top: auto;
+        border-right: 1px solid #ddd;
+        background-color: white;
+    }
+
+        .fixed-column th, .fixed-column td {
+            border-right: 1px solid #ddd;
+        }
+
+</style>
+
+<script>
+    $(document).ready(function () {
+        $('#kt_datatable_zero_RiceSacksConsultationTable').DataTable({
+            language: {
+                emptyTable: "No hay datos disponibles",
+                info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
+                infoEmpty: "Mostrando 0 a 0 de 0 registros",
+                infoFiltered: "(filtrado de _MAX_ registros totales)",
+                lengthMenu: "Mostrar _MENU_ registros",
+                loadingRecords: "Cargando...",
+                processing: "Procesando...",
+                search: "Buscar:",
+                zeroRecords: "No se encontraron registros coincidentes",
+            },
+            columnDefs: [
+                {
+                    targets: 0,  // Primera columna (índice 0)
+                    visible: false,
+                    searchable: false
+                },
+                {
+                    targets: -1,       // Última columna (botón eliminar)
+                    orderable: false,  // No permitir ordenamiento
+                    searchable: false  // No permitir búsqueda
+                }
+
+            ]
+        });
+    });
+</script>
+
+<div class="table-container">
+    <table id="kt_datatable_zero_RiceSacksConsultationTable" data-kt-filemanager-table="files" class="table table-row-bordered">
+        
+        <thead>
+            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                <th hidden></th>
+                <th class="min-w-100px text-center text-dark">CLASIFICACIÓN</th>
+                <th class="min-w-50px text-center text-dark">CANTIDAD ESCOGIDA</th>
+                <th class="min-w-50px text-center text-dark">RESULTADO</th>
+                <th class="min-w-25px text-center"></th>
+            </tr>
+        </thead>
+        <tbody class="fw-semibold text-gray-600" style="font-size: 13px;">
+        </tbody>
+    </table>
+
+
+</div>
+<!--end::Table-->

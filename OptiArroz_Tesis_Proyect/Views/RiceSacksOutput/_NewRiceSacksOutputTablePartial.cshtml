@@ -1,0 +1,581 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using OptiArroz_Tesis_Proyect.Models.Entities
+@model IEnumerable<OptiArroz_Tesis_Proyect.Models.Dtos.RiceSacksOutputTableDTO>
+
+<!-- Mantengo el mismo código pero actualizo los estilos relevantes -->
+<style>
+    .icon {
+        cursor: pointer;
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table th, .table td {
+            padding: 8px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+
+    /* Asegurar que el dropdown esté por encima de todo */
+    .dropdown {
+        position: relative;
+    }
+
+    .dropdown-menu {
+        min-width: 120px;
+        z-index: 9999 !important; /* Forzar que esté por encima de todo */
+        transform: none !important;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        border: 1px solid rgba(0,0,0,0.15);
+    }
+
+    .dropdown-item {
+        padding: 0.5rem 1rem;
+        cursor: pointer;
+    }
+
+</style>
+
+<div class="table-responsive">
+    <table class="table align-middle table-row-dashed fs-6 gy-4" id="kt_docs_datatable_subtable">
+        <thead>
+            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                <th class="min-w-20px text-end text-dark">ACCIONES</th>
+                <th class="min-w-150px text-center text-dark">CODIGO</th>
+                <th class="min-w-150px text-center text-dark">FECHA REGISTRO</th>
+                <th class="min-w-150px text-center text-dark">FECHA SALIDA</th>
+                <th class="min-w-150px text-center text-dark">CREADO POR</th>
+                <th class="min-w-150px text-center text-dark">MOTIVO</th>
+                <th class="min-w-150px text-center text-dark">COMENTARIOS</th>
+                <th class="min-w-100px text-center"></th>
+            </tr>
+        </thead>
+        <tbody class="fw-bold text-gray-600">
+            <tr data-kt-docs-datatable-subtable="subtable_template" class="d-none">
+                <td class="fixed-column"></td>
+                <td></td>
+                <td>
+                    <div class="text-gray-900 fs-7">Código lote</div>
+                    <span class="text-muted fs-7 fw-bold" data-kt-docs-datatable-subtable="template_lote"></span>
+                </td>
+                <td>
+                    <div class="text-gray-900 fs-7">Clasificación</div>
+                    <span class="text-muted fs-7 fw-bold" data-kt-docs-datatable-subtable="template_clasificacion"></span>
+                </td>
+                <td>
+                    <div class="text-gray-900 fs-7">Ubicación</div>
+                    <span class="text-muted fs-7 fw-bold" data-kt-docs-datatable-subtable="template_ubicacion"></span>
+                </td>
+                <td>
+                    <div class="text-gray-900 fs-7">Fecha vencimiento</div>
+                    <span class="text-muted fs-7 fw-bold" data-kt-docs-datatable-subtable="template_fecha_vencimiento"></span>
+                </td>
+                <td>
+                    <div class="text-gray-900 fs-7">Cantidad extraída</div>
+                    <span class="text-muted fs-7 fw-bold" data-kt-docs-datatable-subtable="template_cantidad"></span>
+                </td>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td class="text-center">
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-icon btn-light btn-active-light-primary" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="generateMobileQR(@item.IdRiceSacksOutput, event)">
+                                        <span class="action-text">Vista móvil</span>
+                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="downloadExitNote(@item.IdRiceSacksOutput,event)">
+                                        <span class="download-text">Nota salida</span>
+                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="javascript:void(0);" onclick="downloadDepartureOrder(@item.IdRiceSacksOutput,event)">
+                                        <span class="download-text">Orden de salida</span>
+                                        <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                    <td class="text-center">
+                        <a href="#" class="text-gray-900 text-hover-primary">@item.Code</a>
+                    </td>
+                    <td class="text-center">@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+                    <td class="text-center">@item.CreatedAt.ToString("dd/MM/yyyy")</td>
+                    <td class="text-center">
+                        <a href="#" class="text-gray-900 text-hover-primary">@item.CreatedBy</a>
+                    </td>
+                    <td class="text-center">@item.RiceSacksOutputType</td>
+                    <td class="text-center">@item.Observation</td>
+                    <td class="text-center">
+                        <a href="#" class="btn btn-sm btn-icon btn-light btn-active-light-primary" data-kt-docs-datatable-subtable="expand_row">
+                            <span class="svg-icon svg-icon-2">
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </span>
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="qrCode"></div>
+                <p class="mt-3 text-danger">Scanee el QR desde su dispositivo móvil<br />para ver el resultado de la consulta</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    "use strict";
+
+    var KTDocsDatatableSubtable = function () {
+        var table;
+        var datatable;
+        var template;
+
+        // Datos ficticios para las subtablas (reducidos a 1 registro por salida)
+        const mockData = {
+        @foreach (var item in Model)
+        {
+            @Html.Raw($"'{item.Code}': [")
+            foreach (var detail in item.RiceSacksOutputDetailTableDTOs)
+            {
+                @Html.Raw($@"{{
+                    lote: '{detail.Code}',
+                    clasificacion: '{detail.Classification}',
+                    ubicacion: '{detail.Ubication}',
+                    fecha_vencimiento: '{detail.ExpirationDate:dd/MM/yyyy}',
+                    cantidad: '{detail.SacksQuantity}'
+                }},")
+            }
+            @Html.Raw("],")
+            }
+        };
+
+        // Inicializar DataTable
+        const initDatatable = () => {
+            table = document.querySelector('#kt_docs_datatable_subtable');
+            if (!table) {
+                console.error('Table element not found');
+                return;
+            }
+
+            // Configurar ordenamiento de fechas
+            const tableRows = table.querySelectorAll('tbody tr');
+
+            tableRows.forEach(row => {
+                const dateRow = row.querySelectorAll('td');
+                if (dateRow[2] && !row.closest('[data-kt-docs-datatable-subtable="subtable_template"]')) {
+                    const dateText = dateRow[2].innerText.trim();
+                    const realDate = moment(dateText, "DD/MM/YYYY").format();
+                    dateRow[2].setAttribute('data-order', realDate);
+                }
+            });
+
+            // Obtener y clonar template
+            const subtable = document.querySelector('[data-kt-docs-datatable-subtable="subtable_template"]');
+            if (subtable) {
+                template = subtable.cloneNode(true);
+                template.classList.remove('d-none');
+                subtable.parentNode.removeChild(subtable);
+            }
+
+            // Inicializar DataTable
+            datatable = $(table).DataTable({
+                "info": false,
+                'order': [],
+                "pageLength": 10,
+                "lengthChange": true,
+                'ordering': true,
+                'paging': true,
+                'searching': true,
+                "language": {
+                    "lengthMenu": "Mostrar _MENU_ registros por página",
+                    "zeroRecords": "No se encontraron registros",
+                    "info": "Mostrando página _PAGE_ de _PAGES_",
+                    "infoEmpty": "No hay registros disponibles",
+                    "infoFiltered": "(filtrado de _MAX_ registros totales)",
+                    "search": "Buscar:",
+                },
+                'columnDefs': [
+                    { orderable: false, targets: 0 },
+                    { orderable: false, targets: 7 }
+                ]
+            });
+
+            // Reinicializar funciones en cada redibujado
+            datatable.on('draw', function () {
+                resetSubtable();
+                handleActionButton();
+            });
+
+            handleActionButton();
+        }
+
+        // Manejar botón de acción
+        const handleActionButton = () => {
+            const buttons = document.querySelectorAll('[data-kt-docs-datatable-subtable="expand_row"]');
+
+            buttons.forEach((button) => {
+                const newButton = button.cloneNode(true);
+                button.parentNode.replaceChild(newButton, button);
+
+                newButton.addEventListener('click', e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const row = newButton.closest('tr');
+                    const codigo = row.querySelector('td:nth-child(2) a').textContent.trim();
+                    const rowClasses = ['isOpen', 'border-bottom-0'];
+                    const icon = newButton.querySelector('.svg-icon');
+
+                    if (row.classList.contains('isOpen')) {
+                        const subtables = [];
+                        let nextRow = row.nextElementSibling;
+                        while (nextRow && nextRow.getAttribute('data-kt-docs-datatable-subtable') === 'subtable_template') {
+                            subtables.push(nextRow);
+                            nextRow = nextRow.nextElementSibling;
+                        }
+                        subtables.forEach(el => el.parentNode.removeChild(el));
+
+                        row.classList.remove(...rowClasses);
+                        if (icon) icon.style.transform = '';
+                    } else {
+                        const rowData = mockData[codigo] || [];
+                        populateTemplate(rowData, row);
+                        row.classList.add(...rowClasses);
+                        if (icon) icon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            });
+        }
+
+        // Poblar template con datos
+        const populateTemplate = (data, target) => {
+            data.forEach((d, index) => {
+                const newTemplate = template.cloneNode(true);
+
+                // Poblar elementos con datos
+                newTemplate.querySelector('[data-kt-docs-datatable-subtable="template_lote"]').innerText = d.lote;
+                newTemplate.querySelector('[data-kt-docs-datatable-subtable="template_clasificacion"]').innerText = d.clasificacion;
+                newTemplate.querySelector('[data-kt-docs-datatable-subtable="template_ubicacion"]').innerText = d.ubicacion;
+                newTemplate.querySelector('[data-kt-docs-datatable-subtable="template_fecha_vencimiento"]').innerText = d.fecha_vencimiento;
+                newTemplate.querySelector('[data-kt-docs-datatable-subtable="template_cantidad"]').innerText = d.cantidad;
+
+                // Insertar template en la tabla
+                const tbody = table.querySelector('tbody');
+                tbody.insertBefore(newTemplate, target.nextSibling);
+            });
+        }
+
+        // Resetear subtabla
+        const resetSubtable = () => {
+            const subtables = document.querySelectorAll('[data-kt-docs-datatable-subtable="subtable_template"]');
+            subtables.forEach(st => {
+                st.parentNode.removeChild(st);
+            });
+
+            const rows = table.querySelectorAll('tbody tr');
+            rows.forEach(r => {
+                r.classList.remove('isOpen');
+                const button = r.querySelector('[data-kt-docs-datatable-subtable="expand_row"]');
+                if (button) {
+                    const icon = button.querySelector('.svg-icon');
+                    if (icon) {
+                        icon.style.transform = '';
+                    }
+                }
+            });
+        }
+
+        return {
+            init: function () {
+                initDatatable();
+            }
+        }
+    }();
+
+    // Inicializar cuando el DOM esté listo
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            KTDocsDatatableSubtable.init();
+        });
+    } else {
+        KTDocsDatatableSubtable.init();
+    }
+</script>
+
+<script>
+    function downloadDepartureOrder(idOutput,event) {
+        event.stopPropagation();
+
+        if (!idOutput) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'ID de salida no encontrado'
+            });
+            return;
+        }
+
+        // Obtener el elemento clickeado
+        const link = $(event.currentTarget);
+        const downloadText = link.find('.download-text');
+        const spinner = link.find('.spinner-border');
+
+        // Mostrar spinner y deshabilitar el link
+        downloadText.addClass('d-none');
+        spinner.removeClass('d-none');
+        link.addClass('disabled');
+
+        $.ajax({
+            url: '/RiceSacksOutput/DownloadDepartureOrder',
+            type: 'GET',
+            data: { IdRiceSacksOutput: idOutput },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob, status, xhr) {
+                const contentType = xhr.getResponseHeader('content-type');
+                if (contentType && contentType.indexOf('application/pdf') !== -1) {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `OrdenDeSalida_Salida_${idOutput}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    $(a).remove();
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            const error = JSON.parse(this.result);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: error.message || 'Error al descargar el archivo'
+                            });
+                        } catch {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al procesar la respuesta del servidor'
+                            });
+                        }
+                    };
+                    reader.readAsText(blob);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                let mensaje = 'No se pudo descargar la orden de salida';
+                switch (xhr.status) {
+                    case 404:
+                        mensaje = 'No se encontró la orden de salida';
+                        break;
+                    case 403:
+                        mensaje = 'No tiene permisos para descargar este archivo';
+                        break;
+                    case 500:
+                        mensaje = 'Error en el servidor al procesar la solicitud';
+                        break;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensaje
+                });
+            },
+            complete: function () {
+                // Restaurar el estado original del link
+                downloadText.removeClass('d-none');
+                spinner.addClass('d-none');
+                link.removeClass('disabled');
+            }
+        });
+    }
+</script>
+
+<script>
+    function downloadExitNote(idOutput,event) {
+        event.stopPropagation();
+
+
+        if (!idOutput) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'ID de salida no encontrado'
+            });
+            return;
+        }
+
+        // Obtener el elemento clickeado
+        const link = $(event.currentTarget);
+        const downloadText = link.find('.download-text');
+        const spinner = link.find('.spinner-border');
+
+        // Mostrar spinner y deshabilitar el link
+        downloadText.addClass('d-none');
+        spinner.removeClass('d-none');
+        link.addClass('disabled');
+
+        $.ajax({
+            url: '/RiceSacksOutput/DownloadExitNote',
+            type: 'GET',
+            data: { IdRiceSacksOutput: idOutput },
+            xhrFields: {
+                responseType: 'blob'
+            },
+            success: function (blob, status, xhr) {
+                const contentType = xhr.getResponseHeader('content-type');
+                if (contentType && contentType.indexOf('application/pdf') !== -1) {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `NotaDeSalida_${idOutput}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    $(a).remove();
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        try {
+                            const error = JSON.parse(this.result);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: error.message || 'Error al descargar el archivo'
+                            });
+                        } catch {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: 'Error al procesar la respuesta del servidor'
+                            });
+                        }
+                    };
+                    reader.readAsText(blob);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                let mensaje = 'No se pudo descargar la nota de salida';
+                switch (xhr.status) {
+                    case 404:
+                        mensaje = 'No se encontró la nota de salida';
+                        break;
+                    case 403:
+                        mensaje = 'No tiene permisos para descargar este archivo';
+                        break;
+                    case 500:
+                        mensaje = 'Error en el servidor al procesar la solicitud';
+                        break;
+                }
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: mensaje
+                });
+            },
+            complete: function () {
+                // Restaurar el estado original del link
+                downloadText.removeClass('d-none');
+                spinner.addClass('d-none');
+                link.removeClass('disabled');
+            }
+        });
+    }
+</script>
+
+<script>
+    function generateMobileQR(idOutput, event) {
+        // Prevenir que se cierre el dropdown
+        event.stopPropagation();
+
+        // Obtener elementos
+        const link = $(event.currentTarget);
+        const actionText = link.find('.action-text');
+        const spinner = link.find('.spinner-border');
+
+        // Mostrar loading en el link
+        actionText.addClass('d-none');
+        spinner.removeClass('d-none');
+        link.addClass('disabled');
+
+        // Mostrar modal con loading inicial
+        const qrContainer = $('#qrCode');
+        qrContainer.html('<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>');
+
+        const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+        modal.show();
+
+        // Llamada AJAX
+        $.ajax({
+            url: '/RiceSacksOutput/GenerateMobileQR',
+            type: 'GET',
+            data: { idOutput: idOutput },
+            success: function (response) {
+                if (response.success) {
+                    // Crear imagen del QR
+                    qrContainer.html(`<img src="data:image/png;base64,${response.qrImage}" alt="QR Code" class="img-fluid">`);
+                } else {
+                    qrContainer.html(`
+                        <div class="alert alert-danger">
+                            ${response.message || 'Error generando el código QR'}
+                        </div>
+                    `);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error('Error:', error);
+                qrContainer.html(`
+                    <div class="alert alert-danger">
+                        Error al generar el código QR. Por favor, intente nuevamente.
+                    </div>
+                `);
+            },
+            complete: function () {
+                // Restaurar estado original del link
+                actionText.removeClass('d-none');
+                spinner.addClass('d-none');
+                link.removeClass('disabled');
+            }
+        });
+    }
+
+    function closeDropdown(element) {
+        $(element).closest('.dropdown-menu').parent().find('[data-bs-toggle="dropdown"]').dropdown('hide');
+    }
+</script>

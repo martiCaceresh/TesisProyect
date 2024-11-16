@@ -49,6 +49,7 @@ builder.Services.AddTransient<IRiceClassDA, RiceClassDA>();
 builder.Services.AddTransient<IRiceGradeDA, RiceGradeDA>();
 builder.Services.AddTransient<IRiceLotDA, RiceLotDA>();
 builder.Services.AddTransient<IRiceSacksOutputDA, RiceSacksOutputDA>();
+builder.Services.AddTransient<IRiceSacksOutputTypeDA, RiceSacksOutputTypeDA>();
 builder.Services.AddTransient<IRiceLotMovementDA, RiceLotMovementDA>();
 builder.Services.AddTransient<IRiceClassificationDA, RiceClassificationDA>();
 builder.Services.AddTransient<IZoneDA, ZoneDA>();

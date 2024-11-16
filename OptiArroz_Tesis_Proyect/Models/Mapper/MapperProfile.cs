@@ -16,6 +16,13 @@ namespace OptiArroz_Tesis_Proyect.Models.Mapper
                 .ForMember(dest => dest.Classification, opt => opt.MapFrom(src => src.RiceClassification != null ? src.RiceClassification.Name : string.Empty))
                 .ForMember(dest => dest.LastUbication, opt => opt.MapFrom(src => src.LastUbication != null ? src.LastUbication.UbicationName() : (src.Zone != null ? src.Zone.Name : "")));
 
+            CreateMap<RiceSacksOutputDetail, RiceSacksOutputDetailTableDTO>()
+                .ForMember(dest => dest.Classification, opt => opt.MapFrom(src => src.RiceLot != null ? (src.RiceLot.RiceClassification != null ? src.RiceLot.RiceClassification.Name : "") : ""))
+                .ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.RiceLot != null ? src.RiceLot.Code : ""))
+                .ForMember(dest => dest.ExpirationDate, opt => opt.MapFrom(src => src.RiceLot != null ? src.RiceLot.ExpirationDate : DateTime.MinValue))
+                .ForMember(dest => dest.Ubication, opt => opt.MapFrom(src => src.RiceLot != null ? (src.RiceLot.LastUbication != null ? src.RiceLot.LastUbication.UbicationName() : (src.RiceLot.Zone != null ? src.RiceLot.Zone.Name : "")) : ""));
+
+
             CreateMap<RiceLotMovement, RiceLotMovementTableDTO>()
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.Name + " " + src.CreatedBy.LastName : ""))
                 .ForMember(dest => dest.Origin, opt => opt.MapFrom(src => src.Origin != null ? src.Origin.UbicationName() : (src.ZoneOrigin != null ? src.ZoneOrigin.Name : "")))
@@ -28,10 +35,9 @@ namespace OptiArroz_Tesis_Proyect.Models.Mapper
                 .ForMember(dest => dest.State, opt => opt.MapFrom(src => src.State == 0 ? "INACTIVO" : "ACTIVO"))
                 .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy != null ? src.UpdatedBy.Name + " " + src.UpdatedBy.LastName : ""));
 
-            CreateMap<RiceSacksOutput,RiceSacksOutputTableDTO>()
+            CreateMap<RiceSacksOutput, RiceSacksOutputTableDTO>()
                 .ForMember(dest => dest.RiceSacksOutputType, opt => opt.MapFrom(src => src.RiceSacksOutputType != null ? src.RiceSacksOutputType.name : ""))
-                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.Name + " " + src.CreatedBy.LastName : ""))
-                .ForMember(dest => dest.UpdatedBy, opt => opt.MapFrom(src => src.UpdatedBy != null ? src.UpdatedBy.Name + " " + src.UpdatedBy.LastName : ""));
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.Name + " " + src.CreatedBy.LastName : ""));
 
 
 

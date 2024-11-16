@@ -6,7 +6,7 @@ namespace OptiArroz_Tesis_Proyect.Models.Dtos
 {
     public class RiceSacksConsultationTableDTO
     {
-
+        public int IdLot { get; set; }
         public string Code { get; set; } = string.Empty;
 
         public int LeftoverQuantity { get; set; }

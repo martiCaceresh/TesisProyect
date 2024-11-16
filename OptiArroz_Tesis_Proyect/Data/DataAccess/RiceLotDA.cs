@@ -2,6 +2,7 @@
 using OptiArroz_Tesis_Proyect.Data.Interfaces;
 using OptiArroz_Tesis_Proyect.Models.Dtos;
 using OptiArroz_Tesis_Proyect.Models.Entities;
+using OptiArroz_Tesis_Proyect.Models.Utils;
 
 namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 {
@@ -16,6 +17,7 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 
         public async Task CreateRiceLot(RiceLot NewRiceLot)
         {
+            await StockSemaphore.Semaphore.WaitAsync();
             using var transaction = await DbContext.Database.BeginTransactionAsync();
             try
             {
@@ -31,6 +33,10 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                 await transaction.RollbackAsync();
                 throw new Exception("Fallo al crear el lote", ex);
             }
+            finally
+            {
+                StockSemaphore.Semaphore.Release();
+            }
             
         }
 
@@ -38,6 +44,8 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
         {
             //var LastRiceLot = await DbContext.RiceLots.Where(x => x.CreatedAt.Date == DateTime.Now.Date.AddDays(1)).OrderByDescending(x => x.Code).FirstOrDefaultAsync();
             var RiceLots = await DbContext.RiceLots.ToListAsync();
+            var Classification = await DbContext.RiceClassifications.FindAsync(NewRiceLot.IdClassification) ?? throw new Exception("No se encontro la clasificacion del lote");
+            Classification.CurrentStock += NewRiceLot.InitialQuantity;
             var LastRiceLot = RiceLots.Where(x => x.CreatedAt.Date == DateTime.Now.Date).OrderByDescending(x => x.Code).FirstOrDefault();
 
             if (LastRiceLot == null)
@@ -57,10 +65,13 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             }
 
             await DbContext.RiceLots.AddAsync(NewRiceLot);
+            
             await DbContext.SaveChangesAsync();
 
             return NewRiceLot;
         }
+
+
         private async Task UpdateLastUbicationWithLot(RiceLot NewRiceLot)
         {
             if (NewRiceLot.IdLastUbication != null)

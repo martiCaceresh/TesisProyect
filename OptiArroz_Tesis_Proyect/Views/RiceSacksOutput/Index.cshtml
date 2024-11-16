@@ -338,6 +338,7 @@
         //Al hacer click en create
         $('[data-kt-element*="-finish"]').on('click', function (e) {
             e.preventDefault();
+            console.log("VALIDANDO CAMPOS")
             if (validateCurrentStep()) {
                 Create();
             }
@@ -365,30 +366,6 @@
                     parentDiv.next('.invalid-feedback').hide();
                 }
             });
-
-
-            if (isValid && currentIndex === 0) { //Llenar el select de sacos de la seccion 2
-                var Sacks = [];
-                $('[data-repeater-sack]').each(function (index) {
-                    if (index !== 1) {
-                        Sacks.push($(this).val().trim());
-                    }
-                });
-
-                $('[data-repeater-ricesack]').each(function (index) {
-                    // Limpiar las opciones existentes manteniendo solo la opción por defecto
-                    $(this).find('option:not(:first)').remove();
-
-                    // Llenar el select con los valores de la lista Sacks
-                    Sacks.forEach(function (sackValue) {
-                        if (sackValue !== '') {
-                            let option = new Option(sackValue, sackValue);
-                            $(this).append(option);
-                        }
-                    }.bind(this));
-                });
-
-            }
 
             return isValid;
 

@@ -21,6 +21,9 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         [Required]
         public int SacksPerLot { get; set; }
 
+        [Required]
+        public int CurrentStock { get; set; }
+
 
         public int IdRiceClass { get; set; }
 

@@ -128,17 +128,16 @@
         <div style="margin-top: 10px; font-weight: bold; color: #333;">Cargando...</div>
     </div>
     <!--begin::Table-->
+    @if (Model.RiceSacksConsultationTableDTOs.Count != 0)
+    {
+        <div id="RiceSacksConsultationTableTitle" class="d-flex align-items-center fs-5 fw-semibold mb-4">Resultado de lotes para la extracción de @Model.QuantitySelected sacos</div>
+    }
+    else
+    {
+        <div id="RiceSacksConsultationTableTitle" class="d-flex align-items-center fs-5 fw-semibold mb-4">Resultado de consulta de 0 lotes</div>
+    }
     <table id="kt_datatable_zero_RiceSacksConsultationTable" data-kt-filemanager-table="files" class="table table-row-bordered">
-        @if(Model.RiceSacksConsultationTableDTOs.Count != 0) {
-            <div id="RiceSacksConsultationTableTitle" class="d-flex align-items-center fs-5 fw-semibold mb-4">Resultado de lotes para la extracción de @Model.QuantitySelected sacos</div>
-        }
-        else {
-            <!--begin::Label-->
-            <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
-                <span>Resultado de consulta de 0 lotes</span>
-            </label>
-            <!--end::Label-->
-        }
+        
         <thead>
             <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
                 <th class="min-w-200px text-center text-dark">CODIGO</th>
@@ -147,10 +146,10 @@
                 <th class="min-w-150px text-center text-dark">UBICACION ACTUAL</th>
                 <th class="min-w-150px text-center text-dark">STOCK ACTUAL</th>
                 <th class="min-w-150px text-center text-dark">CANTIDAD ESCOGIDA</th>
-
+                <th hidden></th>
             </tr>
         </thead>
-        <tbody class="fw-semibold text-gray-600" style="font-size: 11px;">
+        <tbody class="fw-semibold text-gray-600" style="font-size: 13px;">
 
             @foreach (var item in Model.RiceSacksConsultationTableDTOs)
             {
@@ -170,6 +169,7 @@
                            style="font-size: 12px; font-weight: 900"
                            value="@item.QuantitySelected">
                     </td>
+                    <td hidden>@Html.DisplayFor(modelItem => item.IdLot)</td>
                 </tr>
             }
         </tbody>

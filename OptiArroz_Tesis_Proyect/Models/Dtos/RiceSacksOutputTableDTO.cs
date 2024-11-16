@@ -20,5 +20,9 @@ namespace OptiArroz_Tesis_Proyect.Models.Dtos
         public string CreatedBy { get; set; } = string.Empty;
 
         public string UpdatedBy { get; set; } = string.Empty;
+
+        public string Observation { get; set; } = string.Empty;
+
+        public List<RiceSacksOutputDetailTableDTO> RiceSacksOutputDetailTableDTOs { get; set; } = new List<RiceSacksOutputDetailTableDTO>();
     }
 }

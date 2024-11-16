@@ -86,20 +86,6 @@
         max-width: 90%;
     }
 
-    .page-loader {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        visibility: hidden;
-    }
-
     .circle {
         width: 20px;
         height: 20px;
@@ -119,18 +105,6 @@
         }
     });
 
-    // Función para mostrar el Page Loader
-    function showPageLoader() {
-        const pageLoader = document.querySelector(".page-loader");
-        pageLoader.style.visibility = "visible"; // Mostrar el Page Loader
-    }
-    // Función para ocultar el Page Loader
-    function hidePageLoader() {
-        const pageLoader = document.querySelector(".page-loader");
-        pageLoader.style.visibility = "hidden"; // Ocultar el Page Loader
-    }
-    // También puedes ocultar el Page Loader después de que se complete la carga
-    window.addEventListener("load", hidePageLoader);
 
     function Create() {
         const form = document.getElementById('kt_create_app_form');

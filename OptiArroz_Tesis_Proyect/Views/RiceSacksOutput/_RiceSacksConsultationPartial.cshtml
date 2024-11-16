@@ -5,28 +5,56 @@
     ViewData["Title"] = "Consulta de sacos";
 }
 <style>
-    /* Modal que se desliza desde el lado derecho */
-    .modal.right .modal-dialog {
-        position: fixed;
-        margin: auto;
-        width: 400px; /* Ajusta este valor para el ancho del modal */
-        height: 100%;
-        right: 0;
-        top: 0;
-        transform: translateX(100%);
-        transition: transform 0.3s ease-out;
+    /* Estilos para Carga de archivos */
+    #areaArrastreFile,
+    #areaArrastreBankConfirmation {
+        border: 2px dashed #007bff;
+        padding: 20px;
+        text-align: center;
+        position: relative;
+        transition: min-height 0.3s ease;
     }
 
-    .modal.right.show .modal-dialog {
-        transform: translateX(0);
+    .areaArrastreHoverFile
+    .areaArrastreHoverBankConfirmation {
+        border-color: #0056b3;
     }
 
-    /* Estilo para asegurar que el modal ocupe todo el alto */
-    .modal-fullscreen {
-        height: 100%;
+    .botonArchivoFile
+    .botonArchivoBankConfirmation {
+        display: inline-block;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        cursor: pointer;
+    }
+
+    .botonArchivoFile:hover,
+    .botonArchivoBankConfirmation:hover {
+        background-color: #0056b3;
+    }
+
+    #cardArchivoFile,
+    #cardArchivoBankConfirmation {
+        display: none;
+        max-width: 400px;
+        margin: 10px auto;
+    }
+
+    #btnCargarFile,
+    #btnCargarBankConfirmation {
+        display: none;
     }
 
 </style>
+<style>
+
+    .modal-dialog-custom-lg {
+        max-width: 90%;
+    }
+</style>
+
+
 <!--begin:: INICIALIZACION DE COMPONENTES-->
 <script>
     // Reinicializar menús
@@ -36,16 +64,6 @@
             menu.destroy();
         }
         new KTMenu(element);
-    });
-
-
-    // Reinicializar tooltips
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(element => {
-        const tooltip = bootstrap.Tooltip.getInstance(element);
-        if (tooltip) {
-            tooltip.dispose();
-        }
-        new bootstrap.Tooltip(element);
     });
 </script>
 <script>
@@ -79,6 +97,8 @@
         
     });
 
+
+
     //funcion para validar stepper
     function validateForm(form) {
         var inputs = form.find('input[required], select[required]');
@@ -103,181 +123,756 @@
     }
 </script>
 <script>
-    var ConsultationReview = [];
+    function addConsultation() {
+        // Obtener los valores del formulario
+        const selectElement = document.getElementById('IdClassification');
+        const quantityElement = document.getElementById('QuantitySelected');
 
-    function AddConsultation() {
-        // Obtener los datos de la tabla
-        const tableData = extractTableData();
+        // Validar que los campos no estén vacíos
+        if (!selectElement.value || !quantityElement.value) {
+            return false;
+        }
 
-        // Filtrar los registros que ya existen y actualizar sus cantidades
-        tableData.forEach(newItem => {
-            const existingIndex = ConsultationReview.findIndex(item => item.code === newItem.code);
-            if (existingIndex !== -1) {
-                // Si el registro ya existe, actualizar la cantidad
-                ConsultationReview[existingIndex].quantitySelected = newItem.quantitySelected;
+        // Obtener el texto de la clasificación seleccionada
+        const selectedOption = selectElement.options[selectElement.selectedIndex];
+        const classificationName = selectedOption.text;
+        const classificationId = selectElement.value;
+        const quantitySelected = parseInt(quantityElement.value);
+
+        // Obtener la instancia de DataTable
+        const dataTable = $('#kt_datatable_zero_RiceSacksConsultationTable').DataTable();
+
+        // Crear el botón de eliminar con estilos
+        const deleteButton = `
+            <button type="button"
+                    class="btn btn-icon btn-light-danger btn-sm"
+                    onclick="deleteConsultationRow(this)">
+                <i class="fa-solid fa-trash"></i>
+            </button>`;
+
+        // Verificar si la clasificación ya existe
+        const existingRow = dataTable.rows().data().toArray().findIndex(row => row[0] === classificationId);
+
+        if (existingRow !== -1) {
+            // Si la clasificación existe, reemplazar la cantidad y resetear el resultado
+            dataTable.row(existingRow).data([
+                classificationId,      // ID (oculto)
+                classificationName,    // Nombre de clasificación
+                quantitySelected,      // Nueva cantidad (reemplazando la anterior)
+                'Pendiente',          // Resetear a Pendiente
+                deleteButton          // Botón de eliminar
+            ]).draw(false);
+        } else {
+            // Agregar nueva fila
+            dataTable.row.add([
+                classificationId,      // ID (oculto)
+                classificationName,    // Nombre de clasificación
+                quantitySelected,      // Cantidad
+                'Pendiente',          // Resultado
+                deleteButton          // Botón de eliminar
+            ]).draw(false);
+        }
+
+        return true;
+    }
+    // Función para reiniciar completamente (limpiar tabla y formulario)
+    function resetFilters() {
+        const dataTable = $('#kt_datatable_zero_RiceSacksConsultationTable').DataTable();
+    
+        // Limpiar todos los datos de la tabla
+        dataTable.clear().draw();
+    }
+    function deleteConsultationRow(button) {
+        const dataTable = $('#kt_datatable_zero_RiceSacksConsultationTable').DataTable();
+        const row = dataTable.row($(button).closest('tr'));
+        row.remove().draw(false);
+    }
+</script>
+<!--begin: Upload Files-->
+<script>
+    // Función para formatear bytes a kilobytes, megabytes, etc.
+    function formatBytes(bytes, decimals = 2) {
+        if (bytes === 0) return '0 Bytes';
+
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
+
+    // Función para manejar el evento de arrastrar
+    function handleDragOver(event) {
+        event.preventDefault();
+    }
+
+    // Funciones para manejar el evento de arrastrar y soltar para Confirmación de banco
+    var archivoBankConfirmation;
+
+    function handleDropBankConfirmation(event) {
+        event.preventDefault();
+
+        archivoBankConfirmation = event.dataTransfer.files[0];
+
+        var inputArchivoBankConfirmation = document.getElementById("inputArchivoBankConfirmation");
+
+        // Asignar directamente el archivo al input
+        inputArchivoBankConfirmation.files = event.dataTransfer.files;
+
+        // Validar que solo se haya seleccionado un archivo
+        if (archivoBankConfirmation) {
+            var extensionPermitida = ['pdf'];
+            var extensionArchivo = archivoBankConfirmation.name.split('.').pop().toLowerCase();
+
+            if (extensionPermitida.indexOf(extensionArchivo) === -1) {
+                Swal.fire({
+                    icon: 'error', // El tipo de alerta (success, error, info, etc.)
+                    title: 'Error', // El título de la alerta
+                    text: 'Por favor, selecciona un archivo con extensión .pdf.', // El mensaje de la alerta
+                    showConfirmButton: true // Muestra un botón de confirmación
+                });
+                return;
+            }
+
+            var nombreCompleto = archivoBankConfirmation.name;
+            var maxCaracteres = 20;
+
+            if (nombreCompleto.length > maxCaracteres) {
+                var nombreSinExtension = nombreCompleto.slice(0, maxCaracteres - extensionArchivo.length - 1);
+                var nombreCorto = nombreSinExtension + "...." + extensionArchivo;
             } else {
-                // Si es un nuevo registro, agregarlo
-                ConsultationReview.push(newItem);
+                var nombreCorto = nombreCompleto;
+            }
+
+            // Actualizar la imagen de fileIcon según la extensión
+            var fileIcon = document.getElementById("fileIconBankConfirmation");
+            var iconPath = "../assets/media/opplus/";
+
+            switch (extensionArchivo) {
+                case 'xlsx':
+                case 'xls':
+                    iconPath += "xls.png";
+                    break;
+                case 'pdf':
+                    iconPath += "pdf.png";
+                    break;
+                default:
+                    // Puedes proporcionar una imagen predeterminada o manejar otros casos aquí
+                    iconPath += "default.png";
+            }
+
+            fileIcon.src = iconPath;
+
+            // Actualizar el elemento de entrada de archivo con el nombre del archivo
+            document.getElementById("nombreArchivoBankConfirmation").innerHTML = nombreCorto;
+            document.getElementById("fileSizeBankConfirmation").innerHTML = formatBytes(archivoBankConfirmation.size);
+            document.getElementById("cardArchivoBankConfirmation").style.display = "block";
+            document.getElementById("agregarArchivoBankConfirmation").style.display = "none";
+
+            // Ajustar la altura del área de arrastre para contener el archivo seleccionado
+            var areaArrastre = document.getElementById("areaArrastreBankConfirmation");
+            areaArrastre.style.minHeight = areaArrastre.offsetHeight + "px";
+        }
+    }
+
+    // Función para quitar el archivo seleccionado
+    function quitarArchivoBankConfirmation() {
+        archivoBankConfirmation = null;
+        document.getElementById("nombreArchivoBankConfirmation").innerHTML = "Ningún archivo seleccionado";
+        document.getElementById("inputArchivoBankConfirmation").value = "";
+        document.getElementById("cardArchivoBankConfirmation").style.display = "none";
+        document.getElementById("agregarArchivoBankConfirmation").style.display = "block";
+
+        // Restablecer la altura mínima del área de arrastre
+        document.getElementById("areaArrastreBankConfirmation").style.minHeight = "";
+    }
+
+    //Función para manejar el cambio en el input de archivo
+    function handleArchivoSeleccionadoBankConfirmation() {
+        archivoBankConfirmation = document.getElementById("inputArchivoBankConfirmation").files[0];
+
+        // Actualizar el elemento de entrada de archivo con el nombre del archivo
+        if (archivoBankConfirmation) {
+            var extensionPermitida = ['pdf'];
+            var extensionArchivo = archivoBankConfirmation.name.split('.').pop().toLowerCase();
+
+            if (extensionPermitida.indexOf(extensionArchivo) === -1) {
+                Swal.fire({
+                    icon: 'error', // El tipo de alerta (success, error, info, etc.)
+                    title: 'Error', // El título de la alerta
+                    text: 'Por favor, selecciona un archivo con extensión .pdf.', // El mensaje de la alerta
+                    showConfirmButton: true // Muestra un botón de confirmación
+                });
+                return;
+            }
+
+            var nombreCompleto = archivoBankConfirmation.name;
+            var maxCaracteres = 20;
+
+            if (nombreCompleto.length > maxCaracteres) {
+                var nombreSinExtension = nombreCompleto.slice(0, maxCaracteres - extensionArchivo.length - 1);
+                var nombreCorto = nombreSinExtension + "...." + extensionArchivo;
+            } else {
+                var nombreCorto = nombreCompleto;
+            }
+
+            // Actualizar la imagen de fileIcon según la extensión
+            var fileIcon = document.getElementById("fileIconBankConfirmation");
+            var iconPath = "../assets/media/opplus/";
+
+            switch (extensionArchivo) {
+                case 'xlsx':
+                case 'xls':
+                    iconPath += "xls.png";
+                    break;
+                case 'pdf':
+                    iconPath += "pdf.png";
+                    break;
+                default:
+                    // Puedes proporcionar una imagen predeterminada o manejar otros casos aquí
+                    iconPath += "default.png";
+            }
+
+            fileIcon.src = iconPath;
+
+            document.getElementById("nombreArchivoBankConfirmation").innerHTML = nombreCorto;
+            document.getElementById("fileSizeBankConfirmation").innerHTML = formatBytes(archivoBankConfirmation.size);
+            document.getElementById("cardArchivoBankConfirmation").style.display = "block";
+            document.getElementById("agregarArchivoBankConfirmation").style.display = "none";
+
+            // Ajustar la altura del área de arrastre para contener el archivo seleccionado
+            var areaArrastre = document.getElementById("areaArrastreBankConfirmation");
+            areaArrastre.style.minHeight = areaArrastre.offsetHeight + "px";
+        }
+    }
+</script>
+<!--end: Upload Files-->
+
+
+<script>
+    // IIFE para evitar contaminación del scope global
+    (function () {
+        // Singleton para manejar los estilos de tooltip
+        const TooltipStyleManager = {
+            styles: `
+                <style id="tooltipCustomStyles">
+                    .tooltip-inner {
+                        min-width: 200px;
+                        max-width: 400px !important;
+                        padding: 1rem !important;
+                        text-align: left !important;
+                        font-size: 0.875rem !important;
+                        line-height: 1.5 !important;
+                        font-family: inherit !important;
+                        white-space: pre-wrap !important;
+                        border-radius: 0.475rem !important;
+                        box-shadow: 0 0.5rem 1.5rem 0.5rem rgba(0, 0, 0, 0.075) !important;
+                    }
+
+                    .tooltip-error .tooltip-inner {
+                        background-color: #fff1f1 !important;
+                        color: #f1416c !important;
+                        border: 1px solid #f1416c !important;
+                    }
+
+                    .tooltip-warning .tooltip-inner {
+                        background-color: #fff8dd !important;
+                        color: #ffc700 !important;
+                        border: 1px solid #ffc700 !important;
+                    }
+
+                    .tooltip-success .tooltip-inner {
+                        background-color: #e8fff3 !important;
+                        color: #50cd89 !important;
+                        border: 1px solid #50cd89 !important;
+                    }
+
+    @@media (max-width: 768px) {
+                        .tooltip-inner {
+                            max-width: 300px !important;
+                            font-size: 0.8rem !important;
+                        }
+                    }
+                </style>`,
+
+            init() {
+                if (!document.getElementById('tooltipCustomStyles')) {
+                    document.head.insertAdjacentHTML('beforeend', this.styles);
+                }
+            }
+        };
+
+        // Clase para manejar los tooltips
+        class TooltipManager {
+            static getStatusIcon(status) {
+                const icons = {
+                    1: ['fa-circle-check text-success', 'tooltip-success'],
+                    2: ['fa-triangle-exclamation text-warning', 'tooltip-warning'],
+                    3: ['fa-circle-xmark text-danger', 'tooltip-error'],
+                    default: ['fa-circle-question text-muted', '']
+                };
+
+                const [iconClass, tooltipClass] = icons[status] || icons.default;
+                return {
+                    iconHtml: `<i class="fa-solid ${iconClass} fs-2"></i>`,
+                    tooltipClass
+                };
+            }
+
+            static createTooltipHtml(iconHtml, tooltipClass, message) {
+                return `
+                    <span class="mx-2"
+                        data-bs-toggle="tooltip"
+                        data-bs-placement="top"
+                        data-bs-html="true"
+                        data-tooltip-class="${tooltipClass}"
+                        title="${message}">
+                        ${iconHtml}
+                    </span>`;
+            }
+
+            static initializeTooltips() {
+                // Destruir tooltips existentes antes de reinicializar
+                $('[data-bs-toggle="tooltip"]').tooltip('dispose');
+
+                // Inicializar nuevos tooltips
+                $('[data-bs-toggle="tooltip"]').tooltip({
+                    template: '<div class="tooltip" role="tooltip">' +
+                        '<div class="tooltip-arrow"></div>' +
+                        '<div class="tooltip-inner"></div>' +
+                        '</div>',
+                    trigger: 'hover',
+                    animation: true,
+                    delay: { show: 100, hide: 100 },
+                    html: true
+                });
+
+                // Aplicar clases personalizadas
+                $(document).on('inserted.bs.tooltip', '[data-bs-toggle="tooltip"]', function () {
+                    const tooltipClass = $(this).data('tooltip-class');
+                    if (tooltipClass) {
+                        const tooltipId = $(this).attr('aria-describedby');
+                        if (tooltipId) {
+                            $(`#${tooltipId}`).addClass(tooltipClass);
+                        }
+                    }
+                });
+            }
+        }
+
+        // Función principal de consulta de stock
+        window.StockConsultation = function () {
+            // Inicializar estilos de tooltip
+            TooltipStyleManager.init();
+
+            const dataTable = $('#kt_datatable_zero_RiceSacksConsultationTable').DataTable();
+            const data = dataTable.rows().data().toArray();
+
+            if (data.length === 0) {
+                Swal.fire({
+                    text: "Debe agregar al menos un registro para procesar la consulta",
+                    icon: "warning",
+                    buttonsStyling: false,
+                    confirmButtonText: "Ok, entendido",
+                    customClass: {
+                        confirmButton: "btn btn-primary"
+                    }
+                });
+                return;
+            }
+
+            const StockConsultationJson = data.map(row => ({
+                IdClassification: parseInt(row[0]),
+                QuantitySelected: parseInt(row[2])
+            }));
+
+            const processingAlert = Swal.fire({
+                text: "Procesando consulta...",
+                icon: "info",
+                buttonsStyling: false,
+                showConfirmButton: false,
+                allowOutsideClick: false
+            });
+
+            $.ajax({
+                url: '/Classification/GetStockConsultation',
+                type: 'POST',
+                data: JSON.stringify(StockConsultationJson),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json',
+                success: function (response) {
+                    processingAlert.close();
+
+                    if (response.success) {
+                        dataTable.rows().every(function (index) {
+                            const rowData = this.data();
+                            const idClassification = parseInt(rowData[0]);
+                            const result = response.data.find(r => r.idClassification === idClassification);
+
+                            if (result) {
+                                const { iconHtml, tooltipClass } = TooltipManager.getStatusIcon(result.status);
+                                const tooltipHtml = TooltipManager.createTooltipHtml(
+                                    iconHtml,
+                                    tooltipClass,
+                                    result.tooltipMessage
+                                );
+                                dataTable.cell(index, 3).data(tooltipHtml);
+                            }
+                        });
+
+                        dataTable.draw(false);
+
+                        // Inicializar tooltips después de que la tabla se haya redibujado
+                        setTimeout(() => {
+                            TooltipManager.initializeTooltips();
+                        }, 100);
+
+                        Swal.fire({
+                            text: "Consulta procesada exitosamente",
+                            icon: "success",
+                            buttonsStyling: false,
+                            confirmButtonText: "Ok",
+                            customClass: {
+                                confirmButton: "btn btn-primary"
+                            }
+                        });
+                    } else {
+                        Swal.fire({
+                            text: "Error al procesar la consulta",
+                            icon: "error",
+                            buttonsStyling: false,
+                            confirmButtonText: "Ok",
+                            customClass: {
+                                confirmButton: "btn btn-danger"
+                            }
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    processingAlert.close();
+
+                    Swal.fire({
+                        text: "Error al procesar la consulta: " + (xhr.responseJSON?.message || "Error desconocido"),
+                        icon: "error",
+                        buttonsStyling: false,
+                        confirmButtonText: "Ok",
+                        customClass: {
+                            confirmButton: "btn btn-primary"
+                        }
+                    });
+                }
+            });
+        };
+    })();
+    function validateTableStatus() {
+        // Obtener la instancia de DataTable
+        const dataTable = $('#kt_datatable_zero_RiceSacksConsultationTable').DataTable();
+        const data = dataTable.rows().data().toArray();
+
+        // Validar si hay registros en la tabla
+        if (data.length === 0) {
+            Swal.fire({
+                title: "Sin registros",
+                text: "Debe agregar al menos un registro para procesar la salida",
+                icon: "warning",
+                buttonsStyling: false,
+                confirmButtonText: "Entendido",
+                customClass: {
+                    confirmButton: "btn btn-primary"
+                }
+            });
+            return false;
+        }
+
+        // Validar si hay registros pendientes
+        const hasPendingRecords = data.some(row => row[3] === 'Pendiente');
+        if (hasPendingRecords) {
+            Swal.fire({
+                title: "Consulta pendiente",
+                text: "Debe procesar la consulta de stock antes de registrar la salida",
+                icon: "warning",
+                buttonsStyling: false,
+                confirmButtonText: "Entendido",
+                customClass: {
+                    confirmButton: "btn btn-primary"
+                }
+            });
+            return false;
+        }
+
+        // Validar si hay registros con stock insuficiente
+        const hasInsufficientStock = data.some(row => {
+            const cell = row[3]; // Columna del resultado
+            // Buscar el ícono de error (cruz roja) en el contenido de la celda
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = cell;
+            return tempDiv.querySelector('.fa-circle-xmark') !== null;
+        });
+
+        if (hasInsufficientStock) {
+            Swal.fire({
+                title: "Stock insuficiente",
+                text: "Hay pedidos que no pueden ser atendidos por falta de stock. Por favor, elimine estos registros para continuar.",
+                icon: "error",
+                buttonsStyling: false,
+                confirmButtonText: "Entendido",
+                customClass: {
+                    confirmButton: "btn btn-danger"
+                }
+            });
+            return false;
+        }
+
+        return true;
+    }
+    // Función modificada para el botón de registro
+    document.getElementById('btnShowRiceSackOutputModal').addEventListener('click', function (e) {
+        e.preventDefault();
+
+        // Realizar todas las validaciones antes de abrir el modal
+        if (validateTableStatus()) {
+            InitializedModal();
+        }
+    });
+    
+    function InitializedModal() {
+
+        // Si el modal ya existe, solo lo abrimos
+        if (document.getElementById('outputModal')) {
+            const modal = new bootstrap.Modal(document.getElementById('outputModal'));
+            modal.show();
+            return;
+        }
+
+        // Crear el modal dinámicamente
+        const modalHtml = `
+        <div class="modal fade" id="outputModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered mw-800px">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="fw-bold">Registro de Salida</h2>
+                        <div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                            <i class="ki-duotone ki-cross fs-1">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                        </div>
+                    </div>
+
+                    <div class="modal-body py-10 px-lg-8">
+                        <div class="current" data-kt-stepper-element="content">
+                        
+                            <form asp-controller="RiceSacksOutput" asp-action="CreateRiceSacksOutput" method="post" class="row g-3 needs-validation" novalidate="novalidate" id="kt_riceSacksOutput_app_form">
+                                <!-- Tipo de Salida -->
+                                <div class="fv-row mb-7">
+                                        <div class="input-group">
+                                                    <div class="form-floating">
+                                                        <select id="outputType" name="IdRiceSacksOutputType" class="form-select" required data-validation="required" data-dropdown-parent="#files_modal" oninput="ValidateElement($(this))">
+                                                            <option value="">Seleccione un tipo de salida</option>
+    @foreach (var item in Model.RiceSacksOutputTypes)
+    {
+                                                                        <option value="@item.IdRiceSacksOutputType">@item.name</option>
+    }
+                                                        </select>
+                                                        <label class="form-label required">Tipo de Salida</label>
+                                                    </div>
+                                                </div>
+                                                <div class="invalid-feedback">Este campo es obligatorio.</div>
+                                </div>
+
+                                <!-- Cliente -->
+                                <div class="fv-row mb-7">
+                                        <div class="input-group">
+                                                    <div class="form-floating">
+                                                        <input type="text" id="clientName" name="ClienteName" class="form-control" required data-validation="required" placeholder="Nombre del cliente" oninput="ValidateElement($(this))"/>
+                                                        <label class="form-label required">Cliente</label>
+                                                    </div>
+                                                </div>
+                                                <div class="invalid-feedback">Este campo es obligatorio.</div>
+                                </div>
+
+                                <!-- Observaciones -->
+                                <div class="fv-row mb-7">
+                                    <div class="form-floating">
+                                        <textarea id="observations" name="Observations" class="form-control"
+                                                  placeholder="Observaciones" data-kt-autosize="true"
+                                                  style="height: 80px"></textarea>
+                                        <label class="form-label">Observaciones</label>
+                                    </div>
+                                </div>
+
+                                    <div class="w-100">
+                        <div class="mb-8">
+                            <label class="fs-6 fw-semibold mb-2">Adjunta una copia del documento de especificación técnica del arroz lotizado</label>
+
+                            <div class="input-group row">
+                                <div class="col" id="areaArrastreBankConfirmation" ondrop="handleDropBankConfirmation(event)" ondragover="handleDragOver(event)">
+                                    <div id="agregarArchivoBankConfirmation" style="display: block;">
+                                        <strong>Arrastra aquí</strong>
+                                        <br />
+                                        <strong>o</strong>
+                                        <br />
+                                        <label for="inputArchivoBankConfirmation" class="btn btn-sm btn-lg btn-primary">
+                                            Selecciona un archivo
+                                            <input type="file" name="TechnicalEspecification" required data-validation="required" id="inputArchivoBankConfirmation" style="display: none;" onchange="handleArchivoSeleccionadoBankConfirmation()" oninput="ValidateElement($(this))" />
+                                        </label>
+                                    </div>
+
+                                    <div id="cardArchivoBankConfirmation">
+                                        <div class="d-flex flex-stack py-4">
+                                            <div class="d-flex align-items-center">
+                                                <!--begin::Avatar-->
+                                                <div class="symbol symbol-35px">
+                                                    <img id="fileIconBankConfirmation" src="" alt="icon" />
+                                                </div>
+                                                <!--end::Avatar-->
+                                                <!--begin::Details-->
+                                                <div class="ms-6">
+                                                    <p id="nombreArchivoBankConfirmation" class="fs-5 fw-bold text-gray-900 mb-2">Nombre</p>
+                                                    <div id="fileSizeBankConfirmation" class="fw-semibold text-muted"></div>
+                                                </div>
+                                                <!--end::Details-->
+                                            </div>
+                                            <!--begin::Menu-->
+                                            <div class="min-w-100px">
+                                                <button type="button" class="close btn btn-sm btn-lg btn-primary" onclick="quitarArchivoBankConfirmation()">
+                                                    <!--begin::Indicator label-->
+                                                    <span class="indicator-label">Quitar</span>
+                                                    <!--end::Indicator label-->
+                                                </button>
+                                            </div>
+                                            <!--end::Menu-->
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <!-- Error message -->
+                            <div class="invalid-feedback">Este campo es obligatorio.</div>
+                        </div>
+
+                        <!--end::Input group-->
+
+                            <div class="d-flex flex-stack justify-content-end gap-5">
+                                                <button type="button" class="btn btn-sm btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                                    <button type="submit" class="btn btn-sm btn-success">
+                                    <span class="indicator-label">
+                                        Registrar Salida
+                                    </span>
+                                    <span class="indicator-progress">
+                                        Por favor espere... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                    </span>
+                                </button>
+                                        </div>
+                            
+                    </div>
+                            </form>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>`;
+
+        // Agregar el modal al body si no existe
+        if (!document.getElementById('outputModal')) {
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // Inicializar el modal
+        const modal = new bootstrap.Modal(document.getElementById('outputModal'));
+
+        // Inicializar autosize para el textarea
+        autosize(document.querySelector('[data-kt-autosize="true"]'));
+
+        $("#kt_riceSacksOutput_app_form").submit(function (e) {
+            e.preventDefault();
+            console.log("ESTOY EN EL BOTON SUBMIT")
+            var form = $(this);
+            console.log("1")
+            if (validateForm(form)) {
+                console.log("2")
+                // Obtener los datos del DataTable
+                const dataTable = $('#kt_datatable_zero_RiceSacksConsultationTable').DataTable();
+                console.log("3")
+                const tableData = dataTable.rows().data().toArray();
+                console.log("4")
+
+                // Crear el objeto con los datos del DataTable
+                const outputData = {
+                    IdRiceSacksOutputType: document.getElementById('outputType').value,
+                    ClientName: document.getElementById('clientName').value,
+                    Observation: document.getElementById('observations').value,
+                    Consultation: JSON.stringify(tableData.map(row => ({
+                        IdClassification: parseInt(row[0]), // Asumiendo que IdClassification está en la primera columna
+                        QuantitySelected: parseInt(row[2])  // Asumiendo que QuantitySelected está en la tercera columna
+                    })))
+                };
+                console.log("5")
+                // Crear FormData
+                const formData = new FormData();
+                Object.keys(outputData).forEach(key => {
+                    formData.append(key, outputData[key]);
+                });
+                console.log("6")
+                // Agregar el archivo si existe
+                const fileInput = document.getElementById('inputArchivoBankConfirmation');
+                console.log("7")
+
+
+
+                if (fileInput.files.length > 0) {
+                    formData.append('Attachment', fileInput.files[0]);
+                }
+                console.log("8")
+
+                // Realizar la petición AJAX
+                $.ajax({
+                    url: `/RiceSacksOutput/CreateRiceSacksOutput`,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (response) {
+                        if (response === "Ok") {
+                            window.location.href = `/RiceSacksOutput/Index`;
+                        } else {
+                            Swal.fire({
+                                title: "Error",
+                                text: response,
+                                icon: "error",
+                                buttonsStyling: false,
+                                confirmButtonText: "Aceptar",
+                                customClass: {
+                                    confirmButton: "btn btn-danger"
+                                }
+                            });
+                        }
+                    },
+                    error: function () {
+                        Swal.fire({
+                            title: "Error",
+                            text: "Ocurrió un error en el registro. Vuelva a intentar",
+                            icon: "error",
+                            buttonsStyling: false,
+                            confirmButtonText: "Aceptar",
+                            customClass: {
+                                confirmButton: "btn btn-danger"
+                            }
+                        });
+                    }
+                });
             }
         });
 
-        updateCardsAndSummary();
-
         // Mostrar el modal
-        const modal = new bootstrap.Modal(document.getElementById('files_modal'));
         modal.show();
     }
 
-    function updateCardsAndSummary() {
-        // Generar las cards
-        const cardsContainer = document.getElementById('consultationCards');
-        cardsContainer.innerHTML = '';
-
-        ConsultationReview.forEach((item, index) => {
-            const card = `
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body p-5">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="fw-bold fs-5">${item.code}</div>
-                            <button class="btn btn-icon btn-sm btn-light-danger" onclick="removeCard(${index})">
-                                <i class="ki-duotone ki-cross fs-2">
-                                    <span class="path1"></span>
-                                    <span class="path2"></span>
-                                </i>
-                            </button>
-                        </div>
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="d-flex flex-column">
-                                    <span class="text-gray-500 fs-7">Clasificación</span>
-                                    <span class="text-gray-800 fw-bold fs-7">${item.classification}</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-flex flex-column">
-                                    <span class="text-gray-500 fs-7">Vencimiento</span>
-                                    <span class="text-gray-800 fw-bold fs-7">${item.expirationDate}</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-flex flex-column">
-                                    <span class="text-gray-500 fs-7">Ubicación</span>
-                                    <span class="text-gray-800 fw-bold fs-7 text-primary">${item.lastUbication}</span>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="d-flex flex-column">
-                                    <span class="text-gray-500 fs-7">Stock Actual</span>
-                                    <span class="text-gray-800 fw-bold fs-7">${item.leftoverQuantity}</span>
-                                </div>
-                            </div>
-                            <div class="col-12">
-                                <div class="d-flex flex-column">
-                                    <span class="text-gray-500 fs-7">Cantidad Seleccionada</span>
-                                    <input type="number"
-                                           class="form-control form-control-solid form-control-sm mt-1"
-                                           value="${item.quantitySelected}"
-                                           min="0"
-                                           max="${item.leftoverQuantity}"
-                                           onchange="updateQuantity(${index}, this.value)">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-
-            cardsContainer.innerHTML += card;
-        });
-
-        updateSummary();
-    }
-
-    function updateSummary() {
-        // Actualizar el resumen
-        const summary = ConsultationReview.reduce((acc, item) => {
-            if (!acc[item.classification]) {
-                acc[item.classification] = 0;
-            }
-            acc[item.classification] += parseInt(item.quantitySelected);
-            return acc;
-        }, {});
-
-        // Calcular total
-        const total = Object.values(summary).reduce((a, b) => a + b, 0);
-
-        // Generar HTML del resumen
-        let summaryHtml = '';
-
-        // Agregar cada clasificación
-        Object.entries(summary).forEach(([classification, quantity]) => {
-            summaryHtml += `
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-gray-800">${classification}...........</span>
-                <span class="text-gray-800 fw-bold">${quantity} unds</span>
-            </div>`;
-        });
-
-        // Agregar el total
-        summaryHtml += `
-            <div class="separator my-4"></div>
-            <div class="d-flex justify-content-between align-items-center">
-                <span class="text-gray-800 fw-bold">TOTAL SACOS:</span>
-                <span class="text-gray-800 fw-bolder">${total} unds</span>
-            </div>`;
-
-        document.getElementById('summaryContent').innerHTML = summaryHtml;
-    }
-
-    function updateQuantity(index, newValue) {
-        // Validar que el valor no exceda el stock
-        const maxStock = ConsultationReview[index].leftoverQuantity;
-        newValue = Math.min(Math.max(0, parseInt(newValue) || 0), maxStock);
-
-        // Actualizar el valor
-        ConsultationReview[index].quantitySelected = newValue;
-
-        // Actualizar el resumen
-        updateSummary();
-    }
-
-    function removeCard(index) {
-        // Eliminar el registro del array
-        ConsultationReview.splice(index, 1);
-
-        // Actualizar las cards y el resumen
-        updateCardsAndSummary();
-    }
-
-    function extractTableData() {
-        const rows = document.querySelectorAll('#kt_datatable_zero_RiceSacksConsultationTable tbody tr');
-        const tableData = [];
-    
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            const quantitySelected = parseInt(cells[5].querySelector('input').value) || 0;
-        
-            // Solo procesar filas donde quantitySelected > 0
-            if(quantitySelected > 0) {
-                const rowData = {
-                    code: cells[0].textContent.trim(),
-                    expirationDate: cells[1].textContent.trim(),
-                    classification: cells[2].textContent.trim(),
-                    lastUbication: cells[3].textContent.trim(),
-                    leftoverQuantity: parseInt(cells[4].textContent.trim()) || 0,
-                    quantitySelected: quantitySelected
-                };
-            
-                tableData.push(rowData);
-            }
-        });
-    
-        return tableData;
-    }
-
-
 </script>
-
-
 <!--begin::Toolbar-->
 <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
     <!--begin::Toolbar container-->
@@ -315,10 +910,7 @@
             <div class="m-0">
                 <!--begin::Menu toggle-->
                 <a href="#" class="btn btn-sm btn-secondary me-2 mb-2" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-start" data-kt-menu-offset="0,5">
-                    <i class="ki-duotone ki-filter fs-2 text-muted me-1">
-                        <span class="path1"></span>
-                        <span class="path2"></span>
-                    </i>Consulta
+                    <i class="ki-duotone ki-plus fs-2"></i>Consulta
                 </a>
                 <!--end::Menu toggle-->
                 <!--begin::Menu 1-->
@@ -332,57 +924,58 @@
                     <div class="separator border-gray-200"></div>
                     <!--end::Menu separator-->
                     <!--begin::Form-->
-                    <form asp-controller="RiceSacksOutput" asp-action="GetLotsConsultationResult" method="post" class="row g-3 needs-validation" novalidate="novalidate" id="kt_riceSacksConsultation_app_form">
-                        <div class="px-7 py-5">
-                            <!--begin::Status Input group-->
-                            <div class="mb-5">
-                                <div class="input-group">
-                                    <div class="form-floating">
-                                        <select id="IdClassification" name="IdClassification" class="form-select" required data-validation="required" oninput="ValidateElement($(this))">
-                                            <option value="">Seleccione una clasificación de arroz</option>
-                                            @foreach (var item in Model.RiceClassifications)
-                                            {
-                                                <option value="@item.IdClassification">
-                                                    @item.Name
-                                                </option>
-                                            }
-                                        </select>
-                                        <label class="form-label" for="riceClass">Clasificación</label>
-                                    </div>
+                    <div class="px-7 py-5">
+                        <!--begin::Status Input group-->
+                        <div class="mb-5">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <select id="IdClassification" class="form-select" required data-validation="required" oninput="ValidateElement($(this))">
+                                        <option value="">Seleccione una clasificación de arroz</option>
+                                        @foreach (var item in Model.RiceClassifications)
+                                        {
+                                            <option value="@item.IdClassification">
+                                                @item.Name
+                                            </option>
+                                        }
+                                    </select>
+                                    <label class="form-label" for="riceClass">Clasificación</label>
                                 </div>
-                                <!-- Mensaje de feedback inmediatamente después del input-group -->
-                                <div class="invalid-feedback"> Este campo es obligatorio.</div>
-                                <!--end::Input-->
                             </div>
-                            <!--end::Input group-->
-                            <!--begin::Revision Input group-->
-                            <div class="mb-5">
-                                <!--begin::Input-->
-                                <div class="input-group">
-                                    <div class="form-floating">
-                                        <input id="QuantitySelected" name="QuantitySelected" type="text" required data-validation="required,numeric" class="form-control" placeholder="Cantidad de sacos" oninput="ValidateElement($(this))" />
-                                        <label class="form-label required" for="QuantitySelected">Cantidad de sacos</label>
-                                    </div>
-                                </div>
-                                <div class="invalid-feedback"> Este campo es obligatorio.</div>
-                                <!--end::Input-->
-                            </div>
-                            <!--end::Input group-->
-                            <!--begin::Actions-->
-                            <div class="d-flex justify-content-end">
-                                <button onclick="resetFilters()" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="true">Reiniciar</button>
-                                <button class="btn btn-sm btn-primary" data-kt-menu-dismiss="true" data-kt-element="finish-finish">Aplicar</button>
-                            </div>
-                            <!--end::Actions-->
+                            <!-- Mensaje de feedback inmediatamente después del input-group -->
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                            <!--end::Input-->
                         </div>
-                    </form>
+                        <!--end::Input group-->
+                        <!--begin::Revision Input group-->
+                        <div class="mb-5">
+                            <!--begin::Input-->
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input id="QuantitySelected" type="text" required data-validation="required,numeric" class="form-control" placeholder="Cantidad de sacos" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="QuantitySelected">Cantidad de sacos</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                            <!--end::Input-->
+                        </div>
+                        <!--end::Input group-->
+                        <!--begin::Actions-->
+                        <div class="d-flex justify-content-end">
+                            <button onclick="resetFilters()" class="btn btn-sm btn-light btn-active-light-primary me-2" data-kt-menu-dismiss="false">Reiniciar</button>
+                            <button onclick="addConsultation()" class="btn btn-sm btn-primary" data-kt-menu-dismiss="false">Aplicar</button>
+                        </div>
+                        <!--end::Actions-->
+                    </div>
                     <!--end::Form-->
                 </div>
                 <!--end::Menu 1-->
             </div>
             <!--end::Filter menu-->
-            <a id="btnOpenModal" onclick="AddConsultation()" class="btn btn-sm btn-success me-2 mb-2">
-                <i class="ki-duotone ki-plus fs-2"></i>Resultado 
+            <a id="btnStockConsultation" onclick="StockConsultation()" class="btn btn-sm btn-success me-2 mb-2">
+                <i class="ki-duotone ki-plus fs-2"></i>Procesar consulta
+            </a>
+            <a id="btnShowRiceSackOutputModal" class="btn btn-sm btn-primary me-2 mb-2">
+                <i class="ki-duotone ki-plus fs-2"></i>Registrar salida
             </a>
         </div>
         <!--end::Actions-->
@@ -401,7 +994,7 @@
         <div class="card card-flush">
             <!--begin::Card body-->
             <div id="RiceSacksConsultationSection" class="card-body">
-                @await Html.PartialAsync("_RiceSacksConsultationTablePartial", Model)
+                @await Html.PartialAsync("_RiceSacksConsultationStockTablePartial")
             </div>
             <!--end::Card body-->
         </div>
@@ -411,7 +1004,7 @@
 </div>
 <!--end::Content-->
 
-<div class="app-engage " id="kt_app_engage">
+@*<div class="app-engage " id="kt_app_engage">
     <!--begin::Files toggle-->
     <a data-bs-target="#files_modal"
        class="app-engage-btn border-hover-success hover-scale cursor-pointer"
@@ -431,27 +1024,22 @@
         <i class="fa-solid fa-mobile-screen fs-2x pt-1 mb-2 text-primary" ></i>
     </a>
     <!--end::Files toggle-->
-</div>
+</div>*@
 
 
 <!-- Modal -->
 <div class="modal right fade" id="files_modal" tabindex="-1" aria-labelledby="files_modalLabel" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
         <div class="modal-content">
+            <div id="modalHeader"></div>
             <div class="modal-body px-10">
                 <!-- Cards Container -->
                 <div id="consultationCards" class="d-flex flex-column gap-4">
                     <!-- Las cards se generarán aquí dinámicamente -->
                 </div>
             </div>
-            <div class="modal-footer px-10">
-                <!-- Resumen directo en el footer -->
-                <div class="w-100">
-                    <h4 class="fw-bold mb-5">RESUMEN</h4>
-                    <div id="summaryContent">
-                        <!-- El resumen se generará aquí dinámicamente -->
-                    </div>
-                </div>
+            <div id="modalFooter">
+                <!-- El footer se generará dinámicamente -->
             </div>
         </div>
     </div>

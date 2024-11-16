@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Linq;
 using System.Reflection.Metadata;
+using OptiArroz_Tesis_Proyect.Models.Dtos;
 
 namespace OptiArroz_Tesis_Proyect.Models.Entities
 {
@@ -45,8 +46,16 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public string? IdUpdatedBy { get; set; }
         public ApplicationUser? UpdatedBy { get; set; }
 
+        public RiceSacksOutput() { }
 
-
+        public RiceSacksOutput(CreateRiceSacksOutputDTO NewOutput , byte[] OutPutEvidence , string IdUser)
+        {
+            RiceSacksOutputDate = DateTime.Now;
+            Observation = NewOutput.Observation ?? "";
+            OutputEvidence = OutPutEvidence;
+            IdRiceSacksOutputType = NewOutput.IdRiceSacksOutputType;
+            SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
+        }
 
         public void SetBaseModel(string? IdCreatedBy, string? IdUpdatedBy, DateTime CreatedAt, DateTime UpdatedAt, int State)
         {

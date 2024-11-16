@@ -50,26 +50,36 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             var FoundRiceLot = await DbContext.RiceLots.FindAsync(NewRiceLotMovement.IdRiceLot) ?? throw new Exception("No se encontro el lote.");
 
             //Establecer la ultima ubicacion del lote
+            await UpdateLastUbicationWithLot(FoundRiceLot, 1); //Libera la antigua ubicacion
             FoundRiceLot.IdLastUbication = NewRiceLotMovement.IdDestination;
             FoundRiceLot.IdZone = NewRiceLotMovement.IdZoneDestination;
             DbContext.Entry(FoundRiceLot).State = EntityState.Modified;
             await DbContext.SaveChangesAsync();
-
-            await UpdateLastUbicationWithLot(FoundRiceLot);
+            await UpdateLastUbicationWithLot(FoundRiceLot , 0); //Ocupa la nueva ubicacion
 
         }
 
-        private async Task UpdateLastUbicationWithLot(RiceLot NewRiceLot)
+        private async Task UpdateLastUbicationWithLot(RiceLot NewRiceLot , int State)
         {
             if (NewRiceLot.IdLastUbication != null)
             {
                 var Ubication = await DbContext.Ubications.FindAsync(NewRiceLot.IdLastUbication) ?? throw new Exception("Ubicacion no encontrada.");
-                Ubication.IdCurrentRiceLot = NewRiceLot.IdLot;
-                Ubication.State = 0; //Ocupado
+                if(State == 0)
+                {
+                    Ubication.IdCurrentRiceLot = NewRiceLot.IdLot;
+                    Ubication.State = State; //Ocupado
+                }
+                else
+                {
+                    Ubication.IdCurrentRiceLot = null;
+                    Ubication.State = State;
+                }
+                
                 DbContext.Entry(Ubication).State = EntityState.Modified;
                 await DbContext.SaveChangesAsync();
             }
             return;
         }
+
     }
 }

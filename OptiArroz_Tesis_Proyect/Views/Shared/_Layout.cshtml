@@ -42,6 +42,19 @@
 			opacity: 1; /* La pantalla de carga será sólida sin transparencia */
 		}
 
+		#loaderDark {
+			position: fixed;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background-color: #131313; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
+			z-index: 9999;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			opacity: 1; /* La pantalla de carga será sólida sin transparencia */
+		}
 		/* Estilo para el spinner o indicador de carga */
 		.spinner {
 			min-width: 110px;
@@ -84,6 +97,9 @@
 <body id="kt_app_body" data-kt-app-layout="light-header" data-kt-app-header-fixed="true" data-kt-app-toolbar-enabled="true" class="app-default">
 	<div id="loader" style="display:none;">
 		<img id="spinner" src="~/assets/media/loaders/CargaGeneralApp.gif" alt="Cargando..." class="h-sm-100px h-lg-150px app-sidebar-logo-default theme-light-show spinner" />
+	</div>
+	<div id="loaderDark" style="display:none;">
+		<img id="spinnerDark" src="~/assets/media/loaders/CargaGeneralAppDark.gif" alt="Cargando..." class="h-sm-100px h-lg-150px app-sidebar-logo-default theme-dark-show spinner" />
 	</div>
 	<header>
 		<div class="d-flex flex-column flex-root app-root" id="kt_app_root">
@@ -710,16 +726,7 @@
 										</a>
 										</div>
 										<!--end::Menu item-->
-										<!--begin::Menu item-->
-										<div class="menu-item px-3 my-0">
-										<a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="system">
-										<span class="menu-icon" data-kt-element="icon">
-										<i class="ki-outline ki-screen fs-2"></i>
-										</span>
-										<span class="menu-title">System</span>
-										</a>
-										</div>
-										<!--end::Menu item-->
+										
 										</div>
 										<!--end::Menu-->
 										</div> 
@@ -806,7 +813,6 @@
 	<script src="https://cdn.amcharts.com/lib/5/geodata/worldTimeZoneAreasLow.js"></script>
 
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.10/signalr.min.js"></script>
-
 	<script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>
 	<script src="~/assets/plugins/custom/tinymce/tinymce.bundle.js"></script>
 	<link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
@@ -827,6 +833,7 @@
 	@await RenderSectionAsync("Scripts", required: false)
 
 	<script>
+
 		document.addEventListener("DOMContentLoaded", function () {
 			var logoutLink = document.getElementById("logoutLink");
 
@@ -844,16 +851,24 @@
 	</script>
 
 	<script>
-		// Mostrar el loader cuando comienza a cargarse una nueva página
 		function showLoader() {
 			const loader = document.getElementById('loader');
-			loader.style.display = 'block'; // Muestra el loader
+			const loaderDark = document.getElementById('loaderDark');
+
+			const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+			if (isDarkMode) {
+				loaderDark.style.display = 'block';
+				loader.style.display = 'none';
+			} else {
+				loader.style.display = 'block';
+				loaderDark.style.display = 'none';
+			}
 		}
 
-		// Ocultar el loader cuando la página termina de cargar
 		function hideLoader() {
-			const loader = document.getElementById('loader');
-			loader.style.display = 'none'; // Oculta el loader
+			document.getElementById('loader').style.display = 'none';
+			document.getElementById('loaderDark').style.display = 'none';
 		}
 
 		// Eventos para cambiar la imagen del logo (esto es opcional según tus necesidades)
@@ -876,13 +891,8 @@
 			}, 3500);
 		}
 
-		// Control del spinner al cargar la página y al navegar entre páginas
-		document.addEventListener('DOMContentLoaded', function () {
-			showLoader(); // Mostrar el loader cuando la página comienza a cargarse
-		});
 
 		window.addEventListener('load', function () {
-			hideLoader(); // Ocultar el loader cuando la página termina de cargarse
 			cambiarDespuesDeSegundos(); // Cambiar el logo después de unos segundos
 		});
 

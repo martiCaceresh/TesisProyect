@@ -13,6 +13,7 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             this.DbContext = DbContext;
         }
 
+
         public async Task<bool> ValidateFirstConfiguration ()
         {
             return await DbContext.SystemConfiguration.AnyAsync();

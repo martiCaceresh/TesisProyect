@@ -146,7 +146,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
                 // Agrega un mensaje de éxito al TempData
                 TempData["SuccessMessage"] = "Se registro la salida correctamente";
 
-                return Json("Ok");
+                return Json("Ok"); //FALTA LOGICA PARA CUANDO ALGUN PEDIDO NO SE PUEDA COMPLETAR
             }
             catch (Exception)
             {

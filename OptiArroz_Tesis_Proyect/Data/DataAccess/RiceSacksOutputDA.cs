@@ -284,5 +284,32 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                 throw new Exception("Algo fallo al obtener la salida");
             }
         }
+
+        public async Task<List<RiceSacksOutputTypeLotDTO>> GetRiceSackOutputTypeLot(string OutputCode)
+        {
+            var IdOutput = await DbContext.RiceSacksOutputs.Where(x => x.Code == OutputCode).Select(x => x.IdRiceSacksOutput).FirstOrDefaultAsync();
+
+            var groupedDetails = await DbContext.RiceSacksOutputDetails
+                                        .Include(x => x.RiceLot)
+                                        .ThenInclude(x => x.RiceClassification)
+                                        .Where(x => x.IdRiceSacksOutput == IdOutput)
+                                        .GroupBy(x => new {
+                                            IdClassification = x.RiceLot.RiceClassification.IdClassification, // Asumiendo que existe un campo Id
+                                            Classification = x.RiceLot.RiceClassification.Name,
+                                            ExpirationDate = x.RiceLot.ExpirationDate
+                                        })
+                                        .Select(g => new RiceSacksOutputTypeLotDTO
+                                        {
+                                            IdClassification = g.Key.IdClassification,
+                                            Classification = g.Key.Classification,
+                                            ExpirationDate = g.Key.ExpirationDate,
+                                            QuantitySelected = g.Sum(x => x.SacksQuantity)
+                                        })
+                                        .ToListAsync();
+
+            return groupedDetails;
+
+
+        }
     }
 }

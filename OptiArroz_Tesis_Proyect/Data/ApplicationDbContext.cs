@@ -204,7 +204,7 @@ namespace OptiArroz_Tesis_Proyect.Data
             builder.Entity<RiceSacksDevolution>()
                 .HasOne(p => p.RiceSacksDevolutionType)
                 .WithMany(f => f.RiceSacksDevolutions)
-                .HasForeignKey(p => p.IdRiceSacksDevolution);
+                .HasForeignKey(p => p.IdRiceSacksDevolutionType);
 
             builder.Entity<RiceSacksDevolution>()
                 .HasOne(p => p.CreatedBy)

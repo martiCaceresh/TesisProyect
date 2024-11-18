@@ -11,9 +11,11 @@ using iText.Kernel.Pdf;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using iText.Layout;
+using Microsoft.AspNetCore.Authorization;
 
 namespace OptiArroz_Tesis_Proyect.Controllers
 {
+    [Authorize]
     public class RiceLotController : Controller
     {
 

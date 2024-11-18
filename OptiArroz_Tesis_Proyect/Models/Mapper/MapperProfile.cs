@@ -14,9 +14,17 @@ namespace OptiArroz_Tesis_Proyect.Models.Mapper
 
             CreateMap<RiceLot, RiceSacksConsultationTableDTO>()
                 .ForMember(dest => dest.Classification, opt => opt.MapFrom(src => src.RiceClassification != null ? src.RiceClassification.Name : string.Empty))
+                .ForMember(dest => dest.MaximunCapacity, opt => opt.MapFrom(src => src.RiceClassification != null ? src.RiceClassification.SacksPerLot : 0))
                 .ForMember(dest => dest.LastUbication, opt => opt.MapFrom(src => src.LastUbication != null ? src.LastUbication.UbicationName() : (src.Zone != null ? src.Zone.Name : "")));
 
             CreateMap<RiceSacksOutputDetail, RiceSacksOutputDetailTableDTO>()
+                .ForMember(dest => dest.Classification, opt => opt.MapFrom(src => src.RiceLot != null ? (src.RiceLot.RiceClassification != null ? src.RiceLot.RiceClassification.Name : "") : ""))
+                .ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.RiceLot != null ? src.RiceLot.Code : ""))
+                .ForMember(dest => dest.ExpirationDate, opt => opt.MapFrom(src => src.RiceLot != null ? src.RiceLot.ExpirationDate : DateTime.MinValue))
+                .ForMember(dest => dest.Ubication, opt => opt.MapFrom(src => src.RiceLot != null ? (src.RiceLot.LastUbication != null ? src.RiceLot.LastUbication.UbicationName() : (src.RiceLot.Zone != null ? src.RiceLot.Zone.Name : "")) : ""));
+
+
+            CreateMap<RiceSacksDevolutionDetail, RiceSacksDevolutionDetailTableDTO>()
                 .ForMember(dest => dest.Classification, opt => opt.MapFrom(src => src.RiceLot != null ? (src.RiceLot.RiceClassification != null ? src.RiceLot.RiceClassification.Name : "") : ""))
                 .ForMember(dest => dest.Code, opt => opt.MapFrom(src => src.RiceLot != null ? src.RiceLot.Code : ""))
                 .ForMember(dest => dest.ExpirationDate, opt => opt.MapFrom(src => src.RiceLot != null ? src.RiceLot.ExpirationDate : DateTime.MinValue))
@@ -37,6 +45,10 @@ namespace OptiArroz_Tesis_Proyect.Models.Mapper
 
             CreateMap<RiceSacksOutput, RiceSacksOutputTableDTO>()
                 .ForMember(dest => dest.RiceSacksOutputType, opt => opt.MapFrom(src => src.RiceSacksOutputType != null ? src.RiceSacksOutputType.name : ""))
+                .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.Name + " " + src.CreatedBy.LastName : ""));
+
+            CreateMap<RiceSacksDevolution, RiceSacksDevolutionTableDTO>()
+                .ForMember(dest => dest.RiceSacksDevolutionType, opt => opt.MapFrom(src => src.RiceSacksDevolutionType != null ? src.RiceSacksDevolutionType.name : ""))
                 .ForMember(dest => dest.CreatedBy, opt => opt.MapFrom(src => src.CreatedBy != null ? src.CreatedBy.Name + " " + src.CreatedBy.LastName : ""));
 
 

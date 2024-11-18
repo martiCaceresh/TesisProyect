@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.Xml.Linq;
+using OptiArroz_Tesis_Proyect.Models.Dtos;
 
 namespace OptiArroz_Tesis_Proyect.Models.Entities
 {
@@ -12,6 +13,8 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public string Code { get; set; } = string.Empty;
 
         public DateTime RiceSacksDevolutionDate { get; set; }
+
+        public string RiceSacksOutput { get; set; } = string.Empty ;
 
         public string Observation { get; set; } = string.Empty;
 
@@ -43,6 +46,17 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public string? IdUpdatedBy { get; set; }
         public ApplicationUser? UpdatedBy { get; set; }
 
+
+        public RiceSacksDevolution() { }
+
+        public RiceSacksDevolution(CreateNewDevolutionDTO NewDevolutionDTO, string IdUser)
+        {
+            this.RiceSacksDevolutionDate = DateTime.Now;
+            this.Observation = NewDevolutionDTO.Observation ?? "";
+            this.IdRiceSacksDevolutionType = NewDevolutionDTO.IdRiceSacksDevolutionType;
+            this.RiceSacksOutput = NewDevolutionDTO.RiceSacksOutput;
+            SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
+        }
 
         public void SetBaseModel(string? IdCreatedBy, string? IdUpdatedBy, DateTime CreatedAt, DateTime UpdatedAt, int State)
         {

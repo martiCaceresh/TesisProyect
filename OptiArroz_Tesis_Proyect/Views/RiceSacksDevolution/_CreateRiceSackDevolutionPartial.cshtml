@@ -1,0 +1,747 @@
+﻿@using System.Text.Json
+@model OptiArroz_Tesis_Proyect.Models.ViewModels.RiceSacksDevolutionVM
+
+<style>
+
+    .form-control {
+        text-transform: uppercase;
+    }
+
+    .modal-dialog-custom-lg {
+        max-width: 90%;
+    }
+
+</style>
+<!--end::Style-->
+<!--begin: General scripts-->
+<script>
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+            // Simula el clic en el botón "Siguiente"
+            event.preventDefault(); // Evita comportamientos por defecto del Enter
+            $('[data-kt-element*="-next"]:visible').click();
+        }
+    });
+
+
+    function Create() {
+        const form = document.getElementById('kt_modal_create_app_form');
+
+        var Classifications = [];
+        var ExpirationDates = [];
+        var QuantityDevolutions = [];
+
+
+        $('[output-info-classification]').each(function (index) {
+            Classifications.push($(this).val().trim());
+        });
+
+        // Itera sobre los elementos de entrada en los repeaters para Classification
+        $('[output-info-expirationDate]').each(function (index) {
+            ExpirationDates.push($(this).val().trim());
+        });
+
+        $('[output-info-quantitySelected]').each(function (index) {
+            QuantityDevolutions.push($(this).val().trim());
+        });
+
+        console.log(Classifications);
+        console.log(ExpirationDates);
+        console.log(QuantityDevolutions);
+
+        const sumaTotal = QuantityDevolutions.reduce((sum, quantity) => {
+            return sum + (parseInt(quantity) || 0);
+        }, 0);
+
+        if (sumaTotal === 0) {
+            Swal.fire({
+                title: '¡Advertencia!',
+                text: 'Debe seleccionar al menos 1 saco para devolver',
+                icon: 'warning',
+                confirmButtonText: 'Entendido',
+                confirmButtonColor: '#3085d6'
+            });
+            return false;
+        }
+
+        // Asigna los valores a los inputs ocultos y muestra en consola
+        $('#Classifications').val(Classifications.toString());
+        $('#ExpirationDates').val(ExpirationDates.toString());
+        $('#QuantityDevolutions').val(QuantityDevolutions.toString());
+
+        // Confirmación de envío
+        Swal.fire({
+            title: '¿Estás seguro?',
+            text: "¿Deseas enviar el formulario?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sí, enviar',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                //MOSTRAR SPINNER
+                $('#submitButton').prop('disabled', true); // Deshabilitar el botón
+                $('#btnGuardar').hide(); // Ocultar el texto
+                $('.indicator-progress').show(); // Mostrar el spinner
+                // Envía el formulario
+                form.submit();
+            }
+        });
+    }
+
+    function GetRiceSacksOutputDetails() {
+        // Obtener código de salida
+        var OutputCode = $('#RiceSacksOutput').val();
+
+        $.ajax({
+            url: '/RiceSacksDevolution/GetRiceSacksOutputDetails',
+            type: 'GET',
+            data: { OutputCode: OutputCode },
+            success: function (response) {
+                console.log(response)
+                // Limpiar el contenedor existente antes de agregar nuevos rows
+                $('#detailsContainer').empty();
+
+                var index = 0
+                // Iterar sobre cada item en el response
+                response.forEach(function (item) {
+                    // Crear el HTML para cada row
+                    var rowHtml = `
+                        <div class="row">
+                                <input hidden type="text" class="form-control"
+                                                       value="${item.idClassification}" output-info-classification/>
+                            <div class="col-lg-3 mb-3">
+                                <div class="input-group">
+                                    <div class="form-floating">
+                                        <input readonly id="Classification_${index}" type="text" class="form-control"
+                                               value="${item.classification}" placeholder="Clasificación"/>
+                                        <label class="form-label required" for="Classification_${index}">Clasificación</label>
+                                    </div>
+                                </div>
+                            </div>
+                                <div class="col-lg-3 mb-2">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input readonly
+                                                   id="ExpirationDate_${index}"
+                                                   type="date"
+                                                   class="form-control"
+                                                   value="${new Date(item.expirationDate).toISOString().split('T')[0]}"
+                                                   placeholder="Clasificación"
+                                                   output-info-expirationDate/>
+                                            <label class="form-label required" for="ExpirationDate_${index}">Fecha vencimiento</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 mb-2">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="QuantitySelected_${index}"
+                                                   type="number"
+                                                   required
+                                                   data-validation="required"
+                                                   class="form-control"
+                                                   value="0"
+                                                   min="0"
+                                                   max="${item.quantitySelected}"
+                                                   placeholder="Cantidad devuelta" oninput="ValidateElement($(this))" output-info-quantitySelected/>
+                                            <label class="form-label required" for="QuantitySelected_${index}">Cantidad devuelta</label>
+                                        </div>
+                                    </div>
+                                        <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                        </div>
+                    `;
+                    index++;
+                    // Agregar el nuevo row al contenedor
+                    $('#detailsContainer').append(rowHtml);
+
+                    inicializarValidacion();
+                });
+            },
+            error: function (error) {
+                console.error('Error al obtener los detalles:', error);
+                // Opcional: Mostrar mensaje de error al usuario
+                alert('Error al obtener los detalles de la salida');
+            }
+        });
+    }
+
+</script>
+<!--end: General scripts-->
+<!--begin: Stepper Logic-->
+<script>
+    $(document).ready(function () {
+        // Configuración inicial del stepper
+        var totalSteps = $('[data-kt-stepper-element="content"]').length;
+
+        // Al hacer clic en "Next"
+        $('[data-kt-element*="-next"]').on('click', function () {
+            if (validateCurrentStep()) {
+                console.log("Paso valido")
+                GetRiceSacksOutputDetails();
+                navigateStepper(1);
+            }
+            console.log("Paso no valido")
+        });
+
+        // Al hacer clic en "Previous"
+        $('[data-kt-element*="-previous"]').on('click', function () {
+            navigateStepper(-1);
+        });
+
+        //Al hacer click en create
+        $('[data-kt-element*="-create"]').on('click', function (e) {
+            e.preventDefault();
+            if (validateCurrentStep()) {
+                Create();
+            }
+        });
+
+        //funcion para validar stepper
+        function validateCurrentStep() {
+            var currentSection = $('.current[data-kt-stepper-element="content"]');
+            var currentIndex = $('[data-kt-stepper-element="content"]').index(currentSection);
+            var inputs = currentSection.find('input[required], select[required]');
+            var isValid = true;
+
+
+
+            inputs.each(function () {
+                var element = $(this);
+                if (!element.val() || element.hasClass('invalid')) {
+                    var parentDiv = element.closest('.input-group');
+                    isValid = false;
+                    element.addClass('invalid');
+                    parentDiv.next('.invalid-feedback').show();
+                } else {
+                    var parentDiv = element.closest('.input-group');
+                    element.removeClass('invalid');
+                    parentDiv.next('.invalid-feedback').hide();
+                }
+            });
+
+
+            if (isValid && currentIndex === 0) { //Llenar el select de sacos de la seccion 2
+                var Sacks = [];
+                $('[data-repeater-sack]').each(function (index) {
+                    if (index !== 1) {
+                        Sacks.push($(this).val().trim());
+                    }
+                });
+
+                $('[data-repeater-ricesack]').each(function (index) {
+                    // Limpiar las opciones existentes manteniendo solo la opción por defecto
+                    $(this).find('option:not(:first)').remove();
+
+                    // Llenar el select con los valores de la lista Sacks
+                    Sacks.forEach(function (sackValue) {
+                        if (sackValue !== '') {
+                            let option = new Option(sackValue, sackValue);
+                            $(this).append(option);
+                        }
+                    }.bind(this));
+                });
+
+            }
+
+            return isValid;
+
+        }
+
+        function navigateStepper(direction) {
+            // Encuentra la sección actual
+            var currentSection = $('.current[data-kt-stepper-element="content"]');
+
+            // Encuentra el índice de la sección actual
+            var currentIndex = $('[data-kt-stepper-element="content"]').index(currentSection);
+
+            // Calcula el próximo índice
+            var nextIndex = currentIndex + direction;
+
+            // Asegúrate de que el próximo índice esté en el rango válido
+            if (nextIndex >= 0 && nextIndex < totalSteps) {
+                // Oculta la sección actual
+                currentSection.removeClass('current');
+
+                // Muestra la siguiente o anterior sección
+                $('[data-kt-stepper-element="content"]:eq(' + nextIndex + ')').addClass('current');
+
+                // Actualiza la navegación del stepper
+                $('.stepper-item.current').removeClass('current');
+                $('[data-kt-stepper-element="nav"]:eq(' + nextIndex + ')').addClass('current');
+            }
+        }
+
+    });
+
+    function navigateStepperByStep(step) {
+        // Encuentra la sección actual
+        var currentSection = $('.current[data-kt-stepper-element="content"]');
+
+        // Calcula el próximo índice
+        var nextIndex = step;
+
+        // Oculta la sección actual
+        currentSection.removeClass('current');
+
+        // Muestra la siguiente o anterior sección
+        $('[data-kt-stepper-element="content"]:eq(' + nextIndex + ')').addClass('current');
+
+        // Actualiza la navegación del stepper
+        $('.stepper-item.current').removeClass('current');
+        $('[data-kt-stepper-element="nav"]:eq(' + nextIndex + ')').addClass('current');
+
+    }
+</script>
+<!--end: Stepper Logic-->
+<!--begin: Stepper Validations-->
+<script>
+
+    //FUNCION QUE REALIZA LAS VALIDACIONES A CADA ELEMENTO DENTRO DEL MODAL
+    function ValidateElement(element) {
+        var isValid = true;
+        var validationTypes = element.data('validation').split(',');
+
+        for (var i = 0; i < validationTypes.length; i++) {
+            var validationType = validationTypes[i];
+            switch (validationType) {
+                case 'required':
+                    if (!element.val()) {
+                        isValid = false;
+                        console.log("Required")
+                        ShowValidationError(element, 'Este campo es obligatorio.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+                case 'digits':
+                    var digits = element.data('digits').toString().split(',').map(Number);
+                    if (!digits.includes(element.val().length)) {
+                        isValid = false;
+                        console.log("Digits")
+                        ShowValidationError(element, `El campo debe tener exactamente ${digits.join(' o ')} dígitos.`);
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+                case 'email':
+                    if (element.val() == "") {
+                        var parentDiv = element.closest('.input-group');
+                        element.removeClass('valid');
+                        element.removeClass('invalid');
+                        parentDiv.next('.invalid-feedback').hide();
+                        element.removeAttr('required');
+                    }
+                    else if (!ValidateEmail(element.val())) {
+                        isValid = false;
+                        console.log("email")
+                        ShowValidationError(element, 'El correo electrónico no es válido.');
+                        element.attr('required', true);
+                        return isValid;
+                    }
+                    else {
+
+                        RemoveValidationError(element);
+                        element.attr('required', true);
+                    }
+                    break;
+
+                case 'numeric':
+                    if (!ValidateNumeric(element.val())) {
+                        isValid = false;
+                        console.log("numeric")
+                        ShowValidationError(element, 'El campo solo debe contener valores numéricos.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+                case 'decimal':
+                    console.log("decimal")
+
+                    if (!ValidateDecimal(element.val())) {
+                        isValid = false;
+                        console.log("decimal")
+                        ShowValidationError(element, 'El número decimal no es válido.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+                case 'contract-format':
+                    var formattedValue = formatContract(element.val());
+                    element.val(formattedValue);
+                    if (!ValidateContractFormat(formattedValue)) {
+                        isValid = false;
+                        console.log("contract-format")
+                        ShowValidationError(element, 'El contrato no sigue el formato correcto.');
+                        return isValid;
+                    } else {
+                        RemoveValidationError(element);
+                    }
+                    break;
+
+
+                default:
+                    break;
+            }
+        }
+
+        return isValid;
+    }
+
+    //FUNCION QUE MUESTRA LOS ATRIBUTOS DE ERROR DEL ELEMENTO
+    function ShowValidationError(element, message) {
+        var parentDiv = element.closest('.input-group');
+        element.removeClass('valid');
+        element.addClass('invalid');
+        parentDiv.next('.invalid-feedback').text(message).show();
+    }
+
+    //FUNCION QUE RETIRA LOS ATRIBUTOS Y CLASES DE ERROR Y AGREGA ATRIBUTOS Y CLASES DE EXITO
+    function RemoveValidationError(element) {
+        var parentDiv = element.closest('.input-group');
+        element.removeClass('invalid');
+        parentDiv.next('.invalid-feedback').hide();
+        element.addClass('valid');
+    }
+
+    //FUNCION PARA VALIDAR CORREO
+    function ValidateEmail(email) {
+        // Expresión regular para validar un correo electrónico
+        var emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+        // Verificar si el email pasa la validación básica
+        if (!emailPattern.test(email)) {
+            return false;
+        }
+
+        // Verificar que no termine con un punto
+        if (email.endsWith('.')) {
+            return false;
+        }
+
+        // Si pasa ambas validaciones, el email es válido
+        return true;
+    }
+
+    //FUNCION PARA VALIDAR VALORES NUMERICOS
+    function ValidateNumeric(number) {
+        return /^\d+$/.test(number);
+    }
+
+
+    function ValidateDecimal(string) {
+        // Si está vacío o no es string, retornar false
+        if (!string || typeof string !== 'string') {
+            return false;
+        }
+
+        // Eliminar espacios en blanco
+        string = string.trim();
+
+        // Verificar si es un número válido
+        // Acepta:
+        // - Cero (0)
+        // - Números enteros positivos (ej: 1, 2, 123)
+        // - Números decimales positivos (ej: 0.45, 123.45)
+        // - No permite múltiples puntos decimales
+        const decimalRegex = /^(0|[1-9]\d*)\.?\d*$/;
+        return decimalRegex.test(string);
+    }
+
+    //VALIDACION DE FORMATO DE CONTRATOS
+    function ValidateContractFormat(contract) {
+        // Expresión regular para validar el formato del contrato
+        var contractPattern = /^\d{4}-\d{4}-\d{2}-\d{8}$/;
+        return contractPattern.test(contract);
+    }
+
+    //CONVERTIDOR DE NUMEROS DECIMALES
+    function formatDecimal(value) {
+
+        // Convertir el valor en un número flotante
+        let number = parseFloat(value);
+
+        if (isNaN(number)) {
+            return 'Invalid number';
+        }
+
+        // Formatear el número con comas en los miles y dos decimales
+        return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    //CONVERTIDOR A FORMATO DE CONTRATO
+    function formatContract(value) {
+
+        var value = value.replace(/\D/g, '');
+        console.log(value);
+        var sections = [4, 4, 2, 8];
+        var formattedValue = '';
+        var index = 0;
+
+        for (var i = 0; i < sections.length; i++) {
+            if (value.length > index) {
+                var endIndex = index + sections[i];
+                if (value.length > endIndex) {
+                    if (value.length > 18 && i === 3) formattedValue += value.substring(index, endIndex);
+                    else formattedValue += value.substring(index, endIndex) + '-';
+                } else {
+                    formattedValue += value.substring(index, value.length);
+                }
+            }
+            index += sections[i];
+        }
+
+        return formattedValue;
+    }
+
+</script>
+<!--end: Stepper Validations-->
+
+<script>
+
+    function inicializarValidacion() {
+        $("input[type='number']").on('input paste', function (e) {
+            // Prevenir el pegado si no es número
+            if (e.type === 'paste') {
+                let clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+                let pastedData = clipboardData.getData('text');
+                if (!/^\d*$/.test(pastedData)) {
+                    e.preventDefault();
+                    return;
+                }
+            }
+            // Eliminar caracteres no numéricos
+            this.value = this.value.replace(/[^0-9]/g, '');
+            // Validar límites
+            let max = parseInt($(this).attr('max'));
+            let min = parseInt($(this).attr('min'));
+            if (this.value !== '') {
+                let num = parseInt(this.value);
+                if (num > max) this.value = max;
+                if (num < min) this.value = min;
+            }
+        });
+
+        // Prevenir el ingreso de caracteres no numéricos
+        $("input[type='number']").on('keypress', function (e) {
+            if (!/^\d*$/.test(String.fromCharCode(e.which)) && e.which != 8) {
+                e.preventDefault();
+            }
+        });
+    }
+
+</script>
+
+<!--begin: Modal - Create App-->
+<div class="modal fade" id="kt_modal_1" tabindex="-1" aria-hidden="true">
+    <!--begin::Modal dialog-->
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-custom-lg">
+        <!--begin::Modal content-->
+        <div class="modal-content">
+            <!--begin::Modal header-->
+            <div class="modal-header">
+                <!--begin::Modal title-->
+                <h2 id="TituloModal">Registro de devolución</h2>
+                <!--end::Modal title-->
+            </div>
+            <!--end::Modal header-->
+            <!--begin::Modal body-->
+            <div class="modal-body py-lg-10 px-lg-10">
+                <!--begin::Stepper-->
+                <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid" id="kt_modal_create_app_stepper">
+                    <!--begin::Aside-->
+                    <div class="d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px">
+                        <!--begin::Nav-->
+                        <div class="stepper-nav ps-lg-10">
+                            <!--begin::Step 1 : DATOS DEL LOTE-->
+                            <div class="stepper-item current" data-kt-stepper-element="nav">
+                                <!--begin::Wrapper-->
+                                <div class="stepper-wrapper">
+                                    <!--begin::Icon-->
+                                    <div class="stepper-icon w-40px h-40px">
+                                        <i class="ki-duotone ki-check stepper-check fs-2"></i>
+                                        <span class="stepper-number">1</span>
+                                    </div>
+                                    <!--end::Icon-->
+                                    <!--begin::Label-->
+                                    <div class="stepper-label">
+                                        <h3 class="stepper-title">Datos de devolución</h3>
+                                        <div class="stepper-desc">Ingresa los datos de la devolución</div>
+                                    </div>
+                                    <!--end::Label-->
+                                </div>
+                                <!--end::Wrapper-->
+                                <!--begin::Line-->
+                                <div class="stepper-line h-40px"></div>
+                                <!--end::Line-->
+                            </div>
+                            <!--end::Step 1-->
+                            <!--begin::Step 2: ELEGIR UBICACION-->
+                            <div class="stepper-item mark-completed" data-kt-stepper-element="nav">
+                                <!--begin::Wrapper-->
+                                <div class="stepper-wrapper">
+                                    <!--begin::Icon-->
+                                    <div class="stepper-icon w-40px h-40px">
+                                        <i class="ki-duotone ki-check stepper-check fs-2"></i>
+                                        <span class="stepper-number">2</span>
+                                    </div>
+                                    <!--end::Icon-->
+                                    <!--begin::Label-->
+                                    <div class="stepper-label">
+                                        <h3 class="stepper-title">Selección de lotes</h3>
+                                        <div class="stepper-desc">Selecciona los lotes de donde se devolverán sacos</div>
+                                    </div>
+                                    <!--end::Label-->
+                                </div>
+                                <!--end::Wrapper-->
+                                <!--begin::Line-->
+                                <div class="stepper-line h-40px"></div>
+                                <!--end::Line-->
+                            </div>
+                            <!--end::Step 2-->
+                            
+                        </div>
+                        <!--end::Nav-->
+                    </div>
+                    <!--begin::Aside-->
+                    <!--begin::Content-->
+                    <div class="flex-row-fluid py-lg-2 px-lg-12">
+
+
+                        <!--begin::Form-->
+                        <form asp-action="CreateRiceSacksDevolution" method="post" class="row g-3 needs-validation" novalidate="novalidate" id="kt_modal_create_app_form">
+                            <!--begin::Step 1 : DATOS DEL LOTE-->
+                            <div class="current" data-kt-stepper-element="content">
+                                <div class="w-100">
+                                    <!--begin::Label-->
+                                    <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                                        <span>Ingresa los siguientes datos del lote</span>
+                                        <span class="ms-1" data-bs-toggle="tooltip" title="Ingresa los datos de la devolución">
+                                            <i class="ki-duotone ki-information-5 text-gray-500 fs-6">
+                                                <span class="path1"></span>
+                                                <span class="path2"></span>
+                                                <span class="path3"></span>
+                                            </i>
+                                        </span>
+                                    </label>
+                                    <!--end::Label-->
+
+
+
+                                    <div class="row">
+                                        <div class="col-lg-6 mb-3">
+                                            <div class="input-group">
+                                                <div class="form-floating">
+                                                    <select id="IdRiceSacksDevolutionType" name="IdRiceSacksDevolutionType" class="form-select" required data-validation="required" data-dropdown-parent="#kt_modal_1" oninput="ValidateElement($(this))">
+                                                        <option value="">Seleccione una clasificación de arroz</option>
+                                                        @foreach (var item in Model.RiceSacksDevolutionTypes)
+                                                        {
+                                                            <option value="@item.IdRiceSackDevolutionType">
+                                                                @item.name
+                                                            </option>
+                                                        }
+                                                    </select>
+                                                    <label class="form-label" for="IdRiceSacksDevolutionType">Motivo de devolución</label>
+                                                </div>
+                                            </div>
+                                            <!-- Mensaje de feedback inmediatamente después del input-group -->
+                                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <div class="input-group">
+                                                <div class="form-floating">
+                                                    <input id="RiceSacksOutput" name="RiceSacksOutput" type="text" required data-validation="required,contract" class="form-control" placeholder="Salida" oninput="ValidateElement($(this))" />
+                                                    <label class="form-label required" for="RiceSacksOutput">Código de salida</label>
+                                                </div>
+                                            </div>
+                                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                        </div>
+                                        
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col mb-3">
+                                            <div class="input-group">
+                                                <div class="form-floating">
+                                                    <textarea id="observations" name="Observations" class="form-control"
+                                                              placeholder="Observaciones" data-kt-autosize="true"
+                                                              style="height: 80px"></textarea>
+                                                    <label class="form-label">Observaciones</label>
+                                                </div>
+                                            </div>
+                                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                        </div>
+                                    </div>
+
+
+                                    <!--begin::Actions-->
+                                    <div class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-lg btn-primary" data-kt-element="first-step-next">
+                                            <span class="indicator-label">Siguiente</span>
+                                            <span class="indicator-progress">
+                                                Por favor, espera...
+                                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <!--end::Actions-->
+                                </div>
+                            </div>
+                            <!--end::Step 1-->
+                            <!--begin::Step 2 : ELEGIR UBICACION-->
+                            <div data-kt-stepper-element="content">
+                                <div class="w-100">
+                                    <!--begin::Label-->
+                                    <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                                        <span>Selecciona las cantidades de sacos a devolver según la clasificacion y fecha de vencimiento de los sacos</span>
+                                    </label>
+                                    <!--end::Label-->
+
+                                    <input hidden name="Classifications" id="Classifications"/>
+                                    <input hidden name="ExpirationDates"  id="ExpirationDates"/>
+                                    <input hidden name="QuantityDevolutions" id="QuantityDevolutions" />
+
+                                    <div id="detailsContainer">
+
+                                    </div>
+
+
+                                    <!--begin::Actions-->
+                                    <div class="d-flex flex-stack">
+                                        <button type="button" class="btn btn-lg btn-danger" data-kt-element="step3-previous">Atrás</button>
+                                        <button type="button" id="submitButton" class="btn btn-lg btn-primary" data-kt-element="finish-create">
+                                            <span id="btnGuardar" class="indicator-label">Crear</span>
+                                            <span class="indicator-progress">
+                                                Por favor, espera...
+                                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                            </span>
+                                        </button>
+                                    </div>
+                                    <!--end::Actions-->
+                                </div>
+                            </div>
+                            <!--end::Step 2-->
+                           
+                        </form>
+                        <!--end::Form-->
+                    </div>
+                    <!--end::Content-->
+                </div>
+                <!--end::Stepper-->
+            </div>
+            <!--end::Modal body-->
+        </div>
+        <!--end::Modal content-->
+    </div>
+    <!--end::Modal dialog-->
+</div>
+<!--end: Modal - Create App-->

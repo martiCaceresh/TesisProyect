@@ -16,6 +16,8 @@ namespace OptiArroz_Tesis_Proyect.Models.Dtos
 
         public string Classification { get; set; } = string.Empty;
 
+        public int MaximunCapacity { get; set; }
+
 
         public string LastUbication { get; set; } = string.Empty;
 

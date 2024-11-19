@@ -6,6 +6,7 @@ using OptiArroz_Tesis_Proyect.Data.Interfaces;
 using OptiArroz_Tesis_Proyect.Models.Dtos;
 using OptiArroz_Tesis_Proyect.Models.Entities;
 using OptiArroz_Tesis_Proyect.Models.ViewModels;
+using QRCoder;
 
 namespace OptiArroz_Tesis_Proyect.Controllers
 {
@@ -67,7 +68,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
                 // Agrega un mensaje de éxito al TempData
                 TempData["SuccessMessage"] = "Se registro la devolución correctamente";
 
-                return RedirectToAction("Index", "Home");
+                return RedirectToAction("Index");
             }
             catch (Exception)
             {
@@ -75,6 +76,35 @@ namespace OptiArroz_Tesis_Proyect.Controllers
                 TempData["ErrorMessage"] = "Se produjo un error en el registro, vuelva a intentar.";
 
                 return RedirectToAction("Index");
+            }
+        }
+        [HttpGet]
+        public async Task<IActionResult> GenerateMobileQR(int idDevolution)
+        {
+            try
+            {
+                // Generar URL segura (podrías incluir un token temporal)
+                var baseUrl = Configuration["BaseUrl"];
+                var mobileUrl = $"{baseUrl}/mobile/devolution/{idDevolution}";
+
+                // Generar QR
+                using (var qrGenerator = new QRCodeGenerator())
+                {
+                    var qrData = qrGenerator.CreateQrCode(mobileUrl, QRCodeGenerator.ECCLevel.Q);
+                    var qrCode = new PngByteQRCode(qrData);
+                    var qrImage = qrCode.GetGraphic(20); // Pixeles por módulo
+
+                    return new JsonResult(new
+                    {
+                        success = true,
+                        qrImage = Convert.ToBase64String(qrImage),
+                        url = mobileUrl
+                    });
+                }
+            }
+            catch
+            {
+                return StatusCode(500, new { success = false, message = "Error generating QR code" });
             }
         }
     }

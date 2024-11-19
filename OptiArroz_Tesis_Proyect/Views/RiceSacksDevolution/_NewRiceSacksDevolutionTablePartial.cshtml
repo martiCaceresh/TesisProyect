@@ -122,11 +122,30 @@
                     <td class="text-center">@item.RiceSacksDevolutionType</td>
                     <td class="text-center">@item.RiceSacksOutput</td>
                     <td class="text-center">
-                        <a href="#" class="btn btn-sm btn-icon btn-light btn-active-light-primary" data-kt-docs-datatable-subtable="expand_row">
-                            <span class="svg-icon svg-icon-2">
-                                <i class="fa-solid fa-chevron-down"></i>
-                            </span>
-                        </a>
+                        <div class="d-flex justify-content-center gap-2">
+                            @if (!string.IsNullOrWhiteSpace(item.Observation))
+                            {
+                                <div class="position-relative">
+                                    <a href="javascript:void(0);"
+                               class="btn btn-sm btn-icon btn-light btn-active-light-primary"
+                               data-bs-toggle="collapse"
+                               data-bs-target="#observation_@item.IdRiceSacksDevolution"
+                               aria-expanded="false">
+                                        <i class="fa-solid fa-comment"></i>
+                                    </a>
+                                    <div class="collapse position-absolute bg-light p-3 rounded shadow-sm"
+                                 id="observation_@item.IdRiceSacksDevolution"
+                                 style="width: 250px; z-index: 100; left: 50%; transform: translateX(-50%);">
+                                        @item.Observation
+                                    </div>
+                                </div>
+                            }
+                            <a href="#" class="btn btn-sm btn-icon btn-light btn-active-light-primary" data-kt-docs-datatable-subtable="expand_row">
+                                <span class="svg-icon svg-icon-2">
+                                    <i class="fa-solid fa-chevron-down"></i>
+                                </span>
+                            </a>
+                        </div>
                     </td>
                 </tr>
             }

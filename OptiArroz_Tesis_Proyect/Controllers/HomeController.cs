@@ -9,7 +9,6 @@ using OptiArroz_Tesis_Proyect.Models.Entities;
 using OptiArroz_Tesis_Proyect.Models.ViewModels;
 using System.Diagnostics;
 using System.Globalization;
-using Twilio.TwiML.Voice;
 
 namespace OptiArroz_Tesis_Proyect.Controllers
 {
@@ -18,6 +17,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
     {
        
         private readonly IRiceClassDA RiceCLassDA;
+        private readonly INotificationSenderDA NotificationSenderDA;
         private readonly IFirstConfigurationDA FirstConfigurationDA;
         private readonly IRiceGradeDA RiceGradeDA;
         private readonly IRiceClassificationDA RiceClassificationDA;
@@ -28,7 +28,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
 
 
 
-        public HomeController(IZoneDA ZoneDA,IRiceClassificationDA RiceClassificationDA, IRiceLotDA RiceLotDA, IMapper Mapper,IFirstConfigurationDA FirstConfigurationDA, IRiceClassDA RiceCLassDA, IRiceGradeDA RiceGradeDA, UserManager<ApplicationUser> UserManager)
+        public HomeController(INotificationSenderDA NotificationSenderDA, IZoneDA ZoneDA,IRiceClassificationDA RiceClassificationDA, IRiceLotDA RiceLotDA, IMapper Mapper,IFirstConfigurationDA FirstConfigurationDA, IRiceClassDA RiceCLassDA, IRiceGradeDA RiceGradeDA, UserManager<ApplicationUser> UserManager)
         {
             this.FirstConfigurationDA = FirstConfigurationDA;
             this.RiceCLassDA = RiceCLassDA;
@@ -38,6 +38,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             this.RiceLotDA = RiceLotDA;
             this.RiceClassificationDA = RiceClassificationDA;
             this.ZoneDA = ZoneDA;
+            this.NotificationSenderDA=  NotificationSenderDA;
         }
 
         public async Task<IActionResult> Index()
@@ -170,5 +171,52 @@ namespace OptiArroz_Tesis_Proyect.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
+        #region Notifications
+        //Get Notification Data
+        [HttpGet]
+        public async Task<List<NotificationDTO>> GetNotificationData()
+        {
+            ApplicationUser user = await UserManager.GetUserAsync(User);
+            var notificationData = await NotificationSenderDA.GetNotificationsByUser(user.Id);
+
+            return notificationData;
+        }
+
+        [HttpGet]
+        public async Task<List<NotificationDTO>> GetAllNotificationData()
+        {
+            ApplicationUser user = await UserManager.GetUserAsync(User);
+            var notificationData = await NotificationSenderDA.GetAllNotificationsByUser(user.Id);
+
+            return notificationData;
+        }
+
+        //Mark Notification as Read
+        [HttpPost]
+        public async Task MarkNotificationAsRead(int id)
+        {
+            await NotificationSenderDA.MarkAsRead(id);
+        }
+
+        public async Task<IActionResult> Notifications()
+        {
+            try
+            {
+                
+                var user = await UserManager.GetUserAsync(User);
+
+                var notificationData = await NotificationSenderDA.GetAllNotificationsByUser(user.Id);
+
+                return View(notificationData);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Hubo un error al listar las notificaciones", ex);
+            }
+        }
+
+        #endregion
     }
 }

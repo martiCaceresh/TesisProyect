@@ -80,7 +80,7 @@
 			}
 	</style>
 
-	@* <style>
+	 <style>
 	/*Notifications*/
 	.notification-count {
 	background-color: #3E97FF; /* Color de fondo de la burbuja */
@@ -91,7 +91,7 @@
 	position: relative; /* Para ajustar la posición del elemento */
 	top: -0.5rem; /* Mover el elemento hacia arriba */
 	}
-	</style> *@
+	</style> 
 </head>
 
 <body id="kt_app_body" data-kt-app-layout="light-header" data-kt-app-header-fixed="true" data-kt-app-toolbar-enabled="true" class="app-default">
@@ -572,7 +572,7 @@
 							<!--end::Menu wrapper-->
 							<!--begin::Navbar-->
 							<div class="app-navbar flex-shrink-0">
-								@* <!--begin::Notifications-->
+								 <!--begin::Notifications-->
 								<div class="app-navbar-item ms-1 ms-md-4">
 								<!--begin::Menu- wrapper-->
 								<div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-40px h-40px" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end" id="kt_menu_item_wow">
@@ -593,7 +593,11 @@
 								<!--begin::Tabs-->
 								<ul class="nav nav-line-tabs nav-line-tabs-2x nav-stretch fw-semibold px-9">
 								<li class="nav-item">
-								<a class="nav-link text-gray-800 opacity-75 opacity-state-100 pb-4 active" data-bs-toggle="tab" href="#process_sheets_notifications">Fichas</a>
+								<a class="nav-link text-gray-800 opacity-75 opacity-state-100 pb-4 active" data-bs-toggle="tab" href="#process_sheets_notifications">Stocks</a>
+								</li>
+
+								<li class="nav-item">
+								<a class="nav-link text-gray-800 opacity-75 opacity-state-100 pb-4" data-bs-toggle="tab" href="#expiration_date_notifications">Fecha Vencimiento</a>
 								</li>
 
 								</ul>
@@ -619,22 +623,20 @@
 								</div>
 								<!--end::Tab panel-->
 								<!--begin::Tab panel-->
-								<div class="tab-pane fade show" id="billing_notifications" role="tabpanel">
-								<!--begin::Wrapper-->
-								<div class="d-flex flex-column px-9">
-								<!--begin::Section-->
-								<div class="pt-10 pb-0">
-								<!--begin::Title-->
-								<h3 class="text-dark text-center fw-bold">Espacio en construcción</h3>
-								<!--end::Title-->
-								<!--begin::Text-->
-								<div class="text-center text-gray-600 fw-semibold pt-1">El módulo de facturación se encuentra en desarrollo.</div>
-								<!--end::Text-->
-								</div>
-								<!--end::Section-->
-								</div>
-								<!--end::Wrapper-->
-								</div>
+								<div class="tab-pane fade show" id="expiration_date_notifications" role="tabpanel">
+												<!--begin::Items-->
+												<div class="notificationsExpirationDate scroll-y mh-325px my-5 px-8">
+												</div>
+												<!--end::Items-->
+												<!--begin::View more-->
+												<div class="py-3 text-center border-top">
+													<a asp-area="" asp-controller="Home" asp-action="NotificationsExpirationDate" class="btn btn-color-gray-600 btn-active-color-primary">
+														Ver todas
+														<i class="ki-outline ki-arrow-right fs-5"></i>
+													</a>
+												</div>
+												<!--end::View more-->
+											</div>
 								<!--end::Tab panel-->
 								</div>
 								<!--end::Tab content-->
@@ -642,7 +644,7 @@
 								<!--end::Menu-->
 								<!--end::Menu wrapper-->
 								</div>
-								<!--end::Notifications--> *@
+								<!--end::Notifications--> 
 								<!--begin::User menu-->
 								<div class="app-navbar-item ms-1 ms-md-4" id="kt_header_user_menu_toggle">
 									<!--begin::Menu wrapper-->
@@ -902,7 +904,7 @@
 		});
 	</script>
 
-	@* <!--Notifications Management (SignalR)-->
+	 <!--Notifications Management (SignalR)-->
 	<script>
 	const connection = new signalR.HubConnectionBuilder()
 	.withUrl("/signalrHub") // Esta es la ruta que mapeaste para tu hub de SignalR en el servidor
@@ -987,21 +989,28 @@
 	contentType: false,
 	processData: false,
 	success: function (notifications) {
+
+	console.log(notifications)
 	var notificationsCount = 0;
 	$('.notifications').empty();
+	$('.notificationsExpirationDate').empty();
 
 	notifications.forEach(function (notification) {
-	createNotificationElement(notification.message, notification.createdAt, notification.notificationType, notification.isRead, notification.url, notification.id);
+		console.log(notification)
+	createNotificationElement(notification.message, notification.createdAt, notification.messageType , notification.type, notification.wasRead, notification.url, notification.id);
 
 	// Incrementar el contador de notificaciones
-	if (!notification.isRead) { notificationsCount++; }
+	if (notification.wasRead == 1) { notificationsCount++; }
 	});
+
+
 
 	var notificationCountElement = document.getElementById('notification-count');
 	// Actualizar el contenido del elemento con el nuevo número
 	if (notificationsCount > 99) {
 	notificationsCount = 99;
 	}
+	console.log(notificationsCount.toString());
 	notificationCountElement.textContent = notificationsCount.toString();
 	},
 	error: function (error) {
@@ -1010,7 +1019,7 @@
 	});
 	}
 
-	function createNotificationElement(message, createdAt, notificationType, isRead, url, id) {
+	function createNotificationElement(message, createdAt, messageType, type, wasRead, url, id) {
 	// Calcular la diferencia de tiempo
 	var createdAtMoment = moment(createdAt);
 	var now = moment();
@@ -1029,18 +1038,18 @@
 
 	// Determinar la clase CSS basada en el estado de lectura
 	var notificationTypeIcon = '';
-	if (notificationType == 'SUCCESS') {
+	if (messageType == 'SUCCESS') {
 	notificationTypeIcon = '<span class="symbol-label bg-light-success"><i class="ki-outline ki-information fs-2 text-success"></i></span>';
-	} else if (notificationType == 'WARNING') {
+	} else if (messageType == 'WARNING') {
 	notificationTypeIcon = '<span class="symbol-label bg-light-warning"><i class="ki-outline ki-information fs-2 text-warning"></i></span>';
-	} else if (notificationType == 'ERROR') {
+	} else if (messageType == 'ERROR') {
 	notificationTypeIcon = '<span class="symbol-label bg-light-danger"><i class="ki-outline ki-information fs-2 text-danger"></i></span>';
-	} else if (notificationType == 'INFO') {
+			} else if (messageType == 'INFO') {
 	notificationTypeIcon = '<span class="symbol-label bg-light-primary"><i class="ki-outline ki-information fs-2 text-primary"></i></span>';
 	}
 
-	var notificationClass = isRead ? '' : 'fw-bold';
-	var timeClass = isRead ? 'badge-light' : 'badge-primary';
+	var notificationClass = wasRead == 0 ? '' : 'fw-bold';
+	var timeClass = wasRead == 0 ? 'badge-light' : 'badge-primary';
 
 	// Formatear url
 	var protocol = window.location.protocol;
@@ -1063,8 +1072,17 @@
 	</div>
 	`;
 
-	// Agregar el nuevo elemento al contenedor
+	console.log()
+
+
+	if(type == 'STOCKS'){
+		// Agregar el nuevo elemento al contenedor
 	$('.notifications').append(newItem);
+	}
+
+	else  if(type=='FECHA VENCIMIENTO')
+
+	$('.notificationsExpirationDate').append(newItem);
 	}
 
 	function markNotificationAsRead(id) {
@@ -1085,7 +1103,7 @@
 	$(document).ready(function () {
 	getNotifications();
 	});
-	</script> *@
+	</script> 
 </body>
 </html>
 

@@ -1,18 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using OptiArroz_Tesis_Proyect.Data.Interfaces;
-using OptiArroz_Tesis_Proyect.Models.Dtos;
 using OptiArroz_Tesis_Proyect.Models.Entities;
 using OptiArroz_Tesis_Proyect.Models.Utils;
+using OptiArroz_Tesis_Proyect.Services;
 
 namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 {
     public class RiceLotDA : IRiceLotDA
     {
         private readonly ApplicationDbContext DbContext;
+        private readonly IMapper Mapper;
+        public readonly SignalRHub signalRHub;
 
-        public RiceLotDA(ApplicationDbContext DbContext)
+        public RiceLotDA(SignalRHub signalRHub, IMapper Mapper, ApplicationDbContext DbContext)
         {
             this.DbContext = DbContext;
+            this.Mapper = Mapper;
+            this.signalRHub = signalRHub;
         }
 
         public async Task CreateRiceLot(RiceLot NewRiceLot)
@@ -67,6 +72,45 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             await DbContext.RiceLots.AddAsync(NewRiceLot);
             
             await DbContext.SaveChangesAsync();
+
+            var notificationType = await DbContext.NotificationTypes.Where(x => x.Name == "STOCKS").FirstOrDefaultAsync() ?? throw new Exception();
+
+            if (Classification.CurrentStock >= Classification.MaximunStock)
+            {
+                //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MAXIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+                //Notifications
+                var title = "¡Se llego al stock máximo!";
+                var message = "Stock maximo de " + Classification.MaximunStock + " sacos en la clasificacion " + Classification.Name + " ha sido alcanzado con un stock actual de " + Classification.CurrentStock;
+                var messageType = "WARNING";
+                var link = "/Home/Index";
+                try
+                {
+                    await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+
+            else if (Math.Abs(Classification.CurrentStock - Classification.MaximunStock) <= notificationType.PriorNotificationDays)
+            {
+                //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MAXIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+                //Notifications
+                var title = "¡Nos encontramos proximo al stock maximo!";
+                var message = "Proximo al stock maximo de " + Classification.MaximunStock + " en la clasificacion " + Classification.Name + " con un stock actual de " + Classification.CurrentStock;
+                var messageType = "INFO";
+                var link = "/Home/Index";
+                try
+                {
+                    await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                    await signalRHub.SendToRole("COLABORATOR", title, message, messageType, 1, link, "");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
 
             return NewRiceLot;
         }
@@ -171,6 +215,19 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             {
                 throw;
             }
+        }
+
+        public async Task<List<RiceLot>> GetLotsExpiringInDays(int PriorNotificationDays)
+        {
+
+            var currentDate = DateTime.Now.Date;
+
+            var lots = await DbContext.RiceLots
+                            .Where(x => x.State == 1 && x.LeftoverQuantity > 0 && MySqlDbFunctionsExtensions.DateDiffDay(EF.Functions, currentDate, x.ExpirationDate) <= PriorNotificationDays)
+                            .OrderBy(x => x.ExpirationDate)
+                            .ToListAsync();
+
+            return lots;
         }
     }
 }

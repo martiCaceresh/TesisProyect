@@ -20,7 +20,7 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public int State { get; set; }
 
         public int? IdCurrentRiceLot { get; set; }
-        public RiceLot? CurrentRiceLot { get; set; }
+        public List<RiceLot>? Lots { get; set; }
 
         public List<RiceLotMovement>? RiceLotMovementOrigins { get; set; }
         public List<RiceLotMovement>? RiceLotMovementDestinations { get; set; }

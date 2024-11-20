@@ -5,6 +5,7 @@ using OptiArroz_Tesis_Proyect.Data.Interfaces;
 using OptiArroz_Tesis_Proyect.Models.Dtos;
 using OptiArroz_Tesis_Proyect.Models.Entities;
 using OptiArroz_Tesis_Proyect.Models.Utils;
+using OptiArroz_Tesis_Proyect.Services;
 using System.Collections.Generic;
 using Twilio.Http;
 
@@ -14,11 +15,13 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
     {
         private readonly ApplicationDbContext DbContext;
         private readonly IMapper Mapper;
+        public readonly SignalRHub signalRHub;
 
-        public RiceSacksDevolutionDA(IMapper Mapper, ApplicationDbContext DbContext)
+        public RiceSacksDevolutionDA(SignalRHub signalRHub, IMapper Mapper, ApplicationDbContext DbContext)
         {
             this.DbContext = DbContext;
             this.Mapper = Mapper;
+            this.signalRHub = signalRHub;
         }
 
         public async Task<List<RiceSacksOutputTypeLotDTO>> CreateRiceSacksDevolution(RiceSacksDevolution NewDevolution, CreateNewDevolutionDTO Devolution)
@@ -55,16 +58,69 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 
         private async Task UpdateStocks(List<RiceSacksConsultationTableDTO> SelectedLots, CreateNewDevolutionDTO Devolutions)
         {
+            var classificationStocks = new Dictionary<int, int>();
+
+            // Actualizar lotes y acumular cantidades
             foreach (var lot in SelectedLots)
             {
-                var FoundLot = await DbContext.RiceLots.FindAsync(lot.IdLot) ?? throw new Exception("No se encontro el lote");
-                FoundLot.LeftoverQuantity += lot.QuantitySelected; //ACTUALIZACION DE STOCKS DE LOTE
-                var FoundClassification = await DbContext.RiceClassifications.FindAsync(FoundLot.IdClassification) ?? throw new Exception("Clasificacion no encontrada");
-                FoundClassification.CurrentStock += lot.QuantitySelected;
+                var foundLot = await DbContext.RiceLots.FindAsync(lot.IdLot)
+                    ?? throw new Exception("No se encontro el lote");
 
+                foundLot.LeftoverQuantity += lot.QuantitySelected;
+                DbContext.Entry(foundLot).State = EntityState.Modified;
 
-                DbContext.Entry(FoundClassification).State = EntityState.Modified;
-                DbContext.Entry(FoundLot).State = EntityState.Modified;
+                // Acumular usando GetValueOrDefault
+                classificationStocks[foundLot.IdClassification] =
+                    classificationStocks.GetValueOrDefault(foundLot.IdClassification, 0) + lot.QuantitySelected;
+            }
+
+            var notificationType = await DbContext.NotificationTypes.Where(x => x.Name == "STOCKS").FirstOrDefaultAsync() ?? throw new Exception();
+
+            // Actualizar clasificaciones
+            foreach (var (idClassification, quantityToAdd) in classificationStocks)
+            {
+                var classification = await DbContext.RiceClassifications.FindAsync(idClassification)
+                    ?? throw new Exception($"Clasificación {idClassification} no encontrada");
+
+                classification.CurrentStock += quantityToAdd;
+                DbContext.Entry(classification).State = EntityState.Modified;
+
+                if (classification.CurrentStock >= classification.MaximunStock)
+                {
+                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MAXIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+                    //Notifications
+                    var title = "¡Se llego al stock máximo!";
+                    var message = "Stock maximo de " + classification.MaximunStock + " sacos en la clasificacion " + classification.Name + " ha sido alcanzado con un stock actual de " + classification.CurrentStock;
+                    var messageType = "WARNING";
+                    var link = "/Home/Index";
+                    try
+                    {
+                        await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                        await signalRHub.SendToRole("COLABORADOR", title, message, messageType, 1, link, "");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+
+                else if (Math.Abs(classification.CurrentStock - classification.MaximunStock) <= notificationType.PriorNotificationDays)
+                {
+                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MAXIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+                    //Notifications
+                    var title = "¡Nos encontramos proximo al stock maximo!";
+                    var message = "Proximo a alcanzar el stock maximo de " + classification.MaximunStock + " sacos en la clasificacion " + classification.Name + " con un stock actual de " + classification.CurrentStock;
+                    var messageType = "INFO";
+                    var link = "/Home/Index";
+                    try
+                    {
+                        await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
             }
 
             await DbContext.SaveChangesAsync();

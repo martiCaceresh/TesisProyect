@@ -11,6 +11,8 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         [Required]
         public string Message { get; set; } = string.Empty;
 
+        public string MessageType { get; set; } = string.Empty;
+
         public string Url { get; set; } = string.Empty;
 
         [DefaultValue(1)]
@@ -28,5 +30,19 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
 
         public int IdNotificationType { get; set; }
         public NotificationType? NotificationType { get; set; }
+
+        public Notification() { }
+
+        public Notification(string sentTo, string message, string messageType, int idNotificationType, string url, int wasRead, DateTime createdAt, DateTime readAt)
+        {
+            IdSendTo = sentTo;
+            Message = message;
+            MessageType = messageType;
+            IdNotificationType = idNotificationType;
+            Url = url;
+            WasRead = wasRead;
+            CreatedAt = createdAt;
+            ReadAt = readAt;
+        }
     }
 }

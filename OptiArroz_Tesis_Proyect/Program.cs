@@ -5,6 +5,7 @@ using OptiArroz_Tesis_Proyect.Data;
 using OptiArroz_Tesis_Proyect.Data.DataAccess;
 using OptiArroz_Tesis_Proyect.Data.Interfaces;
 using OptiArroz_Tesis_Proyect.Models.Entities;
+using OptiArroz_Tesis_Proyect.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,6 +46,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddTransient<INotificationSenderDA, NotificationSenderDA>();
+builder.Services.AddTransient<INotificationTypeDA, NotificationTypeDA>();
 builder.Services.AddTransient<IRiceClassDA, RiceClassDA>();
 builder.Services.AddTransient<IRiceGradeDA, RiceGradeDA>();
 builder.Services.AddTransient<IRiceLotDA, RiceLotDA>();
@@ -57,10 +59,13 @@ builder.Services.AddTransient<IRiceClassificationDA, RiceClassificationDA>();
 builder.Services.AddTransient<IZoneDA, ZoneDA>();
 builder.Services.AddTransient<IUbicationDA, UbicationDA>();
 builder.Services.AddTransient<IFirstConfigurationDA, FirstConfigurationDA>();
+builder.Services.AddTransient<SignalRHub>();
+builder.Services.AddHostedService<ExpirationDateControl>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddMvc().AddRazorRuntimeCompilation();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -84,6 +89,12 @@ app.UseAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Entry}/{id?}");
+
+//Configurar SignalR Hub
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapHub<SignalRHub>("/signalrHub");
+});
 
 app.MapRazorPages();
 IWebHostEnvironment env = app.Environment;

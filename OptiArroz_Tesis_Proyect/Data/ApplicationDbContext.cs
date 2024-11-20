@@ -26,22 +26,6 @@ namespace OptiArroz_Tesis_Proyect.Data
         {
             base.OnModelCreating(builder);
 
-            #region One to One
-
-            // Configurar la relación uno a uno entre Ubicacion y Lote (LoteActual)
-            builder.Entity<Ubication>()
-                .HasOne(u => u.CurrentRiceLot)
-                .WithOne(l => l.LastUbication)
-                .HasForeignKey<Ubication>(u => u.IdCurrentRiceLot)  // Clave foránea en Ubicacion
-                .OnDelete(DeleteBehavior.SetNull); // Permitir valores null si la ubicación está vacía
-
-            // Relación inversa: Lote tiene un UltimaUbicacion
-            builder.Entity<RiceLot>()
-                .HasOne(l => l.LastUbication)
-                .WithOne(u => u.CurrentRiceLot)
-                .HasForeignKey<RiceLot>(l => l.IdLastUbication); // Clave foránea en Lote
-
-            #endregion
 
             #region One to Many
 
@@ -50,6 +34,12 @@ namespace OptiArroz_Tesis_Proyect.Data
                 .HasOne(p => p.RiceClassification)
                 .WithMany(f => f.RiceLots)
                 .HasForeignKey(p => p.IdClassification);
+
+
+            builder.Entity<RiceLot>()
+                .HasOne(p => p.LastUbication)
+                .WithMany(f => f.Lots)
+                .HasForeignKey(p => p.IdLastUbication);
 
             builder.Entity<RiceLot>()
                 .HasOne(p => p.Zone)

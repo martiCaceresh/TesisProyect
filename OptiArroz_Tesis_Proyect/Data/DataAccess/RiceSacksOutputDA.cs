@@ -1,12 +1,11 @@
 ﻿using AutoMapper;
-using iText.StyledXmlParser.Jsoup.Helper;
 using Microsoft.EntityFrameworkCore;
 using OptiArroz_Tesis_Proyect.Data.Interfaces;
 using OptiArroz_Tesis_Proyect.Models.Dtos;
 using OptiArroz_Tesis_Proyect.Models.Entities;
 using OptiArroz_Tesis_Proyect.Models.Utils;
-using Org.BouncyCastle.Pqc.Crypto.Lms;
-using System.Collections.Generic;
+using OptiArroz_Tesis_Proyect.Services;
+
 
 namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 {
@@ -14,11 +13,13 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
     {
         private readonly ApplicationDbContext DbContext;
         private readonly IMapper Mapper;
+        public readonly SignalRHub signalRHub;
 
-        public RiceSacksOutputDA(IMapper Mapper, ApplicationDbContext DbContext)
+        public RiceSacksOutputDA(SignalRHub signalRHub,IMapper Mapper, ApplicationDbContext DbContext)
         {
             this.DbContext = DbContext;
             this.Mapper = Mapper;
+            this.signalRHub = signalRHub;
         }
 
         public async Task<(List<RiceSacksConsultationTableDTO> SelectedLots, List<RiceSacksConsultationResultDTO> Responses)> CreateRiceSacksOutput(RiceSacksOutput NewOutput, List<RiceSacksConsultationDTO> Consultation)
@@ -76,12 +77,52 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                 DbContext.Entry(FoundLot).State = EntityState.Modified;
             }
 
+            var notificationType = await DbContext.NotificationTypes.Where(x => x.Name == "STOCKS").FirstOrDefaultAsync() ?? throw new Exception();
+
             foreach (var consultate in Consultation)
             {
                 var FoundClassification = await DbContext.RiceClassifications.FindAsync(consultate.IdClassification) ?? throw new Exception("Clasificacion no encontrada");
                 FoundClassification.CurrentStock -= consultate.QuantitySelected;
                 DbContext.Entry(FoundClassification).State = EntityState.Modified;
-                //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+
+                if(FoundClassification.CurrentStock <= FoundClassification.MinimunStock)
+                {
+                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+                    //Notifications
+                    var title = "¡Se llego al stock minimo!";
+                    var message = "Stock minimo de " + FoundClassification.MinimunStock + " sacos en la clasificacion " + FoundClassification.Name + " ha sido alcanzado con stock actual de " + FoundClassification.CurrentStock;
+                    var messageType = "WARNING";
+                    var link = "/Home/Index";
+                    try
+                    {
+                        await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                        await signalRHub.SendToRole("COLABORADOR", title, message, messageType, 1, link, "");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+
+                else if ( Math.Abs( FoundClassification.CurrentStock - FoundClassification.MinimunStock) <=  notificationType.PriorNotificationDays)
+                {
+                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+                    //Notifications
+                    var title = "¡Nos encontramos proximos al stock minimo!";
+                    var message = "Proximo al stock minimo de " + FoundClassification.MinimunStock +   " sacos de la clasificacion " + FoundClassification.Name + " con stock actual de " + FoundClassification.CurrentStock;
+                    var messageType = "INFO";
+                    var link = "/Home/Index";
+                    try
+                    {
+                        await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+
+                
             }
 
             await DbContext.SaveChangesAsync();

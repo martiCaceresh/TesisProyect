@@ -390,7 +390,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
                     });
                 }
             }
-            catch (Exception ex)
+            catch 
             {
                 return StatusCode(500, new { success = false, message = "Error generating QR code" });
             }

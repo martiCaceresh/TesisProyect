@@ -11,6 +11,8 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public string PasswordResetCode { get; set; }= string.Empty;
         public DateTime? CodeExpiration { get; set; }
 
+        public int State { get; set; }
+
         public List<Notification>? Notifications { get; set; }
         public List<RiceClass>? RiceClassesUpdated { get; set; }
         public List<RiceClass>? RiceClassesCreated { get; set; }

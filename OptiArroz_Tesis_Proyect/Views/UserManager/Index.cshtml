@@ -1,0 +1,396 @@
+﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.UserManagerVM
+@using OptiArroz_Tesis_Proyect.Models.Utils
+@using Newtonsoft.Json
+
+@{
+    ViewData["Title"] = "Usuarios";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .icon {
+        cursor: pointer;
+    }
+
+    .table-container {
+        position: relative;
+        width: 100%;
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table th, .table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .fixed-column {
+        position: absolute;
+        left: 0;
+        top: auto;
+        border-right: 1px solid #ddd;
+        background-color: white;
+    }
+
+        .fixed-column th, .fixed-column td {
+            border-right: 1px solid #ddd;
+        }
+
+</style>
+<script>
+    $(document).ready(function () {
+        $("#kt_datatable_zero_configuration_active").DataTable({
+            scrollX: true,
+            scrollY: '50vh',
+            fixedColumns: {
+                left: 1
+            }
+        });
+
+        $("#kt_datatable_zero_configuration_inactive").DataTable({
+            scrollX: true,
+            scrollY: '50vh',
+            fixedColumns: {
+                left: 1
+            }
+        });
+    });
+</script>
+<script>
+    function setEdit(item) {
+        $("#ClassificationIdUpdate").val(item.Id);
+        $('#ClassificationNameUpdate').val(item.Name);
+    }
+
+    function setDeactivate(sentId, sentName) {
+        $("#deactivateInputId").val(sentId);
+        $("#deactivateInputName").val(sentName);
+    }
+    function setActivate(sentId, sentName) {
+        $("#activateInputId").val(sentId);
+        $("#activateInputName").val(sentName);
+
+    }
+</script>
+
+
+
+<div class="modal fade" tabindex="-1" id="kt_modal_2">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="card card-dashed">
+                    <form asp-action="UpdateRol" method="post" class="needs-validation" novalidate>
+                        <div class="card-header">
+                            <h3 class="card-title">EDITAR ROL</h3>
+                            <div class="card-toolbar">
+                                <button type="submit" class="btn btn-sm btn-warning">
+                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" name="UserId" id="UserId" />
+                            <div class="row">
+
+                                <div class="col mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="ki-solid ki-pencil fs-2"></i>
+                                        </span>
+                                        <div class="form-floating">
+                                            <select id="RolId" name="RolId" required class="form-select">
+                                                <option value="">Seleccione el rol del usuario</option>
+                                                @foreach (var item in Model.Roles)
+                                                {
+                                                    <option value=@item.Id>@item.Name</option>
+                                                }
+                                            </select>
+                                            <label class="form-label required" for="RolId">Rol</label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="kt_modal_3">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="card card-dashed">
+                    <form asp-action="Deactivate">
+                        <div class="card-header">
+                            <h3 class="card-title">DESACTIVAR USUARIO</h3>
+                            <div class="card-toolbar">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="ki-duotone ki-toggle-off fs-2">
+                                        <span class="path1"></span><span class="path2"></span>
+                                    </i>
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" name="Id" id="deactivateInputId" />
+
+                            <div class="row">
+                                <div class="col mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="ki-solid ki-pencil fs-2"></i>
+                                        </span>
+                                        <div class="form-floating">
+                                            <input disabled id="deactivateInputName" type="text" class="form-control" required />
+                                            <label class="form-label" for="deactivateInputName">Nombre de usuario</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="kt_modal_4">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="card card-dashed">
+                    <form asp-action="Activate">
+                        <div class="card-header">
+                            <h3 class="card-title">ACTIVAR USUARIO</h3>
+                            <div class="card-toolbar">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="ki-duotone ki-toggle-off fs-2">
+                                        <span class="path1"></span><span class="path2"></span>
+                                    </i>
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" name="Id" id="activateInputId" />
+                            <div class="row">
+                                <div class="col mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="ki-solid ki-pencil fs-2"></i>
+                                        </span>
+                                        <div class="form-floating">
+                                            <input disabled id="activateInputName" type="text" class="form-control" required />
+                                            <label class="form-label" for="activateInputName">Nombre de Usuario</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Usuarios</h1>
+                    <!--end::Title-->
+                    
+                </div>
+                <!--end::Page title-->
+                <!--begin::Actions-->
+                <div class="d-flex flex-stack flex-wrap gap-4">
+
+                    <!--begin::Search-->
+                    <div class="position-relative my-1">
+
+                        <form method="get" action="@Url.Action("Index")" data-kt-search-element="form" class="d-none d-lg-block w-80 mb-5 mb-lg-0 position-relative" autocomplete="off">
+                            <input type="hidden">
+                            <i class="ki-duotone ki-magnifier fs-2 position-absolute top-50 translate-middle-y ms-4">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <!--begin::Input-->
+                            <input type="text" class="form-control h-35px w-150px fs-7 ps-12" name="Search" placeholder="Buscar..." data-kt-search-element="input">
+                            <!--end::Input-->
+                        </form>
+                    </div>
+                    <!--end::Search-->
+
+                </div>
+                <!--end::Actions-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+    </div>
+    <!--end::Content wrapper-->
+</div>
+
+<div class="card mb-5 mb-xl-8">
+    <!--begin::Header-->
+    <div class="card-header border-0 pt-5">
+        <div class="card-toolbar">
+            <ul class="nav nav-tabs nav-line-tabs mb-5 fs-6">
+                <li class="nav-item">
+                    <a id="testId" class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_1">Activos</a>
+                </li>
+                <li class="nav-item">
+                    <a id="testId2" class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_2">Inactivos</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!--end::Header-->
+    <div class="card-body py-3">
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="kt_tab_pane_1" role="tabpanel">
+                <div class="table-container">
+                    <!--begin::Table-->
+                    <table id="kt_datatable_zero_configuration_active" class="table">
+                        <thead>
+                            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                                <th class="min-w-100px text-center text-dark fixed-column"></th>
+                                <th class="min-w-150px text-center text-dark">FECHA REGISTRO</th>
+                                <th class="min-w-150px text-center text-dark">NOMBRES</th>
+                                <th class="min-w-150px text-center text-dark">DNI O CARNET EXT.</th>
+                                <th class="min-w-150px text-center text-dark">TELÉFONO</th>
+
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600" style="font-size: 11px;">
+
+                            @foreach (var item in Model.ActiveList)
+                            {
+                                var jsonItem = JsonConvert.SerializeObject(item);
+                                <tr>
+                                    <td class="text-center fixed-column">
+
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-warning btn-sm me-1" onclick="setEdit(@item.UserId , @item.Name , @item.LastName)" data-bs-toggle="modal" data-bs-target="#kt_modal_2">
+                                            <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                        </a>
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm me-1" onclick="setDeactivate(@item.UserId, @item.Name , @item.LastName)" data-bs-toggle="modal" data-bs-target="#kt_modal_3">
+                                            <i class="ki-duotone ki-toggle-off fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                        </a>
+
+                                    </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.RegisterDate) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Name + " " +  item.LastName) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Username) </td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+
+                </div>
+                <!--end::Table-->
+
+            </div>
+            <div class="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
+                <div class="table-container">
+                    <!--begin::Table-->
+                    <table id="kt_datatable_zero_configuration_inactive" class="table">
+                        <thead>
+                            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                                <th class="min-w-100px text-center text-dark fixed-column"></th>
+                                <th class="min-w-150px text-center text-dark">FECHA REGISTRO</th>
+                                <th class="min-w-150px text-center text-dark">NOMBRES</th>
+                                <th class="min-w-150px text-center text-dark">DNI O CARNET EXT.</th>
+                                <th class="min-w-150px text-center text-dark">TELÉFONO</th>
+
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600" style="font-size: 11px;">
+
+                            @foreach (var item in Model.InactiveList)
+                            {
+                                <tr>
+                                    <td class="text-center fixed-column">
+
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-warning btn-sm me-1" onclick="setEdit(@item.UserId , @item.Name , @item.LastName)" data-bs-toggle="modal" data-bs-target="#kt_modal_2">
+                                            <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                        </a>
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-success btn-sm me-1" onclick="setActivate(@item.UserId , @item.Name , @item.LastName)" data-bs-toggle="modal" data-bs-target="#kt_modal_4">
+                                            <i class="ki-duotone ki-toggle-off fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                        </a>
+
+                                    </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.RegisterDate) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Name + " " +  item.LastName) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Username) </td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <!--end::Table-->
+            </div>
+        </div>
+    </div>
+    <!--begin::Body-->
+</div>
+
+
+@if (TempData.ContainsKey("SuccessMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("success", "Éxito" ,TempData["SuccessMessage"]?.ToString() ?? string.Empty ))
+}
+@if (TempData.ContainsKey("ErrorMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("error", "Error" ,TempData["ErrorMessage"]?.ToString() ?? string.Empty ))
+
+}
+
+<script>
+    (function () {
+        'use strict';
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation');
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>

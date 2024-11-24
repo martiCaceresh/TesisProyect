@@ -36,6 +36,9 @@ namespace OptiArroz_Tesis_Proyect.Controllers
                 Model.Classifications = await RiceClassificationDA.GetActiveRiceClassifications();
                 var RiceLot = await RiceLotDA.GetRiceLotById(IdLot);
                 Model.RiceLotDetailDTO = Mapper.Map<RiceLotDetailDTO>(RiceLot);
+
+                ViewBag.IdLot = IdLot;
+
                 return View(Model);
             }
             else

@@ -51,14 +51,11 @@ namespace OptiArroz_Tesis_Proyect.Controllers
 
         public IActionResult Entry()
         {
-
-
             return View();
         }
 
         public IActionResult Exit()
         {
-            //erik caceres
             return View();
 
         }

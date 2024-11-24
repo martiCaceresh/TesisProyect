@@ -1,9 +1,9 @@
-﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.UserManagerVM
+﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.SackManagerVM
 @using OptiArroz_Tesis_Proyect.Models.Utils
 @using Newtonsoft.Json
 
 @{
-    ViewData["Title"] = "Usuarios";
+    ViewData["Title"] = "Sacos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -102,32 +102,27 @@
                 infoEmpty: "No hay registros disponibles",
                 infoFiltered: "(filtrado de _MAX_ registros totales)"
             },
-            initComplete: function() {
+            initComplete: function () {
                 // Vincular el input personalizado con búsqueda instantánea
                 var table = this.api();
-                $('.form-control[name="SearchActive"]').on('keyup', function(){
+                $('.form-control[name="SearchActive"]').on('keyup', function () {
                     table.search(this.value).draw();
                 });
             }
         });
 
-        
+
     });
 </script>
 <script>
-    function setEdit(Id , RoleId , Name , LastName) {
-        $("#UserId").val(Id);
-        $('#RolId').val(RoleId);
-        $("#editInputName").val(Name + " " + LastName);
-    }
 
-    function setDeactivate(sentId, sentName , sentLastName) {
+    function setDeactivate(sentId, sentName) {
         $("#deactivateInputId").val(sentId);
-        $("#deactivateInputName").val(sentName + " " + sentLastName);
+        $("#deactivateInputName").val(sentName);
     }
-    function setActivate(sentId, sentName, sentLastName) {
+    function setActivate(sentId, sentName) {
         $("#activateInputId").val(sentId);
-        $("#activateInputName").val(sentName + " " + sentLastName);
+        $("#activateInputName").val(sentName);
 
     }
 </script>
@@ -139,9 +134,9 @@
         <div class="modal-content">
             <div class="modal-body">
                 <div class="card card-dashed">
-                    <form asp-action="ChangeRoleUser" method="post" class="needs-validation" novalidate>
+                    <form asp-action="Create" method="post" class="needs-validation" novalidate>
                         <div class="card-header">
-                            <h3 class="card-title">EDITAR ROL</h3>
+                            <h3 class="card-title">AÑADIR SACO</h3>
                             <div class="card-toolbar">
                                 <button type="submit" class="btn btn-sm btn-warning">
                                     <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
@@ -150,7 +145,6 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <input type="hidden" name="UserId" id="UserId" />
                             <div class="row">
                                 <div class="col mb-3">
                                     <div class="input-group">
@@ -158,34 +152,13 @@
                                             <i class="ki-solid ki-pencil fs-2"></i>
                                         </span>
                                         <div class="form-floating">
-                                            <input readonly id="editInputName" type="text" class="form-control" required />
-                                            <label class="form-label" for="editInputName">Nombre de usuario</label>
+                                            <input type="text" class="form-control" required name="Weight" />
+                                            <label class="form-label" for="editInputName">Peso del saco</label>
                                         </div>
                                     </div>
 
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col mb-3">
-                                    <div class="input-group">
-                                        <span class="input-group-text">
-                                            <i class="ki-solid ki-pencil fs-2"></i>
-                                        </span>
-                                        <div class="form-floating">
-                                            <select id="RolId" name="RolId" required class="form-select">
-                                                <option value="">Seleccione el rol del usuario</option>
-                                                @foreach (var item in Model.Roles)
-                                                {
-                                                    <option value=@item.Id>@item.Name</option>
-                                                }
-                                            </select>
-                                            <label class="form-label required" for="RolId">Rol</label>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-
                         </div>
                     </form>
                 </div>
@@ -201,7 +174,7 @@
                 <div class="card card-dashed">
                     <form asp-action="Deactivate">
                         <div class="card-header">
-                            <h3 class="card-title">DESACTIVAR USUARIO</h3>
+                            <h3 class="card-title">DESACTIVAR SACO</h3>
                             <div class="card-toolbar">
                                 <button type="submit" class="btn btn-sm btn-danger">
                                     <i class="ki-duotone ki-toggle-off fs-2">
@@ -212,7 +185,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <input type="hidden" name="UserId" id="deactivateInputId" />
+                            <input type="hidden" name="Id" id="deactivateInputId" />
 
                             <div class="row">
                                 <div class="col mb-3">
@@ -222,7 +195,7 @@
                                         </span>
                                         <div class="form-floating">
                                             <input readonly id="deactivateInputName" type="text" class="form-control" required />
-                                            <label class="form-label" for="deactivateInputName">Nombre de usuario</label>
+                                            <label class="form-label" for="deactivateInputName">Peso de saco</label>
                                         </div>
                                     </div>
 
@@ -243,7 +216,7 @@
                 <div class="card card-dashed">
                     <form asp-action="Activate">
                         <div class="card-header">
-                            <h3 class="card-title">ACTIVAR USUARIO</h3>
+                            <h3 class="card-title">ACTIVAR SACO</h3>
                             <div class="card-toolbar">
                                 <button type="submit" class="btn btn-sm btn-success">
                                     <i class="ki-duotone ki-toggle-off fs-2">
@@ -254,7 +227,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <input type="hidden" name="UserId" id="activateInputId" />
+                            <input type="hidden" name="Id" id="activateInputId" />
                             <div class="row">
                                 <div class="col mb-3">
                                     <div class="input-group">
@@ -262,8 +235,8 @@
                                             <i class="ki-solid ki-pencil fs-2"></i>
                                         </span>
                                         <div class="form-floating">
-                                            <input disabled id="activateInputName" type="text" class="form-control" required />
-                                            <label class="form-label" for="activateInputName">Nombre de Usuario</label>
+                                            <input readonly id="activateInputName" type="text" class="form-control" required />
+                                            <label class="form-label" for="activateInputName">Peso de saco</label>
                                         </div>
                                     </div>
 
@@ -288,12 +261,12 @@
                 <!--begin::Page title-->
                 <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
                     <!--begin::Title-->
-                    <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Usuarios</h1>
+                    <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Sacos</h1>
                     <!--end::Title-->
-                    
+
                 </div>
                 <!--end::Page title-->
-               
+
             </div>
             <!--end::Toolbar container-->
         </div>
@@ -321,7 +294,7 @@
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="kt_tab_pane_1" role="tabpanel">
                 <!--begin::Actions-->
-                <div class="row align-items-end">
+                <div class="row justify-items-end">
 
                     <div class="col-4">
                         <!-- Quita el form o modifícalo así -->
@@ -337,7 +310,7 @@
                                    data-kt-search-element="input">
                         </div>
                     </div>
-                        
+
 
 
                 </div>
@@ -348,11 +321,11 @@
                         <thead>
                             <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
                                 <th class="min-w-100px text-center text-dark fixed-column"></th>
-                                <th class="min-w-150px text-center text-dark">FECHA REGISTRO</th>
-                                <th class="min-w-150px text-center text-dark">NOMBRES</th>
-                                <th class="min-w-150px text-center text-dark">DNI O CARNET EXT.</th>
-                                <th class="min-w-150px text-center text-dark">TELÉFONO</th>
-                                <th class="min-w-150px text-center text-dark">ROL</th>
+                                <th class="min-w-150px text-center text-dark">PESO</th>
+                                <th class="min-w-150px text-center text-dark">FECHA CREACIÓN</th>
+                                <th class="min-w-150px text-center text-dark">CREADO POR</th>
+                                <th class="min-w-150px text-center text-dark">FECHA MODIFICACIÓN</th>
+                                <th class="min-w-150px text-center text-dark">MODIFICADO POR</th>
 
                             </tr>
                         </thead>
@@ -360,24 +333,19 @@
 
                             @foreach (var item in Model.ActiveList)
                             {
-                                
-                                var FullName = item.Name + " " + item.LastName;
                                 <tr>
                                     <td class="text-center fixed-column">
 
-                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-warning btn-sm me-1" onclick="setEdit('@item.UserId' , @item.RolId , '@item.Name' , '@item.LastName')" data-bs-toggle="modal" data-bs-target="#kt_modal_2">
-                                            <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
-                                        </a>
-                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm me-1" onclick="setDeactivate('@item.UserId', '@item.Name' , '@item.LastName')" data-bs-toggle="modal" data-bs-target="#kt_modal_3">
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm me-1" onclick="setDeactivate(@item.IdSack, '@item.Weight')" data-bs-toggle="modal" data-bs-target="#kt_modal_3">
                                             <i class="ki-duotone ki-toggle-off fs-2"><span class="path1"></span><span class="path2"></span></i>
                                         </a>
 
                                     </td>
-                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.RegisterDate) </td>
-                                    <td class="text-center"> @Html.DisplayFor(modelItem => FullName) </td>
-                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Username) </td>
-                                    <td class="text-center">@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
-                                    <td class="text-center">@Html.DisplayFor(modelItem => item.Rol)</td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Weight) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.CreatedAt) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.IdCreatedBy) </td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.UpdatedAt)</td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.IdUpdatedBy)</td>
                                 </tr>
                             }
                         </tbody>
@@ -415,31 +383,30 @@
                     <table id="kt_datatable_zero_configuration_inactive" class="table">
                         <thead>
                             <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
-                                <th class="min-w-100px text-center text-dark"></th>
-                                <th class="min-w-150px text-center text-dark">FECHA REGISTRO</th>
-                                <th class="min-w-150px text-center text-dark">NOMBRES</th>
-                                <th class="min-w-150px text-center text-dark">DNI O CARNET EXT.</th>
-                                <th class="min-w-150px text-center text-dark">TELÉFONO</th>
-                                <th class="min-w-150px text-center text-dark">ROL</th>
+                                <th class="min-w-100px text-center text-dark fixed-column"></th>
+                                <th class="min-w-150px text-center text-dark">PESO</th>
+                                <th class="min-w-150px text-center text-dark">FECHA CREACIÓN</th>
+                                <th class="min-w-150px text-center text-dark">CREADO POR</th>
+                                <th class="min-w-150px text-center text-dark">FECHA MODIFICACIÓN</th>
+                                <th class="min-w-150px text-center text-dark">MODIFICADO POR</th>
                             </tr>
                         </thead>
                         <tbody class="fw-semibold text-gray-600" style="font-size: 13px;">
 
                             @foreach (var item in Model.InactiveList)
                             {
-                                var FullName = item.Name + " " + item.LastName;
                                 <tr>
                                     <td class="text-center fixed-column">
-                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-success btn-sm me-1" onclick="setActivate('@item.UserId' , '@item.Name' , '@item.LastName')" data-bs-toggle="modal" data-bs-target="#kt_modal_4">
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-success btn-sm me-1" onclick="setActivate(@item.IdSack , '@item.Weight' )" data-bs-toggle="modal" data-bs-target="#kt_modal_4">
                                             <i class="ki-duotone ki-toggle-off fs-2"><span class="path1"></span><span class="path2"></span></i>
                                         </a>
 
                                     </td>
-                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.RegisterDate) </td>
-                                    <td class="text-center"> @Html.DisplayFor(modelItem => FullName) </td>
-                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Username) </td>
-                                    <td class="text-center">@Html.DisplayFor(modelItem => item.PhoneNumber)</td>
-                                    <td class="text-center">@Html.DisplayFor(modelItem => item.Rol)</td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Weight) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.CreatedAt) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.IdCreatedBy) </td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.UpdatedAt)</td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.IdUpdatedBy)</td>
                                 </tr>
                             }
                         </tbody>

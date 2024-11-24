@@ -5,7 +5,6 @@
 @inject UserManager<ApplicationUser> UserManager
 
 <style>
-
     .dropdown {
         position: relative;
         display: inline-block;
@@ -72,11 +71,161 @@
             border-right: 1px solid #ddd;
         }
 
+    .filters-wrapper {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .filter-container {
+        display: flex;
+        overflow: hidden;
+        max-width: 0;
+        transition: all 0.3s ease-in-out;
+        padding: 0;
+        margin: 0;
+        margin-left: 10px;
+    }
+
+        .filter-container.show {
+            max-width: 100%;
+        }
+
+    .filter-toggle-btn {
+        border: none;
+        background: transparent;
+        color: #009ef7;
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        padding: 0;
+        border-radius: 0.475rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .filter-toggle-btn:hover {
+            background-color: #f1faff;
+        }
+
+        .filter-toggle-btn i {
+            font-size: 1.2rem;
+        }
+
+    .filter-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-col {
+        padding: 0 4px;
+    }
+
+    .form-control-sm {
+        height: 31px;
+        padding: 0.25rem 0.5rem;
+        font-size: 12px;
+    }
 </style>
+
+<div class="card-body py-3">
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="kt_tab_pane_1" role="tabpanel">
+            <div class="table-container">
+                <div id="loadingSpinner" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; text-align: center;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <div style="margin-top: 10px; font-weight: bold; color: #333;">Cargando...</div>
+                </div>
+
+                <table id="kt_datatable_zero_configuration" class="table table-row-bordered">
+                    <thead>
+                        <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                            <th class="w-30px pe-2"></th>
+                            <th class="min-w-180px text-center text-dark">CODIGO</th>
+                            <th class="min-w-130px text-center text-dark">FECHA RECEPCIÓN</th>
+                            <th class="min-w-150px text-center text-dark">FECHA DE VENCIMIENTO</th>
+                            <th class="min-w-150px text-center text-dark">CLASIFICACIÓN</th>
+                            <th class="min-w-100px text-center text-dark">STOCK ACTUAL</th>
+                            <th class="min-w-150px text-center text-dark">UBICACION ACTUAL</th>
+                        </tr>
+                    </thead>
+                    <tbody class="fw-semibold text-gray-600" style="font-size: 13px;">
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <a class="btn btn-icon btn-bg-light btn-active-color-warning btn-sm me-1"
+                                   asp-controller="RiceLot"
+                                   asp-action="RiceLotDetails"
+                                   asp-route-IdLot="@item.IdLot"
+                                   title="Ver Lote"
+                                   data-bs-toggle="tooltip"
+                                   data-bs-trigger="hover"
+                                   data-bs-dismiss="click"
+                                   data-bs-placement="top">
+                                        <i class="ki-duotone ki-pencil fs-2">
+                                            <span class="path1"></span>
+                                            <span class="path2"></span>
+                                        </i>
+                                    </a>
+                                </td>
+                                <td class="text-center">@Html.DisplayFor(modelItem => item.Code)</td>
+                                <td class="text-center"
+                                data-order="@(item.ReceptionDate.HasValue ? item.ReceptionDate.Value.ToString("yyyyMMddHHmmss") : "")">
+                                    @Html.DisplayFor(modelItem => item.ReceptionDate)
+                                </td>
+                                <td class="text-center"
+                                data-order="@(item.ExpirationDate.HasValue ? item.ExpirationDate.Value.ToString("yyyyMMddHHmmss") : "")">
+                                    @Html.DisplayFor(modelItem => item.ExpirationDate)
+                                </td>
+                                <td class="text-center">@Html.DisplayFor(modelItem => item.Classification)</td>
+                                <td class="text-center">@Html.DisplayFor(modelItem => item.LeftoverQuantity)</td>
+                                <td class="text-center">@Html.DisplayFor(modelItem => item.LastUbication)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     $(document).ready(function () {
-        $("#kt_datatable_zero_configuration").DataTable({
+        // Crear el wrapper que contendrá el botón y los filtros
+        var filtersWrapper = $('<div class="filters-wrapper"></div>');
+        var filterContainer = $('<div class="filter-container"></div>');
+        var filterRow = $('<div class="filter-row"></div>');
+
+        var toggleButton = $(`
+            <button class="filter-toggle-btn" data-bs-toggle="tooltip" data-bs-placement="top" title="Mostrar/Ocultar Filtros">
+                <i class="ki-duotone ki-filter">
+                    <span class="path1"></span>
+                    <span class="path2"></span>
+                </i>
+            </button>
+        `);
+
+        var isFiltersVisible = false;
+
+        toggleButton.on('click', function () {
+            isFiltersVisible = !isFiltersVisible;
+            filterContainer.toggleClass('show');
+        });
+
+        filtersWrapper.append(toggleButton);
+        filtersWrapper.append(filterContainer);
+        $('.table-container').before(filtersWrapper);
+
+        $('[data-bs-toggle="tooltip"]').tooltip();
+
+        var table = $("#kt_datatable_zero_configuration").DataTable({
             scrollX: true,
             scrollY: '50vh',
             order: [[1, 'desc']],
@@ -84,69 +233,76 @@
                 left: 2
             },
             autoWidth: false,
-            columnDefs: [
-                { orderable: false, targets: 0 } // Desactiva el ordering en la primera columna
-            ]
+            orderCellsTop: true,
+            fixedHeader: true,
+            columnDefs: [{
+                targets: [0],
+                searchable: false,
+                orderable: false,
+            }],
+            language: {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros por página",
+                zeroRecords: "No se encontraron resultados",
+                info: "Mostrando página _PAGE_ de _PAGES_",
+                infoEmpty: "No hay registros disponibles",
+                infoFiltered: "(filtrado de _MAX_ registros totales)",
+                paginate: {
+                    first: "Primero",
+                    last: "Último",
+                    next: "Siguiente",
+                    previous: "Anterior"
+                }
+            },
+            initComplete: function () {
+                var api = this.api();
+                $('.dataTables_filter').hide();
+
+                var columnWidths = [];
+                api.columns().every(function (colIdx) {
+                    var columnHeader = $(api.column(colIdx).header());
+                    columnWidths[colIdx] = columnHeader.width();
+                });
+
+                api.columns().every(function (colIdx) {
+                    if (colIdx != 0) {
+                        var column = this;
+                        var title = $(column.header()).text().trim();
+                        var columnWidth = columnWidths[colIdx];
+
+                        var filterCol = $(`<div class="filter-col" style="width: ${columnWidth}px;"></div>`);
+                        var filterGroup = $(`
+                            <div class="form-group">
+                                <input type="text" class="form-control form-control-sm"
+                                       style="width: ${columnWidth}px"
+                                       placeholder="Buscar ${title.toLowerCase()}...">
+                            </div>
+                        `);
+
+                        filterGroup.find('input').on('keyup change', function () {
+                            var val = this.value;
+                            if (column.search() !== val) {
+                                column.search(val ? val : '', true, false).draw();
+                            }
+                        });
+
+                        filterCol.append(filterGroup);
+                        filterRow.append(filterCol);
+                    }
+                });
+
+                filterContainer.append(filterRow);
+            }
+        });
+
+        // Ajustar inputs cuando la tabla se redimensione
+        table.on('column-sizing.dt', function () {
+            api.columns().every(function (colIdx) {
+                if (colIdx != 0) {
+                    var columnWidth = $(this.header()).width();
+                    $(filterRow).find(`.filter-col:nth-child(${colIdx}) input`).width(columnWidth);
+                }
+            });
         });
     });
-
-
-
 </script>
-
-<div class="table-container">
-    <div id="loadingSpinner" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10; text-align: center;">
-        <div class="spinner-border" role="status">
-            <span class="visually-hidden">Cargando...</span>
-        </div>
-        <div style="margin-top: 10px; font-weight: bold; color: #333;">Cargando...</div>
-    </div>
-    <!--begin::Table-->
-    <table id="kt_datatable_zero_configuration" data-kt-filemanager-table="files" class="table table-row-bordered">
-        <thead>
-            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
-                @* <th class="min-w-50px text-center text-dark fixed-column"></th> *@
-                <th class="w-10px pe-2">
-          
-                </th>
-                <th class="min-w-200px text-center text-dark">CODIGO</th>
-                <th class="min-w-150px text-center text-dark">FECHA RECEPCIÓN</th>
-                <th class="min-w-150px text-center text-dark">FECHA DE VENCIMIENTO</th>
-                <th class="min-w-150px text-center text-dark">CLASIFICACIÓN</th>
-                <th class="min-w-150px text-center text-dark">STOCK ACTUAL</th>
-                <th class="min-w-150px text-center text-dark">UBICACION ACTUAL</th>
-
-            </tr>
-        </thead>
-        <tbody class="fw-semibold text-gray-600" style="font-size: 13px;">
-
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        <a class="btn btn-icon btn-bg-light btn-active-color-warning btn-sm me-1" asp-controller="RiceLot" asp-action="RiceLotDetails" asp-route-IdLot="@item.IdLot" title="Ver Lote" data-bs-toggle="tooltip" data-bs-trigger="hover" data-bs-dismiss="click" data-bs-placement="top">
-                            <i class="ki-duotone ki-pencil fs-2">
-                                <span class="path1"></span>
-                                <span class="path2"></span>
-                            </i>
-                        </a>
-                    </td>
-                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Code) </td>
-                    <td class="text-center" data-order="@(item.ReceptionDate.HasValue ? item.ReceptionDate.Value.ToString("yyyyMMddHHmmss") : "")">
-                        @Html.DisplayFor(modelItem => item.ReceptionDate)
-                    </td>
-                    <td class="text-center" data-order="@(item.ExpirationDate.HasValue ? item.ExpirationDate.Value.ToString("yyyyMMddHHmmss") : "")">
-                        @Html.DisplayFor(modelItem => item.ExpirationDate)
-                    </td>
-                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Classification) </td>
-                    <td class="text-center"> @Html.DisplayFor(modelItem => item.LeftoverQuantity) </td>
-                    
-                    <td class="text-center">@Html.DisplayFor(modelItem => item.LastUbication)</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-
-
-</div>
-<!--end::Table-->

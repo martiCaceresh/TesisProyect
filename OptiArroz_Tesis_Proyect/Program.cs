@@ -48,6 +48,8 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddTransient<INotificationSenderDA, NotificationSenderDA>();
 builder.Services.AddTransient<INotificationTypeDA, NotificationTypeDA>();
 builder.Services.AddTransient<IRiceClassDA, RiceClassDA>();
+builder.Services.AddTransient<IUserDA, UserDA>();
+builder.Services.AddTransient<ISackDA, SackDA>();
 builder.Services.AddTransient<IRiceGradeDA, RiceGradeDA>();
 builder.Services.AddTransient<IRiceLotDA, RiceLotDA>();
 builder.Services.AddTransient<IRiceSacksOutputDA, RiceSacksOutputDA>();

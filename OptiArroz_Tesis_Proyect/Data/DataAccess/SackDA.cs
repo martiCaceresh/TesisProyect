@@ -21,6 +21,18 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                 var findUser = await DbContext.RiceSacks.FindAsync(Id) ?? throw new Exception("No se pudo encontrar el saco");
                 findUser.State = 1;
                 DbContext.Entry(findUser).State = EntityState.Modified;
+
+                // Actualizar Classifications relacionadas
+                var relatedClassifications = await DbContext.RiceClassifications
+                    .Where(c => c.IdRiceSack == Id)
+                    .ToListAsync();
+
+                foreach (var relatedClassification in relatedClassifications)
+                {
+                    relatedClassification.State = 1;
+                    DbContext.Entry(relatedClassification).State = EntityState.Modified;
+                }
+
                 await DbContext.SaveChangesAsync();
             }
             catch
@@ -66,6 +78,18 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                 var findUser = await DbContext.RiceSacks.FindAsync(Id) ?? throw new Exception("No se pudo encontrar el usuario");
                 findUser.State = 0;
                 DbContext.Entry(findUser).State = EntityState.Modified;
+
+                // Actualizar Classifications relacionadas
+                var relatedClassifications = await DbContext.RiceClassifications
+                    .Where(c => c.IdRiceSack == Id)
+                    .ToListAsync();
+
+                foreach (var relatedClassification in relatedClassifications)
+                {
+                    relatedClassification.State = 0;
+                    DbContext.Entry(relatedClassification).State = EntityState.Modified;
+                }
+
                 await DbContext.SaveChangesAsync();
             }
             catch

@@ -1,0 +1,866 @@
+﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.ClassificationManagerVM
+@using OptiArroz_Tesis_Proyect.Models.Utils
+@using Newtonsoft.Json
+
+@{
+    ViewData["Title"] = "Clasificaciones";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .icon {
+        cursor: pointer;
+    }
+
+    .table-container {
+        position: relative;
+        width: 100%;
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table th, .table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .fixed-column {
+        position: absolute;
+        left: 0;
+        top: auto;
+        border-right: 1px solid #ddd;
+        background-color: white;
+    }
+
+        .fixed-column th, .fixed-column td {
+            border-right: 1px solid #ddd;
+        }
+
+</style>
+
+<script>
+    $(document).ready(function () {
+
+        $("#kt_datatable_zero_configuration_inactive").DataTable({
+            scrollX: true,
+            scrollY: '50vh',
+            fixedColumns: {
+                left: 1
+            },
+            searching: true,
+            columnDefs: [{
+                targets: [0], // Primera columna (la de los botones)
+                searchable: false
+            }],
+            search: {
+                smart: true, // Búsqueda inteligente
+                caseInsensitive: true // No distingue mayúsculas/minúsculas
+            },
+            language: {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros por página",
+                zeroRecords: "No se encontraron resultados",
+                info: "Mostrando página _PAGE_ de _PAGES_",
+                infoEmpty: "No hay registros disponibles",
+                infoFiltered: "(filtrado de _MAX_ registros totales)"
+            },
+            initComplete: function () {
+                // Vincular el input personalizado con búsqueda instantánea
+                var table = this.api();
+                $('.form-control[name="SearchInactive"]').on('keyup', function () {
+                    table.search(this.value).draw();
+                });
+            }
+        });
+        $("#kt_datatable_zero_configuration_active").DataTable({
+            scrollX: true,
+            scrollY: '50vh',
+            fixedColumns: {
+                left: 1
+            },
+            searching: true,
+            columnDefs: [{
+                targets: [0], // Primera columna (la de los botones)
+                searchable: false
+            }],
+            search: {
+                smart: true, // Búsqueda inteligente
+                caseInsensitive: true // No distingue mayúsculas/minúsculas
+            },
+            language: {
+                search: "Buscar:",
+                lengthMenu: "Mostrar _MENU_ registros por página",
+                zeroRecords: "No se encontraron resultados",
+                info: "Mostrando página _PAGE_ de _PAGES_",
+                infoEmpty: "No hay registros disponibles",
+                infoFiltered: "(filtrado de _MAX_ registros totales)"
+            },
+            initComplete: function () {
+                // Vincular el input personalizado con búsqueda instantánea
+                var table = this.api();
+                $('.form-control[name="SearchActive"]').on('keyup', function () {
+                    table.search(this.value).draw();
+                });
+            }
+        });
+
+
+    });
+</script>
+<script>
+
+    function setEdit(item) {
+        console.log(item)
+        $("#IdRiceClassification").val(item.IdRiceClassification);
+        $("#RiceClassification").val(item.Name);
+        $('#MinimunStockUpdate').val(item.MinimunStock);
+        $('#MaximunStockUpdate').val(item.MaximunStock);
+        $('#SacksPerLotUpdate').val(item.SacksPerLot);
+    }
+
+    function setDeactivate(sentId, sentName) {
+        $("#deactivateInputId").val(sentId);
+        $("#deactivateInputName").val(sentName);
+    }
+    function setActivate(sentId, sentName) {
+        $("#activateInputId").val(sentId);
+        $("#activateInputName").val(sentName);
+
+    }
+</script>
+
+<!--begin: Stepper Validations-->
+<script>
+    function ValidateCreateForm(){
+        var inputs = $('#Create').find('input[required], select[required]');
+        var isValid = true;
+
+        inputs.each(function () {
+            var element = $(this);
+            if (!element.val() || element.hasClass('invalid')) {
+                var parentDiv = element.closest('.input-group');
+                isValid = false;
+                element.addClass('invalid');
+                parentDiv.next('.invalid-feedback').show();
+            } else {
+                var parentDiv = element.closest('.input-group');
+                element.removeClass('invalid');
+                parentDiv.next('.invalid-feedback').hide();
+            }
+        });
+
+        if(isValid) {
+            //enviar el formulario
+            $('#Create').submit();
+        }
+        
+    }
+
+    function ValidateUpdateForm(){
+        var inputs = $('#Update').find('input[required], select[required]');
+        var isValid = true;
+
+        inputs.each(function () {
+            var element = $(this);
+            if (!element.val() || element.hasClass('invalid')) {
+                var parentDiv = element.closest('.input-group');
+                isValid = false;
+                element.addClass('invalid');
+                parentDiv.next('.invalid-feedback').show();
+            } else {
+                var parentDiv = element.closest('.input-group');
+                element.removeClass('invalid');
+                parentDiv.next('.invalid-feedback').hide();
+            }
+        });
+
+        if(isValid) {
+            //enviar el formulario
+            $('#Update').submit();
+        }
+        
+    }
+      //FUNCION QUE REALIZA LAS VALIDACIONES A CADA ELEMENTO DENTRO DEL MODAL
+      function ValidateElement(element) {
+          var isValid = true;
+          var validationTypes = element.data('validation').split(',');
+
+          for (var i = 0; i < validationTypes.length; i++) {
+              var validationType = validationTypes[i];
+              switch (validationType) {
+                  case 'required':
+                      if (!element.val()) {
+                          isValid = false;
+                          console.log("Required")
+                          ShowValidationError(element, 'Este campo es obligatorio.');
+                          return isValid;
+                      } else {
+                          RemoveValidationError(element);
+                      }
+                      break;
+                  case 'digits':
+                      var digits = element.data('digits').toString().split(',').map(Number);
+                      if (!digits.includes(element.val().length)) {
+                          isValid = false;
+                          console.log("Digits")
+                          ShowValidationError(element, `El campo debe tener exactamente ${digits.join(' o ')} dígitos.`);
+                          return isValid;
+                      } else {
+                          RemoveValidationError(element);
+                      }
+                      break;
+                  case 'email':
+                      if (element.val() == "") {
+                          var parentDiv = element.closest('.input-group');
+                          element.removeClass('valid');
+                          element.removeClass('invalid');
+                          parentDiv.next('.invalid-feedback').hide();
+                          element.removeAttr('required');
+                      }
+                      else if (!ValidateEmail(element.val())) {
+                          isValid = false;
+                          console.log("email")
+                          ShowValidationError(element, 'El correo electrónico no es válido.');
+                          element.attr('required', true);
+                          return isValid;
+                      }
+                      else {
+
+                          RemoveValidationError(element);
+                          element.attr('required', true);
+                      }
+                      break;
+
+                  case 'numeric':
+                      if (!ValidateNumeric(element.val())) {
+                          isValid = false;
+                          console.log("numeric")
+                          ShowValidationError(element, 'El campo solo debe contener valores numéricos.');
+                          return isValid;
+                      } else {
+                          RemoveValidationError(element);
+                      }
+                      break;
+
+                  case 'decimal':
+                      console.log("decimal")
+
+                      if (!ValidateDecimal(element.val())) {
+                          isValid = false;
+                          console.log("decimal")
+                          ShowValidationError(element, 'El número decimal no es válido.');
+                          return isValid;
+                      } else {
+                          RemoveValidationError(element);
+                      }
+                      break;
+
+                  case 'contract-format':
+                      var formattedValue = formatContract(element.val());
+                      element.val(formattedValue);
+                      if (!ValidateContractFormat(formattedValue)) {
+                          isValid = false;
+                          console.log("contract-format")
+                          ShowValidationError(element, 'El contrato no sigue el formato correcto.');
+                          return isValid;
+                      } else {
+                          RemoveValidationError(element);
+                      }
+                      break;
+
+
+                  default:
+                      break;
+              }
+          }
+
+          return isValid;
+      }
+
+      //FUNCION QUE MUESTRA LOS ATRIBUTOS DE ERROR DEL ELEMENTO
+      function ShowValidationError(element, message) {
+          var parentDiv = element.closest('.input-group');
+          element.removeClass('valid');
+          element.addClass('invalid');
+          parentDiv.next('.invalid-feedback').text(message).show();
+      }
+
+      //FUNCION QUE RETIRA LOS ATRIBUTOS Y CLASES DE ERROR Y AGREGA ATRIBUTOS Y CLASES DE EXITO
+      function RemoveValidationError(element) {
+          var parentDiv = element.closest('.input-group');
+          element.removeClass('invalid');
+          parentDiv.next('.invalid-feedback').hide();
+          element.addClass('valid');
+      }
+
+      //FUNCION PARA VALIDAR CORREO
+      function ValidateEmail(email) {
+          // Expresión regular para validar un correo electrónico
+          var emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+          // Verificar si el email pasa la validación básica
+          if (!emailPattern.test(email)) {
+              return false;
+          }
+
+          // Verificar que no termine con un punto
+          if (email.endsWith('.')) {
+              return false;
+          }
+
+          // Si pasa ambas validaciones, el email es válido
+          return true;
+      }
+
+      //FUNCION PARA VALIDAR VALORES NUMERICOS
+      function ValidateNumeric(number) {
+          return /^\d+$/.test(number);
+      }
+
+
+      function ValidateDecimal(string) {
+          // Si está vacío o no es string, retornar false
+          if (!string || typeof string !== 'string') {
+              return false;
+          }
+
+          // Eliminar espacios en blanco
+          string = string.trim();
+
+          // Verificar si es un número válido
+          // Acepta:
+          // - Cero (0)
+          // - Números enteros positivos (ej: 1, 2, 123)
+          // - Números decimales positivos (ej: 0.45, 123.45)
+          // - No permite múltiples puntos decimales
+          const decimalRegex = /^(0|[1-9]\d*)\.?\d*$/;
+          return decimalRegex.test(string);
+      }
+
+      //VALIDACION DE FORMATO DE CONTRATOS
+      function ValidateContractFormat(contract) {
+          // Expresión regular para validar el formato del contrato
+          var contractPattern = /^\d{4}-\d{4}-\d{2}-\d{8}$/;
+          return contractPattern.test(contract);
+      }
+
+      //CONVERTIDOR DE NUMEROS DECIMALES
+      function formatDecimal(value) {
+
+          // Convertir el valor en un número flotante
+          let number = parseFloat(value);
+
+          if (isNaN(number)) {
+              return 'Invalid number';
+          }
+
+          // Formatear el número con comas en los miles y dos decimales
+          return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
+      //CONVERTIDOR A FORMATO DE CONTRATO
+      function formatContract(value) {
+
+          var value = value.replace(/\D/g, '');
+          console.log(value);
+          var sections = [4, 4, 2, 8];
+          var formattedValue = '';
+          var index = 0;
+
+          for (var i = 0; i < sections.length; i++) {
+              if (value.length > index) {
+                  var endIndex = index + sections[i];
+                  if (value.length > endIndex) {
+                      if (value.length > 18 && i === 3) formattedValue += value.substring(index, endIndex);
+                      else formattedValue += value.substring(index, endIndex) + '-';
+                  } else {
+                      formattedValue += value.substring(index, value.length);
+                  }
+              }
+              index += sections[i];
+          }
+
+          return formattedValue;
+      }
+
+</script>
+<!--end: Stepper Validations-->
+
+
+
+<div class="modal fade" tabindex="-1" id="kt_modal_1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="card card-dashed">
+                    <form id="Create" asp-action="Create" method="post" class="needs-validation" novalidate>
+                        <div class="card-header">
+                            <h3 class="card-title">AÑADIR CLASIFICACIÓN</h3>
+                            <div class="card-toolbar">
+                                <button onclick="ValidateForm()" class="btn btn-sm btn-warning">
+                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            
+                            <div class="row">
+
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <select id="RiceGrade" name="IdRiceGrade" required data-validation="required" class="form-select" oninput="ValidateElement($(this))">
+                                                <option value="">Seleccione el grado</option>
+                                                @foreach (var item in Model.RiceGrades)
+                                                {
+                                                    <option value=@item.IdGrade>@item.Name</option>
+                                                }
+                                            </select>
+                                            <label class="form-label required" for="RiceGrade">Grado</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <select id="RiceClass" name="IdRiceClass" required data-validation="required" class="form-select" oninput="ValidateElement($(this))">
+                                                <option value="">Seleccione una clase</option>
+                                                @foreach (var item in Model.RiceClasses)
+                                                {
+                                                    <option value=@item.IdClass>@item.Name</option>
+                                                }
+                                            </select>
+                                            <label class="form-label required" for="RiceClass">Clase</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <select id="RiceSack" name="IdRiceSack" required data-validation="required" class="form-select" oninput="ValidateElement($(this))">
+                                                <option value="">Seleccione un estado de cliente</option>
+                                                @foreach (var item in Model.RiceSacks)
+                                                {
+                                                    <option value=@item.IdSack>@item.Weight</option>
+                                                }
+                                            </select>
+                                            <label class="form-label required" for="RiceSack">Saco(Kg)</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="sacksPerLot" type="text" name="SacksPerLot" required data-validation="required,numeric" class="form-control" placeholder="Cantidad de sacos por lote" oninput="ValidateElement($(this))" data-repeater-sacksperlot />
+                                            <label class="form-label required" for="sacksPerLot">Cantidad de sacos por lote</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="minimunStock" type="text" name="MiniminStock" required data-validation="required,numeric" class="form-control" placeholder="Stock minimo" oninput="ValidateElement($(this))" data-repeater-minimunstock />
+                                            <label class="form-label required" for="minimunStock">Stock mínimo</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="maximunStock" type="text" name="MaximunStock" required data-validation="required,numeric" class="form-control" placeholder="Stock máximo" oninput="ValidateElement($(this))" data-repeater-maximunstock />
+                                            <label class="form-label required" for="maximunStock">Stock máximo</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="kt_modal_2">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="card card-dashed">
+                    <form id="Update" asp-action="Update" method="post" class="needs-validation" novalidate>
+                        <div class="card-header">
+                            <h3 class="card-title">EDITAR CLASIFICACIÓN</h3>
+                            <div class="card-toolbar">
+                                <button onclick="ValidateForm()" class="btn btn-sm btn-warning">
+                                    <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <input hidden id="IdRiceClassification" type="text"/>
+                            <div class="row">
+
+                                <div class="col mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="RiceClassification" type="text" required data-validation="required" class="form-control" placeholder="Nombre" oninput="ValidateElement($(this))" readonly />
+                                            <label class="form-label required" for="RiceClassification">Nombre de clasificación</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="SacksPerLotUpdate" type="text" name="SacksPerLot" required data-validation="required,numeric" class="form-control" placeholder="Cantidad de sacos por lote" oninput="ValidateElement($(this))" data-repeater-sacksperlot />
+                                            <label class="form-label required" for="SacksPerLotUpdate">Cantidad de sacos por lote</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="MinimunStockUpdate" type="text" name="MiniminStock" required data-validation="required,numeric" class="form-control" placeholder="Stock minimo" oninput="ValidateElement($(this))" data-repeater-minimunstock />
+                                            <label class="form-label required" for="MinimunStockUpdate">Stock mínimo</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+                                <div class="col-lg-4 mb-3">
+                                    <div class="input-group">
+                                        <div class="form-floating">
+                                            <input id="MaximunStockUpdate" type="text" name="MaximunStock" required data-validation="required,numeric" class="form-control" placeholder="Stock máximo" oninput="ValidateElement($(this))" data-repeater-maximunstock />
+                                            <label class="form-label required" for="MaximunStock">Stock máximo</label>
+                                        </div>
+                                    </div>
+                                    <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="kt_modal_3">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="card card-dashed">
+                    <form asp-action="Deactivate">
+                        <div class="card-header">
+                            <h3 class="card-title">DESACTIVAR SACO</h3>
+                            <div class="card-toolbar">
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="ki-duotone ki-toggle-off fs-2">
+                                        <span class="path1"></span><span class="path2"></span>
+                                    </i>
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" name="Id" id="deactivateInputId" />
+
+                            <div class="row">
+                                <div class="col mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="ki-solid ki-pencil fs-2"></i>
+                                        </span>
+                                        <div class="form-floating">
+                                            <input readonly id="deactivateInputName" type="text" class="form-control" required />
+                                            <label class="form-label" for="deactivateInputName">Peso de saco</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" tabindex="-1" id="kt_modal_4">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="card card-dashed">
+                    <form asp-action="Activate">
+                        <div class="card-header">
+                            <h3 class="card-title">ACTIVAR SACO</h3>
+                            <div class="card-toolbar">
+                                <button type="submit" class="btn btn-sm btn-success">
+                                    <i class="ki-duotone ki-toggle-off fs-2">
+                                        <span class="path1"></span><span class="path2"></span>
+                                    </i>
+                                    Confirmar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <input type="hidden" name="Id" id="activateInputId" />
+                            <div class="row">
+                                <div class="col mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="ki-solid ki-pencil fs-2"></i>
+                                        </span>
+                                        <div class="form-floating">
+                                            <input readonly id="activateInputName" type="text" class="form-control" required />
+                                            <label class="form-label" for="activateInputName">Peso de saco</label>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Clasificaciones</h1>
+                    <!--end::Title-->
+
+                </div>
+                <!--end::Page title-->
+                <!--begin::Actions-->
+                <div class="d-flex flex-stack flex-wrap gap-4">
+
+
+                    <!--begin::Create button-->
+                    <a id="btnOpenModal" class="btn btn-sm btn-primary me-2 mb-2" data-bs-toggle="modal" data-bs-target="#kt_modal_1">
+                        <i class="ki-duotone ki-plus fs-2"></i>Añadir
+                    </a>
+                    <!--end::Create button-->
+                </div>
+                <!--end::Actions-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+    </div>
+    <!--end::Content wrapper-->
+</div>
+
+<div class="card mb-5 mb-xl-8">
+    <!--begin::Header-->
+    <div class="card-header border-0 pt-5">
+        <div class="card-toolbar">
+            <ul class="nav nav-tabs nav-line-tabs mb-5 fs-6">
+                <li class="nav-item">
+                    <a id="testId" class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_1">Activos</a>
+                </li>
+                <li class="nav-item">
+                    <a id="testId2" class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_2">Inactivos</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!--end::Header-->
+    <div class="card-body py-3">
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="kt_tab_pane_1" role="tabpanel">
+                <!--begin::Actions-->
+                <div class="row justify-items-end">
+
+                    <div class="col-4">
+                        <!-- Quita el form o modifícalo así -->
+                        <div class="position-relative">
+                            <i class="ki-duotone ki-magnifier fs-2 position-absolute top-50 translate-middle-y ms-4">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <input type="text"
+                                   class="form-control h-35px w-150px fs-7 ps-12"
+                                   name="SearchActive"
+                                   placeholder="Buscar..."
+                                   data-kt-search-element="input">
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <!--end::Actions-->
+                <div class="table-container">
+                    <!--begin::Table-->
+                    <table id="kt_datatable_zero_configuration_active" class="table">
+                        <thead>
+                            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                                <th class="min-w-100px text-center text-dark fixed-column"></th>
+                                <th class="min-w-150px text-center text-dark">NOMBRE</th>
+                                <th class="min-w-150px text-center text-dark">FECHA CREACIÓN</th>
+                                <th class="min-w-150px text-center text-dark">CREADO POR</th>
+                                <th class="min-w-150px text-center text-dark">FECHA MODIFICACIÓN</th>
+                                <th class="min-w-150px text-center text-dark">MODIFICADO POR</th>
+
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600" style="font-size: 11px;">
+
+                            @foreach (var item in Model.ActiveList)
+                            {
+                                var jsonItem = JsonConvert.SerializeObject(item);
+                                <tr>
+                                    <td class="text-center fixed-column">
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-warning btn-sm me-1" onclick="setEdit(@jsonItem)" data-bs-toggle="modal" data-bs-target="#kt_modal_2">
+                                            <i class="ki-duotone ki-pencil fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                        </a>
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm me-1" onclick="setDeactivate(@item.IdClassification, '@item.Name')" data-bs-toggle="modal" data-bs-target="#kt_modal_3">
+                                            <i class="ki-duotone ki-toggle-off fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                        </a>
+
+                                    </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Name) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.CreatedAt) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.IdCreatedBy) </td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.UpdatedAt)</td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.IdUpdatedBy)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+
+                </div>
+                <!--end::Table-->
+
+            </div>
+            <div class="tab-pane fade" id="kt_tab_pane_2" role="tabpanel">
+                <!--begin::Actions-->
+                <div class="row align-items-end">
+
+                    <div class="col-4">
+                        <!-- Quita el form o modifícalo así -->
+                        <div class="position-relative">
+                            <i class="ki-duotone ki-magnifier fs-2 position-absolute top-50 translate-middle-y ms-4">
+                                <span class="path1"></span>
+                                <span class="path2"></span>
+                            </i>
+                            <input type="text"
+                                   class="form-control h-35px w-150px fs-7 ps-12"
+                                   name="SearchInactive"
+                                   placeholder="Buscar..."
+                                   data-kt-search-element="input">
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div class="table-container">
+                    <!--begin::Table-->
+                    <table id="kt_datatable_zero_configuration_inactive" class="table">
+                        <thead>
+                            <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
+                                <th class="min-w-100px text-center text-dark fixed-column"></th>
+                                <th class="min-w-150px text-center text-dark">PESO</th>
+                                <th class="min-w-150px text-center text-dark">FECHA CREACIÓN</th>
+                                <th class="min-w-150px text-center text-dark">CREADO POR</th>
+                                <th class="min-w-150px text-center text-dark">FECHA MODIFICACIÓN</th>
+                                <th class="min-w-150px text-center text-dark">MODIFICADO POR</th>
+                            </tr>
+                        </thead>
+                        <tbody class="fw-semibold text-gray-600" style="font-size: 13px;">
+
+                            @foreach (var item in Model.InactiveList)
+                            {
+                                <tr>
+                                    <td class="text-center fixed-column">
+                                        <a id="btnOpenModal" class="btn btn-icon btn-bg-light btn-active-color-success btn-sm me-1" onclick="setActivate(@item.IdClassification , '@item.Name' )" data-bs-toggle="modal" data-bs-target="#kt_modal_4">
+                                            <i class="ki-duotone ki-toggle-off fs-2"><span class="path1"></span><span class="path2"></span></i>
+                                        </a>
+
+                                    </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.Name) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.CreatedAt) </td>
+                                    <td class="text-center"> @Html.DisplayFor(modelItem => item.IdCreatedBy) </td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.UpdatedAt)</td>
+                                    <td class="text-center">@Html.DisplayFor(modelItem => item.IdUpdatedBy)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <!--end::Table-->
+            </div>
+        </div>
+    </div>
+    <!--begin::Body-->
+</div>
+
+
+@if (TempData.ContainsKey("SuccessMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("success", "Éxito" ,TempData["SuccessMessage"]?.ToString() ?? string.Empty ))
+}
+@if (TempData.ContainsKey("ErrorMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("error", "Error" ,TempData["ErrorMessage"]?.ToString() ?? string.Empty ))
+
+}
+
+<script>
+    (function () {
+        'use strict';
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        var forms = document.querySelectorAll('.needs-validation');
+
+        // Loop over them and prevent submission
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>

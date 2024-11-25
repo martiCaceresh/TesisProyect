@@ -73,6 +73,17 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
             this.Name = RiceSack;
             SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
         }
+
+        public RiceClassification(int MinimunStock, int MaximunStock, int SacksPerLot, int IdRiceClass, int IdRiceGrade, int IdRiceSack, string IdUser)
+        {
+            this.MinimunStock = MinimunStock;
+            this.MaximunStock = MaximunStock;
+            this.SacksPerLot = SacksPerLot;
+            this.IdRiceClass = IdRiceClass;
+            this.IdRiceGrade = IdRiceGrade;
+            this.IdRiceSack = IdRiceSack;
+            SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
+        }
         public void SetBaseModel(string? IdCreatedBy, string? IdUpdatedBy, DateTime CreatedAt, DateTime UpdatedAt, int State)
         {
             this.IdCreatedBy = IdCreatedBy;

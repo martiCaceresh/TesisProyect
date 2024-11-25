@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using iText.Commons.Actions.Contexts;
+using Microsoft.EntityFrameworkCore;
 using OptiArroz_Tesis_Proyect.Data.Interfaces;
 using OptiArroz_Tesis_Proyect.Models.Dtos;
 using OptiArroz_Tesis_Proyect.Models.Entities;
@@ -14,10 +15,75 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
         {
             this.DbContext = DbContext;
         }
+
+        public async Task Create(RiceClassification NewRiceClassification)
+        {
+            try
+            {
+                //validar que no se repita esa clasificacion
+                bool exists = await DbContext.RiceClassifications.AnyAsync(x =>
+                                        x.IdRiceSack == NewRiceClassification.IdRiceSack &&
+                                        x.IdRiceClass == NewRiceClassification.IdRiceClass &&
+                                        x.IdRiceGrade == NewRiceClassification.IdRiceGrade);
+
+                if (exists)
+                {
+                    throw new Exception("La clasificación ya existe");
+                }
+
+                var RiceSack = await DbContext.RiceSacks.FindAsync(NewRiceClassification.IdRiceClass) ?? throw new Exception("No se pudo encontrar el saco");
+                var RiceClass = await DbContext.RiceClasses.FindAsync(NewRiceClassification.IdRiceClass) ?? throw new Exception("No se pudo encontrar la clase");
+                var RiceGrade = await DbContext.RiceGrades.FindAsync(NewRiceClassification.IdRiceGrade) ?? throw new Exception("No se pudo encontrar el grado");
+
+                NewRiceClassification.Name = $"{RiceGrade.Name}-{RiceClass.Name}-{RiceSack.Weight}KG";
+
+                await DbContext.RiceClassifications.AddAsync(NewRiceClassification);
+                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public async Task<List<RiceClassification>> GetActiveRiceClassifications()
         {
-            var Classifications = await DbContext.RiceClassifications.Where(x => x.State == 1).ToListAsync();
-            return Classifications;
+
+            return await DbContext.RiceClassifications
+                    .Include(x => x.CreatedBy) // Incluye la relación con el usuario
+                    .Where(x => x.State == 1)
+                    .Select(x => new RiceClassification
+                    {
+                        IdClassification = x.IdClassification,
+                        Name = x.Name,
+                        State = x.State,
+                        CreatedAt = x.CreatedAt,
+                        IdCreatedBy = x.CreatedBy.Name + " " + x.CreatedBy.LastName,
+                        UpdatedAt = x.UpdatedAt,
+                        IdUpdatedBy = x.UpdatedBy.Name + " " + x.UpdatedBy.LastName,
+                        MinimunStock = x.MinimunStock,
+                        MaximunStock = x.MaximunStock,
+                        SacksPerLot = x.SacksPerLot,
+                    })
+                    .ToListAsync();
+        }
+
+        public async Task<List<RiceClassification>> GetInactiveRiceClassifications()
+        {
+            return await DbContext.RiceClassifications
+                    .Include(x => x.CreatedBy) // Incluye la relación con el usuario
+                    .Where(x => x.State == 0)
+                    .Select(x => new RiceClassification
+                    {
+                        IdClassification = x.IdClassification,
+                        Name = x.Name,
+                        State = x.State,
+                        CreatedAt = x.CreatedAt,
+                        IdCreatedBy = x.CreatedBy.Name + " " + x.CreatedBy.LastName,
+                        UpdatedAt = x.UpdatedAt,
+                        IdUpdatedBy = x.UpdatedBy.Name + " " + x.UpdatedBy.LastName,
+                    })
+                    .ToListAsync();
         }
 
         public async Task<List<RiceSacksConsultationResultDTO>> GetStockConsultation(List<RiceSacksConsultationDTO> consultations)
@@ -94,6 +160,58 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             {
                 StockSemaphore.Semaphore.Release();
             }
+        }
+
+        public async Task Update(int Id, int MinimunStock, int MaximunStock, int QuatityPerLot, string IdUser)
+        {
+            try
+            {
+                var Find = await DbContext.RiceClassifications.FindAsync(Id) ?? throw new Exception("No se pudo encontrar la clasificacion");
+                Find.MinimunStock = MinimunStock;
+                Find.MaximunStock = MaximunStock;
+                Find.SacksPerLot = QuatityPerLot;
+                Find.IdUpdatedBy = IdUser;
+                Find.UpdatedAt = DateTime.Now;
+                DbContext.Entry(Find).State = EntityState.Modified;
+                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                throw;
+            }
+            
+        }
+
+        public async Task Activate(int Id)
+        {
+            try
+            {
+                var Find = await DbContext.RiceClassifications.FindAsync(Id) ?? throw new Exception("No se pudo encontrar la clasificacion");
+                Find.State = 1;
+                DbContext.Entry(Find).State = EntityState.Modified;
+                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                throw;
+            }
+
+        }
+
+        public async Task Deactivate(int Id)
+        {
+            try
+            {
+                var Find = await DbContext.RiceClassifications.FindAsync(Id) ?? throw new Exception("No se pudo encontrar la clasificacion");
+                Find.State = 0;
+                DbContext.Entry(Find).State = EntityState.Modified;
+                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                throw;
+            }
+
         }
     }
 }

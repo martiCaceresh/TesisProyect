@@ -199,5 +199,10 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             await DbContext.Zones.AddRangeAsync(otherZones);
             await DbContext.SaveChangesAsync();
         }
+
+        public async Task<SystemConfiguration> GetFirstConfiguration()
+        {
+            return await DbContext.SystemConfiguration.FirstOrDefaultAsync() ?? throw new Exception("No se encontro alguna configuracion"); 
+        }
     }
 }

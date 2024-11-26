@@ -71,7 +71,47 @@ namespace OptiArroz_Tesis_Proyect.Controllers
                 await RiceClassificationDA.Update(IdRiceClassification, MinimunStock, MaximunStock, SacksPerLot,CurrentUser.Id);
 
                 // Agrega un mensaje de éxito al TempData
-                TempData["SuccessMessage"] = "Se creo el saco correctamente";
+                TempData["SuccessMessage"] = "Se edito el saco correctamente";
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                // Agrega un mensaje de error al TempData
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction("Index");
+            }
+        }
+
+        public async Task<IActionResult> Activate(int Id)
+        {
+            try
+            {
+                await RiceClassificationDA.Activate(Id);
+
+                // Agrega un mensaje de éxito al TempData
+                TempData["SuccessMessage"] = "Se activo la clasificacion correctamente";
+
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                // Agrega un mensaje de error al TempData
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction("Index");
+            }
+        }
+
+        public async Task<IActionResult> Deactivate(int Id)
+        {
+            try
+            {
+                await RiceClassificationDA.Deactivate(Id);
+
+                // Agrega un mensaje de éxito al TempData
+                TempData["SuccessMessage"] = "Se desactivo la clasificacion correctamente";
 
                 return RedirectToAction("Index");
             }

@@ -28,14 +28,14 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 
                 if (exists)
                 {
-                    throw new Exception("La clasificación ya existe");
+                    throw new Exception("La clasificacion ya existe");
                 }
 
-                var RiceSack = await DbContext.RiceSacks.FindAsync(NewRiceClassification.IdRiceClass) ?? throw new Exception("No se pudo encontrar el saco");
+                var RiceSack = await DbContext.RiceSacks.FindAsync(NewRiceClassification.IdRiceSack) ?? throw new Exception("No se pudo encontrar el saco");
                 var RiceClass = await DbContext.RiceClasses.FindAsync(NewRiceClassification.IdRiceClass) ?? throw new Exception("No se pudo encontrar la clase");
                 var RiceGrade = await DbContext.RiceGrades.FindAsync(NewRiceClassification.IdRiceGrade) ?? throw new Exception("No se pudo encontrar el grado");
 
-                NewRiceClassification.Name = $"{RiceGrade.Name}-{RiceClass.Name}-{RiceSack.Weight}KG";
+                NewRiceClassification.Name = $"{RiceGrade.Name}-{RiceClass.Name}-{RiceSack.Weight.ToString("0.##")}KG";
 
                 await DbContext.RiceClassifications.AddAsync(NewRiceClassification);
                 await DbContext.SaveChangesAsync();

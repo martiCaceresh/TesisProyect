@@ -33,13 +33,9 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
 
 
         [Display(Name = "FECHA CREACION")]
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime CreatedAt { get; set; }
 
         [Display(Name = "FECHA MODIFICACION")]
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime UpdatedAt { get; set; }
 
         [DefaultValue(1)]
@@ -66,6 +62,15 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
             this.Rows = Rows;
             this.Columns = Columns;
             SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
+
+        }
+
+        public Zone(int IdZone , string Name, string Description, string IdUser)
+        {
+            this.IdZone = IdZone;
+            this.Name = Name.ToUpper();
+            this.Description = Description.ToUpper();
+            SetBaseModel(IdUser, DateTime.Now, 1);
 
         }
         public void SetBaseModel(string? IdCreatedBy, string? IdUpdatedBy, DateTime CreatedAt, DateTime UpdatedAt, int State)

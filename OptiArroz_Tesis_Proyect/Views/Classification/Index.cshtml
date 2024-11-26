@@ -119,7 +119,7 @@
 
     function setEdit(item) {
         console.log(item)
-        $("#IdRiceClassification").val(item.IdRiceClassification);
+        $("#IdRiceClassification").val(item.IdClassification);
         $("#RiceClassification").val(item.Name);
         $('#MinimunStockUpdate').val(item.MinimunStock);
         $('#MaximunStockUpdate').val(item.MaximunStock);
@@ -452,7 +452,7 @@
                                                 <option value="">Seleccione un estado de cliente</option>
                                                 @foreach (var item in Model.RiceSacks)
                                                 {
-                                                    <option value=@item.IdSack>@item.Weight</option>
+                                                    <option value=@item.IdSack>@Html.DisplayFor(modelItem => item.Weight)</option>
                                                 }
                                             </select>
                                             <label class="form-label required" for="RiceSack">Saco(Kg)</label>
@@ -476,7 +476,7 @@
                                 <div class="col-lg-4 mb-3">
                                     <div class="input-group">
                                         <div class="form-floating">
-                                            <input id="minimunStock" type="text" name="MiniminStock" required data-validation="required,numeric" class="form-control" placeholder="Stock minimo" oninput="ValidateElement($(this))" data-repeater-minimunstock />
+                                            <input id="minimunStock" type="text" name="MinimunStock" required data-validation="required,numeric" class="form-control" placeholder="Stock minimo" oninput="ValidateElement($(this))" data-repeater-minimunstock />
                                             <label class="form-label required" for="minimunStock">Stock mínimo</label>
                                         </div>
                                     </div>
@@ -517,7 +517,7 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <input hidden id="IdRiceClassification" type="text"/>
+                            <input hidden id="IdRiceClassification" name="IdRiceClassification" type="text" />
                             <div class="row">
 
                                 <div class="col mb-3">
@@ -544,7 +544,7 @@
                                 <div class="col-lg-4 mb-3">
                                     <div class="input-group">
                                         <div class="form-floating">
-                                            <input id="MinimunStockUpdate" type="text" name="MiniminStock" required data-validation="required,numeric" class="form-control" placeholder="Stock minimo" oninput="ValidateElement($(this))" data-repeater-minimunstock />
+                                            <input id="MinimunStockUpdate" type="text" name="MinimunStock" required data-validation="required,numeric" class="form-control" placeholder="Stock minimo" oninput="ValidateElement($(this))" data-repeater-minimunstock />
                                             <label class="form-label required" for="MinimunStockUpdate">Stock mínimo</label>
                                         </div>
                                     </div>
@@ -576,7 +576,7 @@
                 <div class="card card-dashed">
                     <form asp-action="Deactivate">
                         <div class="card-header">
-                            <h3 class="card-title">DESACTIVAR SACO</h3>
+                            <h3 class="card-title">DESACTIVAR CLASIFICACION</h3>
                             <div class="card-toolbar">
                                 <button type="submit" class="btn btn-sm btn-danger">
                                     <i class="ki-duotone ki-toggle-off fs-2">
@@ -597,7 +597,7 @@
                                         </span>
                                         <div class="form-floating">
                                             <input readonly id="deactivateInputName" type="text" class="form-control" required />
-                                            <label class="form-label" for="deactivateInputName">Peso de saco</label>
+                                            <label class="form-label" for="deactivateInputName">Clasificación</label>
                                         </div>
                                     </div>
 
@@ -618,7 +618,7 @@
                 <div class="card card-dashed">
                     <form asp-action="Activate">
                         <div class="card-header">
-                            <h3 class="card-title">ACTIVAR SACO</h3>
+                            <h3 class="card-title">ACTIVAR CLASIFICACION</h3>
                             <div class="card-toolbar">
                                 <button type="submit" class="btn btn-sm btn-success">
                                     <i class="ki-duotone ki-toggle-off fs-2">
@@ -638,7 +638,7 @@
                                         </span>
                                         <div class="form-floating">
                                             <input readonly id="activateInputName" type="text" class="form-control" required />
-                                            <label class="form-label" for="activateInputName">Peso de saco</label>
+                                            <label class="form-label" for="activateInputName">Clasificación</label>
                                         </div>
                                     </div>
 
@@ -799,7 +799,7 @@
                         <thead>
                             <tr class="text-start text-gray-400 fw-bold fs-7 text-uppercase gs-0">
                                 <th class="min-w-100px text-center text-dark fixed-column"></th>
-                                <th class="min-w-150px text-center text-dark">PESO</th>
+                                <th class="min-w-150px text-center text-dark">NOMBRE</th>
                                 <th class="min-w-150px text-center text-dark">FECHA CREACIÓN</th>
                                 <th class="min-w-150px text-center text-dark">CREADO POR</th>
                                 <th class="min-w-150px text-center text-dark">FECHA MODIFICACIÓN</th>

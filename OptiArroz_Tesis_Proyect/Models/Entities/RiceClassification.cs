@@ -39,13 +39,9 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
         public List<RiceLot>? RiceLots { get; set; }
 
         [Display(Name = "FECHA CREACION")]
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime CreatedAt { get; set; }
 
         [Display(Name = "FECHA MODIFICACION")]
-        [DataType(DataType.Date)]
-        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime UpdatedAt { get; set; }
 
         [DefaultValue(1)]

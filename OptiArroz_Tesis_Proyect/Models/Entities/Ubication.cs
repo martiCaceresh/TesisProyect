@@ -13,7 +13,7 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
 
         public int IdZone { get; set; }
 
-        public Zone Zone { get; set; } = new Zone();
+        public Zone? Zone { get; set; }
 
         [DefaultValue(1)]
         [Display(Name = "ESTADO")]

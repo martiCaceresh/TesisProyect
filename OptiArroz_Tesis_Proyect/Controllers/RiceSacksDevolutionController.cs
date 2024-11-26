@@ -79,7 +79,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             }
         }
         [HttpGet]
-        public async Task<IActionResult> GenerateMobileQR(int idDevolution)
+        public IActionResult GenerateMobileQR(int idDevolution)
         {
             try
             {

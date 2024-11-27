@@ -8,7 +8,7 @@ namespace OptiArroz_Tesis_Proyect.Services
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<ExpirationDateControl> _logger;
-        private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(5); // Cada 5 minutos
+        private readonly TimeSpan _checkInterval = TimeSpan.FromDays(1); // Cada 5 minutos
 
         public ExpirationDateControl(
             IServiceScopeFactory scopeFactory,
@@ -18,6 +18,7 @@ namespace OptiArroz_Tesis_Proyect.Services
             _logger = logger;
         }
 
+        //FUNCION QUE SE EJECUTA EN SEGUNDO PLANO Y QUE EJECUTA LA FUNCION DE MONITOREO DE ACUERDO AL CHECK INTERVAL
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             Console.WriteLine($"[{DateTime.Now}] Servicio de verificación de vencimientos iniciado");
@@ -41,6 +42,7 @@ namespace OptiArroz_Tesis_Proyect.Services
             }
         }
 
+        //FUNCION QUE MONITOREA EL VENCIMIENTO DE LOS LOTES
         private async Task CheckExpiringLots(CancellationToken stoppingToken)
         {
             using (var scope = _scopeFactory.CreateScope())
@@ -122,6 +124,7 @@ namespace OptiArroz_Tesis_Proyect.Services
             }
         }
 
+        //FUNCION PARA EMITIR NIVELES DE MENSAJES DE ACUERDO A QUE TAN CERCA SE ENCUENTRA DEL NIVEL DE STOCK 
         private string GetMessageType(int daysUntilExpiry, int priorNotificationDays)
         {
             var rangeSize = (double)priorNotificationDays / 3;
@@ -134,6 +137,7 @@ namespace OptiArroz_Tesis_Proyect.Services
                    daysUntilExpiry <= warningLimit ? "WARNING" : "INFO";
         }
 
+        //FUNCION PARA VALIDAR SI SE DEBERIA DE VOLVER A ENVIAR LA NOTIFICACION DE VENCIMIENTO DEL LOTE
         private bool ShouldSendNotification(Notification lastNotification, int frecuencyDays)
         {
             if (lastNotification.IdNotification == 0)

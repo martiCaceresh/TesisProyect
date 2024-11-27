@@ -28,7 +28,9 @@ namespace OptiArroz_Tesis_Proyect.Controllers
 
 
 
-        public RiceLotController(IConfiguration Configuration,IRiceLotDA RiceLotDA, IZoneDA ZoneDA, IRiceClassificationDA RiceClassificationDA, IMapper Mapper, UserManager<ApplicationUser> UserManager)
+        public RiceLotController(IConfiguration Configuration,IRiceLotDA RiceLotDA, 
+            IZoneDA ZoneDA, IRiceClassificationDA RiceClassificationDA, 
+            IMapper Mapper, UserManager<ApplicationUser> UserManager)
         {
 
             this.UserManager = UserManager;

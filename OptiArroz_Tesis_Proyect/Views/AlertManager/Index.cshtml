@@ -1,5 +1,224 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model OptiArroz_Tesis_Proyect.Models.ViewModels.AlertManagerVM
+@using OptiArroz_Tesis_Proyect.Models.Utils
+@using Newtonsoft.Json
+
 @{
+    ViewData["Title"] = "Alertas";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
+<style>
+    .icon {
+        cursor: pointer;
+    }
+
+    .table-container {
+        position: relative;
+        width: 100%;
+        overflow-x: visible;
+        overflow-y: visible;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+        .table th, .table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+    .fixed-column {
+        position: absolute;
+        left: 0;
+        top: auto;
+        border-right: 1px solid #ddd;
+        background-color: white;
+    }
+
+        .fixed-column th, .fixed-column td {
+            border-right: 1px solid #ddd;
+        }
+
+</style>
+
+
+
+
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Configuración de Alertas</h1>
+                    <!--end::Title-->
+                </div>
+                <!--end::Page title-->
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+    </div>
+    <!--end::Content wrapper-->
+</div>
+
+<div class="card mb-5 shadow-sm">
+    <form id="alertConfigForm" asp-action="Update" class="card-body p-4" onsubmit="return validateForm(event)">
+        <!-- Sección de Alertas de Stock -->
+        <div class="mb-4">
+            <h4 class="text-dark fw-semibold mb-3">
+                <i class="fas fa-boxes me-2"></i>
+                Control de Inventario
+            </h4>
+
+            <div class="p-4 rounded">
+                <div class="form-group mb-3">
+                    <label class="form-label fs-5 fw-semibold">Margen de alerta antes del stock mínimo</label>
+                    <div class="input-group">
+                        <input type="number"
+                               id="stockMargin"
+                               asp-for="Stock.PriorNotificationDays"
+                               name="PriorNotificationSacks"
+                               class="form-control"
+                               placeholder="Ingrese cantidad"
+                               min="1"
+                               aria-label="Cantidad de sacos para alerta">
+                        <span class="input-group-text">sacos</span>
+                    </div>
+                    <label class="text-muted">Diferencia minima entre el stock actual y el minimo para lanzar alertas</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sección de Fechas de Vencimiento -->
+        <div>
+            <h4 class="text-dark fw-semibold mb-3">
+                <i class="fas fa-calendar-alt me-2"></i>
+                Control de Vencimientos
+            </h4>
+
+            <div class="p-4 rounded">
+                <div class="form-group mb-3">
+                    <label class="form-label fs-5 fw-semibold">Anticipación de alerta de vencimiento</label>
+                    <div class="input-group">
+                        <input type="number"
+                               id="priorDays"
+                               asp-for="Expiration.PriorNotificationDays"
+                               name="PriorNotificationDays"
+                               class="form-control"
+                               placeholder="Ingrese días"
+                               min="1"
+                               aria-label="Días previos al vencimiento">
+                        <span class="input-group-text">días</span>
+                    </div>
+                    <label class="text-muted">Días de anticipación para notificar productos próximos a vencer</label>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label fs-5 fw-semibold">Frecuencia de recordatorios</label>
+                    <div class="input-group">
+                        <input type="number"
+                               id="frequency"
+                               asp-for="Expiration.FrecuencyAfterFirstNotification"
+                               name="FrecuencyAfterFirstNotification"
+                               class="form-control"
+                               placeholder="Ingrese días"
+                               min="1"
+                               aria-label="Frecuencia de recordatorios">
+                        <span class="input-group-text">días</span>
+                    </div>
+                    <label class="text-muted">Cada cuántos días se repetirán las notificaciones de alerta</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="d-flex justify-content-end mt-4 pt-2 border-top">
+            <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+        </div>
+    </form>
+</div>
+
+@if (TempData.ContainsKey("SuccessMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("success", "Éxito" ,TempData["SuccessMessage"]?.ToString() ?? string.Empty ))
+}
+@if (TempData.ContainsKey("ErrorMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("error", "Error" ,TempData["ErrorMessage"]?.ToString() ?? string.Empty ))
+}
+
+<script>
+    function validateForm(event) {
+        event.preventDefault();
+
+        const stockMargin = document.getElementById('stockMargin').value;
+        const priorDays = document.getElementById('priorDays').value;
+        const frequency = document.getElementById('frequency').value;
+
+        // Validar campos vacíos
+        if (!stockMargin) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo requerido',
+                text: 'Por favor, ingrese el margen de alerta para el stock mínimo',
+                confirmButtonText: 'Entendido'
+            });
+            return false;
+        }
+
+        if (!priorDays) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo requerido',
+                text: 'Por favor, ingrese los días de anticipación para la alerta de vencimiento',
+                confirmButtonText: 'Entendido'
+            });
+            return false;
+        }
+
+        if (!frequency) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Campo requerido',
+                text: 'Por favor, ingrese la frecuencia de recordatorios',
+                confirmButtonText: 'Entendido'
+            });
+            return false;
+        }
+
+        // Validar que los días previos sean mayores a la frecuencia
+        if (parseInt(priorDays) <= parseInt(frequency)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Validación de días',
+                text: 'Los días de anticipación deben ser mayores a la frecuencia de recordatorios',
+                confirmButtonText: 'Entendido'
+            });
+            return false;
+        }
+
+        // Si todas las validaciones pasan, enviar el formulario
+        document.getElementById('alertConfigForm').submit();
+        return true;
+    }
+
+    // Validación en tiempo real para los inputs numéricos
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function () {
+            if (this.value < 1) {
+                this.value = 1;
+            }
+        });
+    });
+</script>
+

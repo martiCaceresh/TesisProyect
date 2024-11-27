@@ -17,6 +17,20 @@
 		opacity: 1; /* La pantalla de carga será sólida sin transparencia */
 	}
 
+	[data-bs-theme="dark"] #loader {
+		position: fixed;
+		left: 0;
+		top: 0;
+		width: 100%;
+		height: 100%;
+		background-color: #131313; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
+		z-index: 9999;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		opacity: 1; /* La pantalla de carga será sólida sin transparencia */
+	}
+
 	/* Estilo para el spinner o indicador de carga */
 	.spinner {
 		min-width: 120px;
@@ -55,7 +69,7 @@
 
 
 <div id="loader">
-	<img id="spinner" src="~/assets/media/loaders/CargaSalidaSiscop3.gif" alt="Cargando..." class=" app-sidebar-logo-default theme-light-show spinner" />
+	<img id="spinner" src="~/assets/media/loaders/CargaSalidaSiscop3.gif" alt="Cargando..." class=" app-sidebar-logo-default spinner" />
 	<form hidden id="formLogout" class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Page("/", new { area = "" })" asp-route-logout="1" method="post">
 		<a class="menu-link px-5" id="logoutLink">Salir</a>
 	</form>

@@ -87,7 +87,7 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 
                 if(FoundClassification.CurrentStock <= FoundClassification.MinimunStock)
                 {
-                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMOªªªªªªª///////////////////////////////////////////////////////
                     //Notifications
                     var title = "¡Se llego al stock minimo!";
                     var message = "Stock minimo de " + FoundClassification.MinimunStock + " sacos en la clasificacion " + FoundClassification.Name + " ha sido alcanzado con stock actual de " + FoundClassification.CurrentStock;
@@ -106,7 +106,7 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 
                 else if ( Math.Abs( FoundClassification.CurrentStock - FoundClassification.MinimunStock) <=  notificationType.PriorNotificationDays)
                 {
-                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMO NO OLVIDARªªªªªªª///////////////////////////////////////////////////////
+                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMOªªªªªªª///////////////////////////////////////////////////////
                     //Notifications
                     var title = "¡Nos encontramos proximos al stock minimo!";
                     var message = "Proximo al stock minimo de " + FoundClassification.MinimunStock +   " sacos de la clasificacion " + FoundClassification.Name + " con stock actual de " + FoundClassification.CurrentStock;

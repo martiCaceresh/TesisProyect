@@ -51,6 +51,7 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             var RiceLots = await DbContext.RiceLots.ToListAsync();
             var Classification = await DbContext.RiceClassifications.FindAsync(NewRiceLot.IdClassification) ?? throw new Exception("No se encontro la clasificacion del lote");
             Classification.CurrentStock += NewRiceLot.InitialQuantity;
+            DbContext.Entry(Classification).State = EntityState.Modified;
             var LastRiceLot = RiceLots.Where(x => x.CreatedAt.Date == DateTime.Now.Date).OrderByDescending(x => x.Code).FirstOrDefault();
 
             if (LastRiceLot == null)
@@ -86,6 +87,7 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                 try
                 {
                     await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                    await signalRHub.SendToRole("COLABORADOR", title, message, messageType, 1, link, "");
                 }
                 catch (Exception e)
                 {
@@ -104,7 +106,7 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                 try
                 {
                     await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
-                    await signalRHub.SendToRole("COLABORATOR", title, message, messageType, 1, link, "");
+                    await signalRHub.SendToRole("COLABORADOR", title, message, messageType, 1, link, "");
                 }
                 catch (Exception e)
                 {

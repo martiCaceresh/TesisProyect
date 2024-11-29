@@ -36,6 +36,7 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
 
         public string UbicationName ()
         {
+            if (Zone == null) return "";
             return Zone.Name + " - " + "F" + Row + "C" + Column;
         }
     }

@@ -115,6 +115,7 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
                     try
                     {
                         await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                        await signalRHub.SendToRole("COLABORADOR", title, message, messageType, 1, link, "");
                     }
                     catch (Exception e)
                     {

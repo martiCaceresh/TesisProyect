@@ -97,14 +97,16 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             try
             {
                 var CurrentUser = await UserManager.GetUserAsync(User);
-
-                // Convertir el IFormFile a byte[]
-                byte[] fileBytes;
-                using (var ms = new MemoryStream())
+                byte[] fileBytes = new List<byte>().ToArray();
+                if (TechnicalEspecification != null)
                 {
-                    await TechnicalEspecification.CopyToAsync(ms);
-                    fileBytes = ms.ToArray();
+                    using (var ms = new MemoryStream())
+                    {
+                        await TechnicalEspecification.CopyToAsync(ms);
+                        fileBytes = ms.ToArray();
+                    }
                 }
+
 
                 var UpdateRiceLot = new RiceLot(UpdateLotDTO, fileBytes, CurrentUser.Id);
 

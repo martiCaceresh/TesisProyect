@@ -152,8 +152,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-4 mb-3">
-                    <form class="form-inline" asp-controller="RiceLotMovement" asp-action="Index" id="RiceLotMovementForm" method="post">
-                        <input type="hidden" value="@ViewBag.IdLot" name="IdLot" />
+                    <form class="form-inline" id="RiceLotMovementForm">
+                        <input type="hidden" value="@ViewBag.IdLot" name="IdLot" id="IdLot" />
                         <a id="RiceLotMovementLink" class="d-block">
                             <i class="fas fa-list"></i>
                             <span class="d-block">Movimiento</span>
@@ -193,12 +193,32 @@
         });
     }
 
-    const RiceLotMovementLink = document.getElementById('RiceLotMovementLink');
+    const riceLotMovementLink = document.getElementById('RiceLotMovementForm');
 
-    if (RiceLotMovementLink) {
-        RiceLotMovementLink.addEventListener('click', function (event) {
-            event.preventDefault();  // Prevenir el comportamiento por defecto del enlace
-            document.getElementById('RiceLotMovementForm').submit();  // Enviar el formulario
+    if (riceLotMovementLink) {
+        riceLotMovementLink.addEventListener('click', function (event) {
+            event.preventDefault(); // Evitar que el formulario se envíe de forma tradicional
+
+            // Obtener el valor del campo 'idLot'
+            const idLot = document.getElementById('IdLot').value;
+
+            // Llamada a la ruta usando Fetch API
+            fetch(`/mobile/RiceLotMovement/${idLot}`, {
+                method: 'GET', // Puedes cambiar a 'POST' si lo necesitas
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Procesa la respuesta aquí
+                    console.log(data);
+                    alert('Lote enviado correctamente.');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Hubo un error al enviar el lote.');
+                });
         });
     }
 

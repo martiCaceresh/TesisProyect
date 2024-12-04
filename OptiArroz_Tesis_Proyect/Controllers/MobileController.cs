@@ -30,7 +30,6 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             this.Configuration = Configuration;
         }
 
-        [Route("mobile/lot/{IdLot}")]
         public async Task<IActionResult> Lot(int IdLot)
         {
             var userAgent = Request.Headers["User-Agent"].ToString();
@@ -52,7 +51,6 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             }
         }
 
-        [Route("mobile/RiceLotMovement/{IdLot}")]
         public async Task<IActionResult> RiceLotMovement(int IdLot)
         {
             var userAgent = Request.Headers["User-Agent"].ToString();

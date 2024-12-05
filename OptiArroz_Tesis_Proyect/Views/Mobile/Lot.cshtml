@@ -173,23 +173,23 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <div class="row">
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Fecha de Recepción</label>
+                                                        <div class="col-6 col-sm-4 mb-3">
+                                                            <label class="form-label" style="color:dimgray">Fecha de Recepción</label>
                                                             <label class="d-block">@Convert.ToDateTime(Model.RiceLotDetailDTO.ReceptionDate).ToString("dd/MM/yyyy")</label>
                                                         </div>
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Fecha de Vencimiento</label>
+                                                        <div class="col-6 col-sm-4 mb-3">
+                                                        <label class="form-label" style="color:dimgray">Fecha de Venc.</label>
                                                             <label class="d-block">@Convert.ToDateTime(Model.RiceLotDetailDTO.ExpirationDate).ToString("dd/MM/yyyy")</label>
                                                         </div>
                                                         <!-- Obligar a las siguientes columnas a pasar a una nueva línea en el breakpoint md y hacia arriba -->
                                                         <div class="w-100 d-none d-md-block"></div>
 
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Última Ubicación</label>
+                                                    <div class="col-6 col-sm-4 mb-3">
+                                                            <label class="form-label" style="color:dimgray">Última Ubicación</label>
                                                             <label class="d-block">@Model.RiceLotDetailDTO.LastUbication</label>
                                                         </div>
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Clasificación</label>
+                                                    <div class="col-6 col-sm-4 mb-3">
+                                                        <label class="form-label" style="color:dimgray">Clasificación</label>
                                                             <label class="d-block">@Model.RiceLotDetailDTO.Classification</label>
                                                         </div>
                                                     </div>
@@ -201,23 +201,23 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <div class="row">
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Stock Inicial</label>
+                                                        <div class="col-6 col-sm-4 mb-3">
+                                                        <label class="form-label" style="color:dimgray">Stock Inicial</label>
                                                             <label class="d-block">@Model.RiceLotDetailDTO.InitialQuantity</label>
                                                         </div>
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Stock Actual</label>
+                                                        <div class="col-6 col-sm-4 mb-3">
+                                                        <label class="form-label" style="color:dimgray">Stock Actual</label>
                                                             <label class="d-block">@Model.RiceLotDetailDTO.LeftoverQuantity</label>
                                                         </div>
                                                         <!-- Obligar a las siguientes columnas a pasar a una nueva línea en el breakpoint md y hacia arriba -->
                                                         <div class="w-100 d-none d-md-block"></div>
 
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Estado del Lote</label>
+                                                        <div class="col-6 col-sm-4 mb-3">
+                                                        <label class="form-label" style="color:dimgray">Estado del Lote</label>
                                                             <label class="d-block">@Model.RiceLotDetailDTO.State</label>
                                                         </div>
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary"></label>
+                                                    <div class="col-6 col-sm-4 mb-3">
+                                                        <label class="form-label" style="color:dimgray"></label>
                                                             <label class="d-block"></label>
                                                         </div>
                                                     </div>
@@ -231,23 +231,23 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <div class="row">
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Creado Por</label>
+                                                        <div class="col-6 col-sm-4 mb-3">
+                                                            <label class="form-label" style="color:dimgray">Creado Por</label>
                                                             <label class="d-block">@Model.RiceLotDetailDTO.CreatedBy</label>
                                                         </div>
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Fecha Registro</label>
+                                                    <div class="col-6 col-sm-4 mb-3">
+                                                            <label class="form-label" style="color:dimgray">Fecha Registro</label>
                                                             <label class="d-block">@Convert.ToDateTime(Model.RiceLotDetailDTO.CreatedAt).ToString("dd/MM/yyyy")</label>
                                                         </div>
                                                         <!-- Obligar a las siguientes columnas a pasar a una nueva línea en el breakpoint md y hacia arriba -->
                                                         <div class="w-100 d-none d-md-block"></div>
 
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Modificado Por</label>
+                                                        <div class="col-6 col-sm-4 mb-3">
+                                                        <label class="form-label" style="color:dimgray">Modificado Por</label>
                                                             <label class="d-block">@Model.RiceLotDetailDTO.UpdatedBy</label>
                                                         </div>
-                                                        <div class="col-6 col-sm-4">
-                                                            <label class="form-label text-secondary">Fecha Modificación</label>
+                                                        <div class="col-6 col-sm-4 mb-3">
+                                                        <label class="form-label" style="color:dimgray">Fecha Modificación</label>
                                                             <label class="d-block">@Convert.ToDateTime(Model.RiceLotDetailDTO.UpdatedAt).ToString("dd/MM/yyyy")</label>
                                                         </div>
                                                     </div>
@@ -266,7 +266,16 @@
     <footer class="footer">
         <div class="container">
             <div class="row justify-content-evenly">
-                <div class="col-4 mb-3 d-flex align-items-center">
+                <div class="col-3 mb-3 align-items-center">
+                    <form asp-action="RiceLotOutput" class="form-inline" id="RiceLotOutputForm">
+                        <input type="hidden" value="@ViewBag.IdLot" name="IdLot" id="IdLot" />
+                        <a id="RiceLotOutputLink" class="text-center">
+                            <i class="fas fa-list"></i>
+                            <span class="d-block">Salida</span>
+                        </a>
+                    </form>
+                </div>
+                <div class="col-3 mb-3 align-items-center">
                     <form asp-action="RiceLotMovement" class="form-inline" id="RiceLotMovementForm">
                         <input type="hidden" value="@ViewBag.IdLot" name="IdLot" id="IdLot" />
                         <a id="RiceLotMovementLink" class="text-center">
@@ -275,13 +284,13 @@
                         </a>
                     </form>
                 </div>
-                <div class="col-4 mb-3 d-flex align-items-center">
+                <div class="col-3 mb-3 align-items-center">
                     <a id="open-camera" class="text-center">
                         <i class="fas fa-camera"></i>
                         <span class="d-block">Scaner</span>
                     </a>
                 </div>
-                <div class="col-4 mb-3 d-flex align-items-center">
+                <div class="col-3 mb-3 align-items-center">
                     <form class="form-inline" asp-controller="Home" asp-action="Exit" id="logoutForm" method="post">
                         <a id="logoutLink" class="text-center">
                             <i class="fas fa-user"></i>
@@ -837,6 +846,15 @@
             riceLotMovementLink.addEventListener('click', function (event) {
                 event.preventDefault(); // Evitar que el formulario se envíe de forma tradicional
                 document.getElementById('RiceLotMovementForm').submit();
+            });
+        }
+
+        const riceLotOutputLink = document.getElementById('RiceLotOutputLink');
+
+        if (riceLotOutputLink) {
+            riceLotOutputLink.addEventListener('click', function (event) {
+                event.preventDefault(); // Evitar que el formulario se envíe de forma tradicional
+                document.getElementById('RiceLotOutputForm').submit();
             });
         }
 

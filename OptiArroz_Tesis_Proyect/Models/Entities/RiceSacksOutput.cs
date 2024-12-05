@@ -57,6 +57,15 @@ namespace OptiArroz_Tesis_Proyect.Models.Entities
             SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
         }
 
+        public RiceSacksOutput(int IdRiceSacksOutputType, string Observations, byte[] OutPutEvidence, string IdUser)
+        {
+            RiceSacksOutputDate = DateTime.Now;
+            Observation = Observations ?? "";
+            OutputEvidence = OutPutEvidence;
+            this.IdRiceSacksOutputType = IdRiceSacksOutputType;
+            SetBaseModel(IdUser, IdUser, DateTime.Now, DateTime.Now, 1);
+        }
+
         public void SetBaseModel(string? IdCreatedBy, string? IdUpdatedBy, DateTime CreatedAt, DateTime UpdatedAt, int State)
         {
             this.IdCreatedBy = IdCreatedBy;

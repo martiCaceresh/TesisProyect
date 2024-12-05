@@ -16,18 +16,22 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
 using OptiArroz_Tesis_Proyect.Models;
 using OptiArroz_Tesis_Proyect.Models.Entities;
+using OptiArroz_Tesis_Proyect.Data.DataAccess;
+using OptiArroz_Tesis_Proyect.Data.Interfaces;
 
 namespace OptiArroz_Tesis_Proyect.Areas.Identity.Pages.Account
 {
     public class LoginModel : PageModel
     {
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly IUserDA UserDA; 
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<ApplicationUser> signInManager, ILogger<LoginModel> logger, IUserDA UserDA)
         {
             _signInManager = signInManager;
             _logger = logger;
+            this.UserDA = UserDA;
         }
 
         /// <summary>
@@ -114,19 +118,36 @@ namespace OptiArroz_Tesis_Proyect.Areas.Identity.Pages.Account
             {
                 // This doesn't count login failures towards account lockout
                 // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
+
+                var User = (await UserDA.GetUsers(0)).Where(x => x.Username == Input.Username).FirstOrDefault();
+
+                if(User == null)
                 {
-                    _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+                    var result = await _signInManager.PasswordSignInAsync(Input.Username, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation("User logged in.");
+                        return LocalRedirect(returnUrl);
+                    }
+                    else
+                    {
+                        _logger.LogInformation("El usuario o contraseña es incorrecto.");
+                        ErrorMessage = "El usuario o la contraseña que has ingresado no son correctas.";
+                        IsLoginError = true;
+                        return Page();
+                    }
                 }
                 else
                 {
-                    _logger.LogInformation("El usuario o contraseña es incorrecto.");
-                    ErrorMessage = "El usuario o la contraseña que has ingresado no son correctas.";
+                    _logger.LogInformation("El usuario ha sido deshabilitado de la plataforma");
+                    ErrorMessage = "El usuario ha sido deshabilitado de la plataforma";
                     IsLoginError = true;
                     return Page();
                 }
+                
+
+                
+                
 
             }
 

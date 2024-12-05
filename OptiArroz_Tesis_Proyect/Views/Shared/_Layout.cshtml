@@ -365,7 +365,7 @@
 												<!--begin::Username-->
 												<div class="d-flex flex-column">
 
-													<a asp-controller="Home" asp-action="MyAccount" class="fw-semibold text-muted text-hover-primary fs-7">@fullname</a>
+													<a asp-controller="UserManager" asp-action="MyAccount" asp-route-UserId="@user.Id"  class="fw-semibold text-muted text-hover-primary fs-7">@fullname</a>
 												</div>
 												<!--end::Username-->
 											</div>

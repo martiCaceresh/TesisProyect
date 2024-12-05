@@ -1,0 +1,146 @@
+﻿@using OptiArroz_Tesis_Proyect.Models.Utils
+@model OptiArroz_Tesis_Proyect.Models.Dtos.UserTableDTO;
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+<!--begin::Main-->
+<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+    <!--begin::Content wrapper-->
+    <div class="d-flex flex-column flex-column-fluid">
+        <!--begin::Toolbar-->
+        <div id="kt_app_toolbar" class="app-toolbar py-3 py-lg-6">
+            <!--begin::Toolbar container-->
+            <div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack">
+                <!--begin::Page title-->
+                <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3">
+                    <!--begin::Title-->
+                    <h1 class="page-heading d-flex text-dark fw-bold fs-3 flex-column justify-content-center my-0">Mi cuenta</h1>
+                    <!--end::Title-->
+                    <!--begin::Breadcrumb-->
+                    <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0 pt-1">
+                        <!--begin::Item-->
+                        <li class="breadcrumb-item text-muted">
+                            <a href="/Home/Index" class="text-muted text-hover-primary">Inicio</a>
+                        </li>
+                        <!--end::Item-->
+                    </ul>
+                    <!--end::Breadcrumb-->
+                </div>
+                <!--end::Page title-->
+
+            </div>
+            <!--end::Toolbar container-->
+        </div>
+        <!--end::Toolbar-->
+        <!--begin::Content-->
+        <div id="kt_app_content" class="app-content flex-column-fluid">
+
+
+            <!--begin::Content container-->
+            <div id="kt_app_content_container" class="app-container container-xxl" style="margin-bottom:15px;">
+                <form asp-action="Update">
+                    <input hidden asp-for="@Model.UserId" name="UserId" />
+                    <div class="row mb-3">
+                        <div class="col-4">
+
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input readonly disabled id="Username" asp-for="@Model.Username" required data-validation="required" class="form-control" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="Username">Dni o Carnet de extranjería</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input readonly disabled id="Rol" asp-for="@Model.Rol" required data-validation="required" class="form-control" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="Rol">Rol</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4">
+
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input id="Name" asp-for="@Model.Name" name="Name" required data-validation="required" class="form-control" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="Name">Nombres</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input id="LastName" asp-for="@Model.LastName" name="LastName" required data-validation="required" class="form-control" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="LastName">Apellidos</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input id="PhoneNumber" asp-for="@Model.PhoneNumber" name="PhoneNumber" required data-validation="required" class="form-control" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="PhoneNumber">Celular</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <div class="input-group">
+                                <div class="form-floating">
+                                    <input id="Email" asp-for="@Model.Email" name="Email" required data-validation="required" class="form-control" oninput="ValidateElement($(this))" />
+                                    <label class="form-label required" for="Email">Correo electronico</label>
+                                </div>
+                            </div>
+                            <div class="invalid-feedback"> Este campo es obligatorio.</div>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-4">
+                            <button type="submit" id="submitButton" class="btn btn-lg btn-primary" data-kt-element="finish-create">
+                                <span id="btnGuardar" class="indicator-label">Actualizar</span>
+                                <span class="indicator-progress">
+                                    Por favor, espera...
+                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+            </div>
+            <!--end::Content container-->
+        </div>
+        <!--end::Content-->
+        
+
+    </div>
+    <!--end::Content wrapper-->
+</div>
+<!--end:::Main-->
+@if (TempData.ContainsKey("SuccessMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("success", "Éxito" ,TempData["SuccessMessage"]?.ToString() ?? string.Empty ))
+}
+@if (TempData.ContainsKey("ErrorMessage"))
+{
+    @await Html.PartialAsync("_Alert", new AlertModel("error", "Error" ,TempData["ErrorMessage"]?.ToString() ?? string.Empty ))
+}

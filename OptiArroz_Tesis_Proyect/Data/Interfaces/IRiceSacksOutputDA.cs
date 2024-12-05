@@ -11,5 +11,6 @@ namespace OptiArroz_Tesis_Proyect.Data.Interfaces
         public Task<List<RiceSacksOutputTypeLotDTO>> GetRiceSackOutputTypeLot(string OutputCode);
         public Task<RiceSacksOutputTableDTO> GetRiceSacksOutputDetailById(int IdRiceSackOutput);
         public Task<(List<RiceSacksConsultationTableDTO> SelectedLots, List<RiceSacksConsultationResultDTO> Responses)> CreateRiceSacksOutput(RiceSacksOutput NewOutput , List<RiceSacksConsultationDTO> SelectedLots);
+        public Task CreateRiceSacksOutput(RiceSacksOutput NewOutput, int QuantitySacks, int IdLot);
     }
 }

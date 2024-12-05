@@ -167,22 +167,22 @@
                                         <div class="card">
                                             <div class="card-body">
                                                 <div class="row">
-                                                    <div class="col-6 col-sm-4">
+                                                    <div class="col-6 col-sm-4 mb-3">
                                                         <label class="form-label" style="color:dimgray">Lote</label>
                                                         <label class="d-block">@Model.RiceLotDetailDTO.Code</label>
                                                     </div>
-                                                    <div class="col-6 col-sm-4">
+                                                    <div class="col-6 col-sm-4 mb-3">
                                                         <label class="form-label" style="color:dimgray">Fecha de Venc.</label>
                                                         <label class="d-block">@Convert.ToDateTime(Model.RiceLotDetailDTO.ExpirationDate).ToString("dd/MM/yyyy")</label>
                                                     </div>
                                                     <!-- Obligar a las siguientes columnas a pasar a una nueva línea en el breakpoint md y hacia arriba -->
                                                     <div class="w-100 d-none d-md-block"></div>
 
-                                                    <div class="col-6 col-sm-4">
+                                                    <div class="col-6 col-sm-4 mb-3">
                                                         <label class="form-label" style="color:dimgray">Última Ubicación</label>
                                                         <label class="d-block">@Model.RiceLotDetailDTO.LastUbication</label>
                                                     </div>
-                                                    <div class="col-6 col-sm-4">
+                                                    <div class="col-6 col-sm-4 mb-3">
                                                         <label class="form-label" style="color:dimgray">Clasificación</label>
                                                         <label class="d-block">@Model.RiceLotDetailDTO.Classification</label>
                                                     </div>
@@ -304,8 +304,17 @@
     <!--end:::Main-->
     <footer id="footer">
         <div class="container">
-            <div class="row">
-                <div class="col-4 mb-3">
+            <div class="row justify-content-evenly">
+                <div class="col-3 mb-3 align-items-center">
+                    <form asp-action="RiceLotOutput" class="form-inline" id="RiceLotOutputForm">
+                        <input type="hidden" value="@ViewBag.IdLot" name="IdLot" id="IdLot" />
+                        <a id="RiceLotOutputLink" class="text-center">
+                            <i class="fas fa-list"></i>
+                            <span class="d-block">Salida</span>
+                        </a>
+                    </form>
+                </div>
+                <div class="col-3 mb-3 align-items-center">
                     <form  asp-action="Lot" class="form-inline" id="RiceLotForm">
                         <input type="hidden" value="@ViewBag.IdLot" name="IdLot" id="IdLot" />
                         <a id="RiceLotLink" class="d-block">
@@ -314,13 +323,13 @@
                         </a>
                     </form>
                 </div>
-                <div class="col-4 mb-3">
+                <div class="col-3 mb-3 align-items-center">
                     <a id="open-camera" class="d-block">
                         <i class="fas fa-camera"></i>
                         <span class="d-block">Scaner</span>
                     </a>
                 </div>
-                <div class="col-4 mb-3">
+                <div class="col-3 mb-3 align-items-center">
                     <form class="form-inline" asp-controller="Home" asp-action="Exit" id="logoutForm" method="post">
                         <a id="logoutLink" class="d-block">
                             <i class="fas fa-user"></i>
@@ -877,6 +886,15 @@
             riceLotMovementLink.addEventListener('click', function (event) {
                 event.preventDefault(); // Evitar que el formulario se envíe de forma tradicional
                 document.getElementById('RiceLotForm').submit();
+            });
+        }
+
+        const riceLotOutputLink = document.getElementById('RiceLotOutputLink');
+
+        if (riceLotOutputLink) {
+            riceLotOutputLink.addEventListener('click', function (event) {
+                event.preventDefault(); // Evitar que el formulario se envíe de forma tradicional
+                document.getElementById('RiceLotOutputForm').submit();
             });
         }
 

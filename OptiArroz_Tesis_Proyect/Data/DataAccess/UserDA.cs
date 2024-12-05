@@ -96,5 +96,23 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
 
             return Users;
         }
+
+        public async Task Update(string UserId,string Name, string LastName, string PhoneNumber, string Email)
+        {
+            try
+            {
+                var findUser = await DbContext.Users.FindAsync(UserId) ?? throw new Exception("No se pudo encontrar el usuario");
+                findUser.Name = Name;
+                findUser.LastName = LastName;
+                findUser.PhoneNumber = PhoneNumber;
+                findUser.Email = Email;
+                DbContext.Entry(findUser).State = EntityState.Modified;
+                await DbContext.SaveChangesAsync();
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 }

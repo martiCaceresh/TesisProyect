@@ -129,6 +129,74 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             await DbContext.SaveChangesAsync();
         }
 
+
+        private async Task UpdateStocks(int IdLot, int QuantitySelected)
+        {
+
+                var FoundLot = await DbContext.RiceLots.FindAsync(IdLot) ?? throw new Exception("No se encontro el lote");
+                FoundLot.LeftoverQuantity -= QuantitySelected; //ACTUALIZACION DE STOCKS DE LOTE
+
+                if (FoundLot.LeftoverQuantity == 0)
+                {
+                    FoundLot.State = 0;
+                    var FoundUbication = DbContext.Ubications.Find(FoundLot.IdLastUbication) ?? throw new Exception("No se encontro la ubicacion del lote");
+                    FoundUbication.State = 1; //LIBERA LA UBICACION
+                    FoundUbication.IdCurrentRiceLot = null;
+                    DbContext.Entry(FoundUbication).State = EntityState.Modified;
+                }
+
+                DbContext.Entry(FoundLot).State = EntityState.Modified;
+            
+
+            var notificationType = await DbContext.NotificationTypes.Where(x => x.Name == "STOCKS").FirstOrDefaultAsync() ?? throw new Exception();
+
+                var FoundClassification = await DbContext.RiceClassifications.FindAsync(FoundLot.IdClassification) ?? throw new Exception("Clasificacion no encontrada");
+                FoundClassification.CurrentStock -= QuantitySelected;
+                DbContext.Entry(FoundClassification).State = EntityState.Modified;
+
+                if (FoundClassification.CurrentStock <= FoundClassification.MinimunStock)
+                {
+                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMOªªªªªªª///////////////////////////////////////////////////////
+                    //Notifications
+                    var title = "¡Se llego al stock minimo!";
+                    var message = "Stock minimo de " + FoundClassification.MinimunStock + " sacos en la clasificacion " + FoundClassification.Name + " ha sido alcanzado con stock actual de " + FoundClassification.CurrentStock;
+                    var messageType = "WARNING";
+                    var link = "/Home/Index";
+                    try
+                    {
+                        await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                        await signalRHub.SendToRole("COLABORADOR", title, message, messageType, 1, link, "");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+
+                else if (Math.Abs(FoundClassification.CurrentStock - FoundClassification.MinimunStock) <= notificationType.PriorNotificationDays)
+                {
+                    //////////////////////////////////////////////////////ªªªªªªGENERAR ALERTA POR STOCK MINIMOªªªªªªª///////////////////////////////////////////////////////
+                    //Notifications
+                    var title = "¡Nos encontramos proximos al stock minimo!";
+                    var message = "Proximo al stock minimo de " + FoundClassification.MinimunStock + " sacos de la clasificacion " + FoundClassification.Name + " con stock actual de " + FoundClassification.CurrentStock;
+                    var messageType = "INFO";
+                    var link = "/Home/Index";
+                    try
+                    {
+                        await signalRHub.SendToRole("ADMINISTRADOR", title, message, messageType, 1, link, "");
+                        await signalRHub.SendToRole("COLABORADOR", title, message, messageType, 1, link, "");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+                }
+
+            await DbContext.SaveChangesAsync();
+        }
+
+
+
         private async Task<(List<RiceSacksConsultationTableDTO> SelectedLots, List<RiceSacksConsultationResultDTO> Responses)> SelectLotsToExtractionFIFO(List<RiceSacksConsultationDTO> Consultation)
         {
             var result = new List<RiceSacksConsultationTableDTO>();
@@ -215,6 +283,19 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             }
 
             await DbContext.RiceSacksOutputDetails.AddRangeAsync(OutputDetails);
+            await DbContext.SaveChangesAsync();
+
+        }
+
+        private async Task RegisterOutputDetails(RiceSacksOutput OutputRegister, int IdLot ,  int QuantitySelected)
+        {
+
+            var Detail = new RiceSacksOutputDetail();
+            Detail.IdRiceSacksOutput = OutputRegister.IdRiceSacksOutput;
+            Detail.SacksQuantity = QuantitySelected;
+            Detail.IdRiceLot = IdLot;
+
+            await DbContext.RiceSacksOutputDetails.AddAsync(Detail);
             await DbContext.SaveChangesAsync();
 
         }
@@ -352,6 +433,44 @@ namespace OptiArroz_Tesis_Proyect.Data.DataAccess
             return groupedDetails;
 
 
+        }
+
+        public async Task CreateRiceSacksOutput(RiceSacksOutput NewOutput, int QuantitySacks, int IdLot)
+        {
+            await StockSemaphore.Semaphore.WaitAsync();
+            using var transaction = await DbContext.Database.BeginTransactionAsync();
+            try
+            {
+
+                //validar stock del lote
+
+                var FoundLot = await DbContext.RiceLots.FindAsync(IdLot) ?? throw new Exception("No se encontro el lote");
+
+                if (FoundLot.LeftoverQuantity == 0) throw new Exception("No se pudo atender su pedido, ya que se extrajeron los sacos del lote en su totalidad");
+                if (FoundLot.LeftoverQuantity < QuantitySacks) throw new Exception("Algunos sacos fueron retirados recientemente, por ello no es posible antender su solicitud con el stock del lote actual : " + FoundLot.LeftoverQuantity);
+
+
+                var OutputRegister = await RegisterOutput(NewOutput);
+
+                await RegisterOutputDetails(OutputRegister, IdLot, QuantitySacks);
+
+                await UpdateStocks(IdLot, QuantitySacks);
+
+                // Confirmar la transacción
+                await transaction.CommitAsync();
+
+                return;
+            }
+            catch
+            {
+                // Revertir todos los cambios si ocurre un error
+                await transaction.RollbackAsync();
+                throw;
+            }
+            finally
+            {
+                StockSemaphore.Semaphore.Release();
+            }
         }
     }
 }

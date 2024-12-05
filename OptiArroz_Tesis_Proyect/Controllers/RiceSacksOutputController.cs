@@ -155,6 +155,43 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             }
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateOutput(int IdRiceSacksOutputType, string Observations, int QuantitySacks , int IdLot , IFormFile Attachment)
+        {
+            try
+            {
+                var CurrentUser = await UserManager.GetUserAsync(User);
+                byte[] fileBytes = Array.Empty<byte>(); // Inicializado como array vacío
+
+                if (Attachment != null)
+                {
+                    // Convertir el IFormFile a byte[]
+                    using (var ms = new MemoryStream())
+                    {
+                        await Attachment.CopyToAsync(ms);
+                        fileBytes = ms.ToArray();
+                    }
+                }
+
+                var NewOutput = new RiceSacksOutput(IdRiceSacksOutputType, Observations, fileBytes, CurrentUser.Id);
+                await RiceSacksOutputDA.CreateRiceSacksOutput(NewOutput, QuantitySacks, IdLot);
+
+
+                // Agrega un mensaje de éxito al TempData
+                TempData["SuccessMessage"] = "Se registro la salida correctamente";
+
+                return RedirectToAction("RiceLotOutput", "Mobile", new { IdLot }); //FALTA LOGICA PARA CUANDO ALGUN PEDIDO NO SE PUEDA COMPLETAR
+            }
+            catch (Exception ex)
+            {
+
+                // Agrega un mensaje de error al TempData
+                TempData["ErrorMessage"] = ex.Message;
+
+                return RedirectToAction("RiceLotOutput", "Mobile", new {IdLot });
+            }
+        }
+
 
         [HttpGet]
         public async Task<IActionResult> DownloadDepartureOrder(int IdRiceSacksOutput)

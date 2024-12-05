@@ -15,13 +15,14 @@ namespace OptiArroz_Tesis_Proyect.Controllers
         private readonly IRiceLotMovementDA RiceLotMovementDA;
         private readonly IRiceSacksOutputDA RiceSacksOutputDA;
         private readonly IRiceSacksDevolutionDA RiceSacksDevolutionDA;
+        private readonly IRiceSacksOutputTypeDA RiceSacksOutputTypeDA;
         private readonly IRiceLotDA RiceLotDA;
         private readonly IZoneDA ZoneDA;
         private readonly IMapper Mapper;
         public readonly UserManager<ApplicationUser> UserManager;
         private readonly IConfiguration Configuration;
 
-        public MobileController(IRiceSacksDevolutionDA RiceSacksDevolutionDA,IRiceSacksOutputDA RiceSacksOutputDA,IConfiguration Configuration, IRiceLotDA RiceLotDA, IRiceLotMovementDA RiceLotMovementDA, IZoneDA ZoneDA, IRiceClassificationDA RiceClassificationDA, IMapper Mapper, UserManager<ApplicationUser> UserManager)
+        public MobileController(IRiceSacksOutputTypeDA RiceSacksOutputTypeDA,IRiceSacksDevolutionDA RiceSacksDevolutionDA,IRiceSacksOutputDA RiceSacksOutputDA,IConfiguration Configuration, IRiceLotDA RiceLotDA, IRiceLotMovementDA RiceLotMovementDA, IZoneDA ZoneDA, IRiceClassificationDA RiceClassificationDA, IMapper Mapper, UserManager<ApplicationUser> UserManager)
         {
             this.UserManager = UserManager;
             this.Mapper = Mapper;
@@ -32,6 +33,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
             this.Configuration = Configuration;
             this.RiceSacksOutputDA = RiceSacksOutputDA;
             this.RiceSacksDevolutionDA = RiceSacksDevolutionDA;
+            this.RiceSacksOutputTypeDA = RiceSacksOutputTypeDA;
         }
 
         public async Task<IActionResult> Lot(int IdLot)
@@ -67,6 +69,27 @@ namespace OptiArroz_Tesis_Proyect.Controllers
                 Model.Zones = await ZoneDA.GetActiveZones();
                 var RiceMovement = await RiceLotMovementDA.GetRiceLotMovementByLot(IdLot);
                 Model.RiceLotMovementTableDTO = Mapper.Map<List<RiceLotMovementTableDTO>>(RiceMovement);
+
+                ViewBag.IdLot = IdLot;
+
+                return View(Model);
+            }
+            else
+            {
+                return Unauthorized("Acceso restringido a dispositivos móviles.");
+            }
+        }
+
+        public async Task<IActionResult> RiceLotOutput(int IdLot)
+        {
+            var userAgent = Request.Headers["User-Agent"].ToString();
+
+            if (EsDispositivoMovil(userAgent))
+            {
+                var Model = new RiceLotOutputVM();
+                var RiceLot = await RiceLotDA.GetRiceLotById(IdLot);
+                Model.RiceLotDetailDTO = Mapper.Map<RiceLotDetailDTO>(RiceLot);
+                Model.RiceSacksOutputTypes = await RiceSacksOutputTypeDA.GetRiceSacksOutputTypes();
 
                 ViewBag.IdLot = IdLot;
 

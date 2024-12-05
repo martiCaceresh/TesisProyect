@@ -52,6 +52,10 @@ namespace OptiArroz_Tesis_Proyect.Controllers
                 // Agrega un mensaje de éxito al TempData
                 TempData["SuccessMessage"] = "Se registro el movimiento correctamente";
 
+                var userAgent = Request.Headers["User-Agent"].ToString();
+
+                if (EsDispositivoMovil(userAgent)) return RedirectToAction("RiceLotMovement", "Mobile", new { IdLot = NewLotMovementDTO.IdRiceLot });
+
                 return RedirectToAction("RiceLotDetails", "RiceLot" , new {IdLot = NewLotMovementDTO.IdRiceLot});
             }
             catch (Exception)
@@ -61,6 +65,14 @@ namespace OptiArroz_Tesis_Proyect.Controllers
 
                 return RedirectToAction("Index", new { IdLot = NewLotMovementDTO.IdRiceLot });
             }
+        }
+
+        private bool EsDispositivoMovil(string userAgent)
+        {
+            // Lista simple de palabras clave que indican un dispositivo móvil
+            var dispositivosMoviles = new[] { "android", "iphone", "ipod", "windows phone", "blackberry", "mobile", "tablet" };
+
+            return dispositivosMoviles.Any(agent => userAgent.ToLower().Contains(agent));
         }
     }
 }

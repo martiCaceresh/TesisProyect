@@ -36,44 +36,10 @@
 
 	<style>
 
-        .ubication-box {
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-        .ubication-box.clickable:hover {
-            opacity: 0.8;
-            transform: scale(1.05);
-        }
-
-    /* Hacer el contenedor scrolleable horizontalmente si es necesario */
-    #UbicationsGraphics .position-relative {
-        max-width: 100%;
-        overflow-x: auto;
-    }
-
-    /* Tooltip personalizado en hover */
-    .ubication-box[title]:hover::after {
-        content: attr(title);
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 1000;
-    }
+    
 
     .form-control {
         text-transform: uppercase;
-    }
-
-    .modal-dialog-custom-lg {
-        max-width: 90%;
     }
 
     .page-loader {
@@ -197,12 +163,10 @@
 					<!--begin::Content container-->
 					<div id="kt_app_content_container" class="app-container container-xxl">
                         <div class="container my-4">
+                            <h2>Lote @Model.RiceLotDetailDTO.Code</h2>
                             <!-- Primera Card -->
                             <div class="card mb-4">
-                                <div class="card-header">
-                                    <h2>Lote @Model.RiceLotDetailDTO.Code</h2>
-                                </div>
-                                <div class="card-body">
+                                
                                     <div class="row">
                                         <!-- Fila 1, Columna 1 -->
                                         <div class="col-12 mb-3">
@@ -291,7 +255,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div>
                             </div>
                         </div>
 					</div>
@@ -300,28 +263,27 @@
 		</div>
 	</div>
 
-    <!--end:::Main-->
     <footer class="footer">
         <div class="container">
-            <div class="row">
-                <div class="col-4 mb-3">
-                    <form asp-controller="Mobile" asp-action="RiceLotMovement" class="form-inline" id="RiceLotMovementForm">
+            <div class="row justify-content-evenly">
+                <div class="col-4 mb-3 d-flex align-items-center">
+                    <form asp-action="RiceLotMovement" class="form-inline" id="RiceLotMovementForm">
                         <input type="hidden" value="@ViewBag.IdLot" name="IdLot" id="IdLot" />
-                        <a id="RiceLotMovementLink" class="d-block">
+                        <a id="RiceLotMovementLink" class="text-center">
                             <i class="fas fa-list"></i>
                             <span class="d-block">Movimiento</span>
                         </a>
                     </form>
                 </div>
-                <div class="col-4 mb-3">
-                    <a id="open-camera" class="d-block">
+                <div class="col-4 mb-3 d-flex align-items-center">
+                    <a id="open-camera" class="text-center">
                         <i class="fas fa-camera"></i>
                         <span class="d-block">Scaner</span>
                     </a>
                 </div>
-                <div class="col-4 mb-3">
+                <div class="col-4 mb-3 d-flex align-items-center">
                     <form class="form-inline" asp-controller="Home" asp-action="Exit" id="logoutForm" method="post">
-                        <a id="logoutLink" class="d-block">
+                        <a id="logoutLink" class="text-center">
                             <i class="fas fa-user"></i>
                             <span class="d-block">Cerrar Sesión</span>
                         </a>
@@ -369,25 +331,6 @@
 	<script src="~/assets/js/custom/utilities/modals/upgrade-plan.js"></script>
 	<script src="~/assets/js/custom/utilities/modals/create-app.js"></script>
 	<script src="~/assets/js/custom/utilities/modals/users-search.js"></script>
-
-
-	<script>
-
-		document.addEventListener("DOMContentLoaded", function () {
-			var logoutLink = document.getElementById("logoutLink");
-
-			if (logoutLink) {
-				logoutLink.addEventListener("click", function (e) {
-					e.preventDefault(); // Evita que el enlace siga el enlace original
-					var form = document.querySelector("form.form-inline");
-
-					if (form) {
-						form.submit(); // Envía el formulario
-					}
-				});
-			}
-		});
-	</script>
 
 	<script>
 		function showLoader() {

@@ -2,6 +2,7 @@
 
 @using Microsoft.AspNetCore.Identity
 @using OptiArroz_Tesis_Proyect.Models.Entities
+@using OptiArroz_Tesis_Proyect.Models.Utils;
 
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
@@ -32,145 +33,109 @@
 
 	<style>
 
-        .ubication-box {
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-        .ubication-box.clickable:hover {
-            opacity: 0.8;
-            transform: scale(1.05);
+        .form-control {
+            text-transform: uppercase;
         }
 
-    /* Hacer el contenedor scrolleable horizontalmente si es necesario */
-    #UbicationsGraphics .position-relative {
-        max-width: 100%;
-        overflow-x: auto;
-    }
-
-    /* Tooltip personalizado en hover */
-    .ubication-box[title]:hover::after {
-        content: attr(title);
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: rgba(0, 0, 0, 0.8);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        white-space: nowrap;
-        z-index: 1000;
-    }
-
-    .form-control {
-        text-transform: uppercase;
-    }
-
-    .modal-dialog-custom-lg {
-        max-width: 90%;
-    }
-
-    .page-loader {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        visibility: hidden;
-    }
-
-    .circle {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        margin-right: 10px;
-    }
-
-    #kt_app_header_wrapper{
-        display:none;
-    }
-
-    #footer {
-        background-color: #f8f9fa;
-        position: fixed;
-        left: 0;
-        bottom: 0;
-        width: 100%;
-        text-align: center;
-    }
-
-        #footer a {
-            color: #495057;
-            text-decoration: none;
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            visibility: hidden;
         }
 
-            #footer a:hover {
-                color: #007bff;
+        .circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        #kt_app_header_wrapper {
+            display: none;
+        }
+
+        #footer {
+            background-color: #f8f9fa;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+            #footer a {
+                color: #495057;
+                text-decoration: none;
             }
 
-        #footer .fa {
-            margin: 0 10px;
+                #footer a:hover {
+                    color: #007bff;
+                }
+
+            #footer .fa {
+                margin: 0 10px;
+            }
+
+        /* Estilo para la pantalla de carga */
+        #loader {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1; /* La pantalla de carga será sólida sin transparencia */
         }
 
-		/* Estilo para la pantalla de carga */
-		#loader {
-			position: fixed;
-			left: 0;
-			top: 0;
-			width: 100%;
-			height: 100%;
-			background-color: white; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
-			z-index: 9999;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			opacity: 1; /* La pantalla de carga será sólida sin transparencia */
-		}
+        #loaderDark {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #131313; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1; /* La pantalla de carga será sólida sin transparencia */
+        }
+        /* Estilo para el spinner o indicador de carga */
+        .spinner {
+            min-width: 110px;
+            min-height: 110px;
+            max-width: 150px; /* Ajusta el tamaño máximo del GIF según sea necesario */
+            max-height: 150px; /* Ajusta el tamaño máximo del GIF según sea necesario */
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
 
-		#loaderDark {
-			position: fixed;
-			left: 0;
-			top: 0;
-			width: 100%;
-			height: 100%;
-			background-color: #131313; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
-			z-index: 9999;
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			opacity: 1; /* La pantalla de carga será sólida sin transparencia */
-		}
-		/* Estilo para el spinner o indicador de carga */
-		.spinner {
-			min-width: 110px;
-			min-height: 110px;
-			max-width: 150px; /* Ajusta el tamaño máximo del GIF según sea necesario */
-			max-height: 150px; /* Ajusta el tamaño máximo del GIF según sea necesario */
-			width: auto;
-			height: auto;
-			position: absolute;
-			top: 50%;
-			left: 50%;
-			transform: translate(-50%, -50%);
-		}
+        /* Estilos personalizados opcionales para la transición */
+        .page-transition {
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
 
-		/* Estilos personalizados opcionales para la transición */
-		.page-transition {
-			opacity: 1;
-			transition: opacity 0.5s ease-in-out;
-		}
-
-			.page-transition.fade-out {
-				opacity: 0;
-			}
-	</style>
+            .page-transition.fade-out {
+                opacity: 0;
+            }
+    </style>
 
 </head>
 
@@ -316,7 +281,14 @@
                                                     <!--end::Actions-->
 
                                                 </form>
-
+                                                @if (TempData.ContainsKey("SuccessMessage"))
+                                                {
+                                                    @await Html.PartialAsync("_Alert", new AlertModel("success", "Éxito" ,TempData["SuccessMessage"]?.ToString() ?? string.Empty ))
+                                                }
+                                                @if (TempData.ContainsKey("ErrorMessage"))
+                                                {
+                                                    @await Html.PartialAsync("_Alert", new AlertModel("error", "Error" ,TempData["ErrorMessage"]?.ToString() ?? string.Empty ))
+                                                }
                                             </div>
                                         </div>
                                     </div>
@@ -399,24 +371,6 @@
 	<script src="~/assets/js/custom/utilities/modals/create-app.js"></script>
 	<script src="~/assets/js/custom/utilities/modals/users-search.js"></script>
 
-
-	<script>
-
-		document.addEventListener("DOMContentLoaded", function () {
-			var logoutLink = document.getElementById("logoutLink");
-
-			if (logoutLink) {
-				logoutLink.addEventListener("click", function (e) {
-					e.preventDefault(); // Evita que el enlace siga el enlace original
-					var form = document.querySelector("form.form-inline");
-
-					if (form) {
-						form.submit(); // Envía el formulario
-					}
-				});
-			}
-		});
-	</script>
 
 	<script>
 		function showLoader() {

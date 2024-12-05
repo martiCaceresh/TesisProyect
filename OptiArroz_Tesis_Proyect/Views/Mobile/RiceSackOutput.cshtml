@@ -1,0 +1,769 @@
+﻿@model OptiArroz_Tesis_Proyect.Models.Dtos.RiceSacksOutputTableDTO
+
+@using Microsoft.AspNetCore.Identity
+@using OptiArroz_Tesis_Proyect.Models.Entities
+@using OptiArroz_Tesis_Proyect.Models.Utils;
+
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - OptiArroz</title>
+
+    <link rel="shortcut icon" href="~/assets/media/logos/favicon.ico" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700" />
+    <!--end::Fonts-->
+    <!--begin::Vendor Stylesheets(used for this page only)-->
+    <link href="~/assets/plugins/custom/fullcalendar/fullcalendar.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/plugins/custom/vis-timeline/vis-timeline.bundle.css" rel="stylesheet" type="text/css" />
+    <!--end::Vendor Stylesheets-->
+    <!--begin::Global Stylesheets Bundle(mandatory for all pages)-->
+    <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <style>
+
+        .form-control {
+            text-transform: uppercase;
+        }
+
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            visibility: hidden;
+        }
+
+        .circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        #kt_app_header_wrapper {
+            display: none;
+        }
+
+        #footer {
+            background-color: #f8f9fa;
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+        }
+
+            #footer a {
+                color: #495057;
+                text-decoration: none;
+            }
+
+                #footer a:hover {
+                    color: #007bff;
+                }
+
+            #footer .fa {
+                margin: 0 10px;
+            }
+
+        /* Estilo para la pantalla de carga */
+        #loader {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1; /* La pantalla de carga será sólida sin transparencia */
+        }
+
+        #loaderDark {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #131313; /* Cambia el color de fondo a blanco o cualquier color sólido que desees */
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 1; /* La pantalla de carga será sólida sin transparencia */
+        }
+        /* Estilo para el spinner o indicador de carga */
+        .spinner {
+            min-width: 110px;
+            min-height: 110px;
+            max-width: 150px; /* Ajusta el tamaño máximo del GIF según sea necesario */
+            max-height: 150px; /* Ajusta el tamaño máximo del GIF según sea necesario */
+            width: auto;
+            height: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* Estilos personalizados opcionales para la transición */
+        .page-transition {
+            opacity: 1;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+            .page-transition.fade-out {
+                opacity: 0;
+            }
+    </style>
+
+</head>
+
+<body id="kt_app_body" data-kt-app-layout="light-header" data-kt-app-header-fixed="true" data-kt-app-toolbar-enabled="true" class="app-default">
+    <div id="loader" style="display:none;">
+        <img id="spinner" src="~/assets/media/loaders/CargaGeneralApp.gif" alt="Cargando..." class="h-sm-100px h-lg-150px app-sidebar-logo-default theme-light-show spinner" />
+    </div>
+    <div id="loaderDark" style="display:none;">
+        <img id="spinnerDark" src="~/assets/media/loaders/CargaGeneralAppDark.gif" alt="Cargando..." class="h-sm-100px h-lg-150px app-sidebar-logo-default theme-dark-show spinner" />
+    </div>
+
+    <!--begin::Wrapper-->
+    <div class="app-wrapper flex-column flex-row-fluid" id="kt_app_wrapper">
+        <!--begin::Main-->
+        <div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+            <!--begin::Content wrapper-->
+            <div class="d-flex flex-column flex-column-fluid">
+                <!--begin::Content-->
+                <div id="kt_app_content" class="app-content flex-column-fluid">
+                    <!--begin::Content container-->
+                    <div id="kt_app_content_container" class="app-container container-xxl">
+                        <div class="container my-4">
+                            <h2>Registro de Consulta</h2><br />
+                            <h2>@Model.Code</h2><br />
+
+                            @foreach (var item in Model.RiceSacksOutputDetailTableDTOs)
+                            {
+
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <h3>@item.Code</h3><br />
+                                                    </div>
+                                                    <div class="row">
+                                                        <div class="col-6 col-sm-4">
+                                                            <label class="form-label" style="color:dimgray">Clasificación</label>
+                                                            <label class="d-block">@item.Classification</label>
+                                                        </div>
+                                                        <div class="col-6 col-sm-4">
+                                                            <label class="form-label" style="color:dimgray">Vencimiento</label>
+                                                            <label class="d-block">@Convert.ToDateTime(item.ExpirationDate).ToString("dd/MM/yyyy")</label>
+                                                        </div>
+                                                        <!-- Obligar a las siguientes columnas a pasar a una nueva línea en el breakpoint md y hacia arriba -->
+                                                        <div class="w-100 d-none d-md-block"></div>
+
+                                                        <div class="col-6 col-sm-4">
+                                                            <label class="form-label" style="color:dimgray">Ubicación</label>
+                                                            <label class="d-block">@item.Ubication</label>
+                                                        </div>
+                                                        <div class="col-6 col-sm-4">
+                                                            <label class="form-label" style="color:dimgray">Cantidad extraída</label>
+                                                            <label class="d-block">@item.SacksQuantity</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                <br />
+                            }
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--end:::Main-->
+    <footer id="footer">
+        <div class="container">
+            <div class="row justify-content-evenly">
+                <div class="col-4 mb-3">
+                    <a id="open-camera" class="d-block">
+                        <i class="fas fa-camera"></i>
+                        <span class="d-block">Scaner</span>
+                    </a>
+                </div>
+                <div class="col-4 mb-3">
+                    <form class="form-inline" asp-controller="Home" asp-action="Exit" id="logoutForm" method="post">
+                        <a id="logoutLink" class="d-block">
+                            <i class="fas fa-user"></i>
+                            <span class="d-block">Cerrar Sesión</span>
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!--TEMPLATE SCRIPTS-->
+    <script>var hostUrl = "assets/";</script>
+    <!--begin::Global Javascript Bundle(mandatory for all pages)-->
+    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/js/scripts.bundle.js"></script>
+
+    <!--end::Global Javascript Bundle-->
+    <!--begin::Vendors Javascript(used for this page only)-->
+    <script src="~/assets/plugins/custom/fullcalendar/fullcalendar.bundle.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/xy.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/radar.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/map.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/geodata/worldLow.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/geodata/continentsLow.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/geodata/usaLow.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/geodata/worldTimeZonesLow.js"></script>
+    <script src="https://cdn.amcharts.com/lib/5/geodata/worldTimeZoneAreasLow.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.10/signalr.min.js"></script>
+    <script src="~/assets/plugins/custom/datatables/datatables.bundle.js"></script>
+    <script src="~/assets/plugins/custom/tinymce/tinymce.bundle.js"></script>
+    <link href="assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <script src="assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/plugins/custom/ckeditor/ckeditor-document.bundle.js"></script>
+    <script src="~/assets/plugins/custom/vis-timeline/vis-timeline.bundle.js"></script>
+    <!--end::Vendors Javascript-->
+    <!--begin::Custom Javascript(used for this page only)-->
+    <script src="~/assets/js/custom/apps/file-manager/list.js"></script>
+    <script src="~/assets/js/widgets.bundle.js"></script>
+    <script src="~/assets/js/custom/widgets.js"></script>
+    <script src="~/assets/js/custom/apps/chat/chat.js"></script>
+    <script src="~/assets/js/custom/utilities/modals/upgrade-plan.js"></script>
+    <script src="~/assets/js/custom/utilities/modals/create-app.js"></script>
+    <script src="~/assets/js/custom/utilities/modals/users-search.js"></script>
+
+
+    <script>
+        function showLoader() {
+            const loader = document.getElementById('loader');
+            const loaderDark = document.getElementById('loaderDark');
+
+            const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
+            if (isDarkMode) {
+                loaderDark.style.display = 'block';
+                loader.style.display = 'none';
+            } else {
+                loader.style.display = 'block';
+                loaderDark.style.display = 'none';
+            }
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('loaderDark').style.display = 'none';
+        }
+
+
+
+        // Mostrar el spinner cuando el usuario navega a una nueva página
+        window.addEventListener('beforeunload', function () {
+            showLoader(); // Muestra el loader antes de salir de la página
+        });
+    </script>
+
+    <script>
+        function ShowZoneUbications(element) {
+            console.log('Iniciando ShowZoneUbications');
+
+            const selectedOption = element.find('option:selected');
+            const idZone = selectedOption.val();
+            const rows = parseInt(selectedOption.data('rows') || 0);
+            const columns = parseInt(selectedOption.data('columns') || 0);
+            const container = $('#UbicationsGraphics');
+
+            console.log('Valores obtenidos:', {
+                idZone: idZone,
+                rows: rows,
+                columns: columns
+            });
+
+            // Limpiar el contenedor
+            container.empty();
+            $('#IdUbication').val('');
+            $('#UbicationSelected').val('');
+
+            // Si no hay una opción seleccionada o la zona tiene 0 filas o columnas, ocultar el label y salir
+            if (!idZone || rows === 0 || columns === 0) {
+                console.log('Saliendo: No hay zona seleccionada o filas/columnas son 0');
+                document.getElementById('SeeUbicationSection').style.display = 'none';
+                document.getElementById('UbicationSelectedLabel').style.display = 'none';
+                document.getElementById('UbicationSelectedInput').style.display = 'none';
+                $('#UbicationSelected').removeAttr('required').removeAttr('data-validation');
+                return;
+            }
+            else {
+                $('#UbicationSelected').attr('required', 'required').attr('data-validation', 'required');
+                document.getElementById('UbicationSelectedLabel').style.display = 'none';
+                document.getElementById('UbicationSelectedInput').style.display = 'none';
+            }
+
+            // Mostrar el label
+            document.getElementById('SeeUbicationSection').style.display = 'block';
+
+
+
+
+            console.log('Iniciando llamada AJAX para zona:', idZone);
+            // Obtener ubicaciones mediante AJAX
+            $.ajax({
+                url: '/Ubication/GetUbicationsByZone',
+                type: 'GET',
+                data: { IdZone: idZone },
+                success: function (ubicationsData) {
+                    console.log('Ubicaciones recibidas:', ubicationsData);
+
+                    // Crear matriz para organizar las ubicaciones
+                    let ubicationMatrix = {};
+                    ubicationsData.forEach(ubication => {
+                        if (!ubicationMatrix[ubication.row]) {
+                            ubicationMatrix[ubication.row] = {};
+                        }
+                        ubicationMatrix[ubication.row][ubication.column] = ubication;
+                    });
+
+                    console.log('Matriz de ubicaciones creada:', ubicationMatrix);
+
+                    // Crear la cuadrícula
+                    let html = '<div class="position-relative overflow-auto px-2">';
+                    html += '<div class="d-flex flex-column gap-2">'; // Contenedor principal
+
+                    // Crear filas y columnas usando los valores de data-rows y data-columns
+                    for (let row = 1; row <= rows; row++) {
+                        html += '<div class="d-flex gap-2">'; // Fila
+
+                        for (let col = 1; col <= columns; col++) {
+                            const ubication = ubicationMatrix[row]?.[col];
+
+                            if (ubication) {
+                                console.log(`Procesando ubicación F${row}C${col}:`, ubication);
+                                const isOccupied = ubication.idCurrentRiceLot !== null;
+                                const backgroundColor = isOccupied ? '#50CD89' : '#F1416C';
+                                const isClickable = !isOccupied;
+
+                                html += `<div class="ubication-box ${isClickable ? 'clickable' : ''}"
+                                                        data-id="${ubication.idUbication}"
+                                                        data-name="F${row}C${col}"
+                                                        title="F${row}C${col}"
+                                                        style="background-color: ${backgroundColor};
+                                                               min-width: 45px;
+                                                               height: 45px;
+                                                               display: flex;
+                                                               align-items: center;
+                                                               justify-content: center;
+                                                               border-radius: 4px;
+                                                               cursor: ${isClickable ? 'pointer' : 'not-allowed'};
+                                                               color: white;
+                                                               font-size: 12px;
+                                                               text-align: center;">
+                                                       F${row}C${col}
+                                                   </div>`;
+                            } else {
+                                console.log(`Ubicación vacía en F${row}C${col}`);
+                                html += `<div style="min-width: 45px;
+                                                              height: 45px;
+                                                              border: 1px dashed #ccc;
+                                                              border-radius: 4px;"></div>`;
+                            }
+                        }
+
+                        html += '</div>'; // Fin de la fila
+
+                        // Agregar espacio para pasillo después de cada 2 filas
+                        if (row % 2 === 0 && row < rows) {
+                            console.log(`Agregando pasillo después de la fila ${row}`);
+                            html += `<div class="d-flex gap-2" style="height: 30px; margin: 10px 0;">
+                                                   <div style="min-width: 100%;
+                                                             background-color: #f5f5f5;
+                                                             border: 1px dashed #ccc;
+                                                             border-radius: 4px;
+                                                             display: flex;
+                                                             align-items: center;
+                                                             justify-content: center;
+                                                             color: #999;
+                                                             font-size: 12px;">
+                                                       Pasillo ${row / 2}
+                                                   </div>
+                                               </div>`;
+                        }
+                    }
+
+                    html += '</div></div>';
+                    container.append(html);
+                    console.log('Cuadrícula generada y agregada al contenedor');
+
+                    // Añadir event listeners para las ubicaciones clickeables
+                    $('.ubication-box.clickable').click(function () {
+                        const idUbication = $(this).data('id');
+                        const UbicationName = $(this).data('name');
+                        console.log('Ubicación seleccionada:', idUbication);
+
+                        // Restaurar color rojo a la ubicación previamente seleccionada
+                        $('.ubication-box.selected').css('background-color', '#F1416C').removeClass('selected');
+
+                        // Marcar la nueva ubicación seleccionada en azul
+                        $(this).css('background-color', '#009EF7').addClass('selected');
+
+                        // Actualizar el input hidden
+                        $('#IdUbication').val(idUbication);
+                        $('#UbicationSelected').val(UbicationName);
+
+                        ValidateElement($('#UbicationSelected'));
+
+                        //Mostrar la seccion de ver ubicacion seleccionada
+                        document.getElementById('UbicationSelectedLabel').style.display = 'block';
+                        document.getElementById('UbicationSelectedInput').style.display = 'block';
+
+                        //Cerrar el modal
+                        const modal = document.getElementById('kt_modal_1');
+                        const modalInstance = bootstrap.Modal.getInstance(modal) || new bootstrap.Modal(modal);
+                        modalInstance.hide()
+
+                        console.log('Input hidden actualizado con:', idUbication);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error en la llamada AJAX:', {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                    container.html('<div class="alert alert-danger">Error al cargar las ubicaciones</div>');
+                }
+            });
+        }
+
+    </script>
+
+    <!--begin: General scripts-->
+    <script>
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                // Simula el clic en el botón "Siguiente"
+                event.preventDefault(); // Evita comportamientos por defecto del Enter
+                $('[data-kt-element*="-next"]:visible').click();
+            }
+        });
+
+        function Create() {
+            const form = document.getElementById('kt_create_app_form');
+            // Confirmación de envío
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¿Deseas enviar el formulario?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, enviar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    //MOSTRAR SPINNER
+                    $('#submitButton').prop('disabled', true); // Deshabilitar el botón
+                    $('#btnGuardar').hide(); // Ocultar el texto
+                    $('.indicator-progress').show(); // Mostrar el spinner
+                    // Envía el formulario
+                    form.submit();
+                }
+            });
+        }
+
+
+    </script>
+    <!--end: General scripts-->
+    <!--end::Style-->
+    <!--begin: Stepper Logic-->
+    <script>
+        $(document).ready(function () {
+
+
+            //Al hacer click en create
+            $('[data-kt-element*="-create"]').on('click', function (e) {
+                e.preventDefault();
+                if (validateCurrentStep()) {
+                    Create();
+                }
+            });
+
+            //funcion para validar stepper
+            function validateCurrentStep() {
+                var currentSection = $('.current[data-kt-stepper-element="content"]');
+                var currentIndex = $('[data-kt-stepper-element="content"]').index(currentSection);
+                var inputs = currentSection.find('input[required], select[required]');
+                var isValid = true;
+
+                inputs.each(function () {
+                    var element = $(this);
+                    if (!element.val() || element.hasClass('invalid')) {
+                        var parentDiv = element.closest('.input-group');
+                        isValid = false;
+                        element.addClass('invalid');
+                        parentDiv.next('.invalid-feedback').show();
+                    } else {
+                        var parentDiv = element.closest('.input-group');
+                        element.removeClass('invalid');
+                        parentDiv.next('.invalid-feedback').hide();
+                    }
+                });
+
+                return isValid;
+
+            }
+
+        });
+    </script>
+    <!--end: Stepper Logic-->
+    <!--begin: Stepper Validations-->
+    <script>
+
+        //FUNCION QUE REALIZA LAS VALIDACIONES A CADA ELEMENTO DENTRO DEL MODAL
+        function ValidateElement(element) {
+            var isValid = true;
+            var validationTypes = element.data('validation').split(',');
+
+            for (var i = 0; i < validationTypes.length; i++) {
+                var validationType = validationTypes[i];
+                switch (validationType) {
+                    case 'required':
+                        if (!element.val()) {
+                            isValid = false;
+                            console.log("Required")
+                            ShowValidationError(element, 'Este campo es obligatorio.');
+                            return isValid;
+                        } else {
+                            RemoveValidationError(element);
+                        }
+                        break;
+                    case 'digits':
+                        var digits = element.data('digits').toString().split(',').map(Number);
+                        if (!digits.includes(element.val().length)) {
+                            isValid = false;
+                            console.log("Digits")
+                            ShowValidationError(element, `El campo debe tener exactamente ${digits.join(' o ')} dígitos.`);
+                            return isValid;
+                        } else {
+                            RemoveValidationError(element);
+                        }
+                        break;
+                    case 'email':
+                        if (element.val() == "") {
+                            var parentDiv = element.closest('.input-group');
+                            element.removeClass('valid');
+                            element.removeClass('invalid');
+                            parentDiv.next('.invalid-feedback').hide();
+                            element.removeAttr('required');
+                        }
+                        else if (!ValidateEmail(element.val())) {
+                            isValid = false;
+                            console.log("email")
+                            ShowValidationError(element, 'El correo electrónico no es válido.');
+                            element.attr('required', true);
+                            return isValid;
+                        }
+                        else {
+
+                            RemoveValidationError(element);
+                            element.attr('required', true);
+                        }
+                        break;
+
+                    case 'numeric':
+                        if (!ValidateNumeric(element.val())) {
+                            isValid = false;
+                            console.log("numeric")
+                            ShowValidationError(element, 'El campo solo debe contener valores numéricos.');
+                            return isValid;
+                        } else {
+                            RemoveValidationError(element);
+                        }
+                        break;
+
+                    case 'decimal':
+                        console.log("decimal")
+
+                        if (!ValidateDecimal(element.val())) {
+                            isValid = false;
+                            console.log("decimal")
+                            ShowValidationError(element, 'El número decimal no es válido.');
+                            return isValid;
+                        } else {
+                            RemoveValidationError(element);
+                        }
+                        break;
+
+                    case 'contract-format':
+                        var formattedValue = formatContract(element.val());
+                        element.val(formattedValue);
+                        if (!ValidateContractFormat(formattedValue)) {
+                            isValid = false;
+                            console.log("contract-format")
+                            ShowValidationError(element, 'El contrato no sigue el formato correcto.');
+                            return isValid;
+                        } else {
+                            RemoveValidationError(element);
+                        }
+                        break;
+
+
+                    default:
+                        break;
+                }
+            }
+
+            return isValid;
+        }
+
+        //FUNCION QUE MUESTRA LOS ATRIBUTOS DE ERROR DEL ELEMENTO
+        function ShowValidationError(element, message) {
+            var parentDiv = element.closest('.input-group');
+            element.removeClass('valid');
+            element.addClass('invalid');
+            parentDiv.next('.invalid-feedback').text(message).show();
+        }
+
+        //FUNCION QUE RETIRA LOS ATRIBUTOS Y CLASES DE ERROR Y AGREGA ATRIBUTOS Y CLASES DE EXITO
+        function RemoveValidationError(element) {
+            var parentDiv = element.closest('.input-group');
+            element.removeClass('invalid');
+            parentDiv.next('.invalid-feedback').hide();
+            element.addClass('valid');
+        }
+
+        //FUNCION PARA VALIDAR CORREO
+        function ValidateEmail(email) {
+            // Expresión regular para validar un correo electrónico
+            var emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+
+            // Verificar si el email pasa la validación básica
+            if (!emailPattern.test(email)) {
+                return false;
+            }
+
+            // Verificar que no termine con un punto
+            if (email.endsWith('.')) {
+                return false;
+            }
+
+            // Si pasa ambas validaciones, el email es válido
+            return true;
+        }
+
+        //FUNCION PARA VALIDAR VALORES NUMERICOS
+        function ValidateNumeric(number) {
+            return /^\d+$/.test(number);
+        }
+
+
+        function ValidateDecimal(string) {
+            // Si está vacío o no es string, retornar false
+            if (!string || typeof string !== 'string') {
+                return false;
+            }
+
+            // Eliminar espacios en blanco
+            string = string.trim();
+
+            // Verificar si es un número válido
+            // Acepta:
+            // - Cero (0)
+            // - Números enteros positivos (ej: 1, 2, 123)
+            // - Números decimales positivos (ej: 0.45, 123.45)
+            // - No permite múltiples puntos decimales
+            const decimalRegex = /^(0|[1-9]\d*)\.?\d*$/;
+            return decimalRegex.test(string);
+        }
+
+        //VALIDACION DE FORMATO DE CONTRATOS
+        function ValidateContractFormat(contract) {
+            // Expresión regular para validar el formato del contrato
+            var contractPattern = /^\d{4}-\d{4}-\d{2}-\d{8}$/;
+            return contractPattern.test(contract);
+        }
+
+        //CONVERTIDOR DE NUMEROS DECIMALES
+        function formatDecimal(value) {
+
+            // Convertir el valor en un número flotante
+            let number = parseFloat(value);
+
+            if (isNaN(number)) {
+                return 'Invalid number';
+            }
+
+            // Formatear el número con comas en los miles y dos decimales
+            return number.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        //CONVERTIDOR A FORMATO DE CONTRATO
+        function formatContract(value) {
+
+            var value = value.replace(/\D/g, '');
+            console.log(value);
+            var sections = [4, 4, 2, 8];
+            var formattedValue = '';
+            var index = 0;
+
+            for (var i = 0; i < sections.length; i++) {
+                if (value.length > index) {
+                    var endIndex = index + sections[i];
+                    if (value.length > endIndex) {
+                        if (value.length > 18 && i === 3) formattedValue += value.substring(index, endIndex);
+                        else formattedValue += value.substring(index, endIndex) + '-';
+                    } else {
+                        formattedValue += value.substring(index, value.length);
+                    }
+                }
+                index += sections[i];
+            }
+
+            return formattedValue;
+        }
+
+    </script>
+    <!--end: Stepper Validations-->
+    <script>
+        const logoutLink = document.getElementById('logoutLink');
+
+        if (logoutLink) {
+            logoutLink.addEventListener('click', function (event) {
+                event.preventDefault();  // Prevenir el comportamiento por defecto del enlace
+                document.getElementById('logoutForm').submit();  // Enviar el formulario
+            });
+        }
+
+
+    </script>
+</body>
+</html>

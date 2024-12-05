@@ -373,7 +373,7 @@ namespace OptiArroz_Tesis_Proyect.Controllers
 
                 // Generar URL segura (podrías incluir un token temporal)
                 var baseUrl = Configuration["BaseUrl"] ;
-                var mobileUrl = $"{baseUrl}/mobile/output/{idOutput}";
+                var mobileUrl = $"{baseUrl}/mobile/RiceSackOutput?IdOutput={idOutput}";
 
                 // Generar QR
                 using (var qrGenerator = new QRCodeGenerator())
